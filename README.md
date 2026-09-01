@@ -1,4 +1,3 @@
-```bash
 <div align="center">
 
 # hirongbao
@@ -94,5 +93,4 @@ HTML · JavaScript
 building        ServiceHub
 maintaining     personal website
 recording       everyday life
-learning        something newxxxxxxxxxx npm run lint  # TypeScript 类型检查bash
-```
+learning        something new
