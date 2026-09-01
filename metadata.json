@@ -1,0 +1,6 @@
+{
+  "name": "hirongbao",
+  "description": "hirongbao 个人动态与信息流展示网站，支持瀑布流排版、分类筛选与心跳在线统计",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

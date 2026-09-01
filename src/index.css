@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-serif: "Playfair Display", serif;
+}
+
+body {
+  @apply bg-[#F8F9FA] text-zinc-900 antialiased h-full;
+}
