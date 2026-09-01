@@ -9,7 +9,7 @@
 <br>
 
 <a href="https://hirongbao.com">
-  <img src="./preview.png" width="900" alt="hirongbao personal website">
+  <img src="[./preview.png](https://hirongbao-1321185798.cos.ap-shanghai.myqcloud.com/images/fe330d2c-3830-40d4-8157-c064bcec4f68.png)" width="900" alt="hirongbao personal website">
 </a>
 
 <br>
