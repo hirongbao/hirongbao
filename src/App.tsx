@@ -270,6 +270,13 @@ export default function App() {
               ))}
             </div>
 
+            {currentPosts.length === 0 && !isFetchingPosts ? (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex w-full flex-col items-center rounded-3xl border border-zinc-200/70 bg-white/70 px-6 py-10 text-center">
+                <img src="/hirongbao.svg" alt="暂无动态" className="mb-5 h-44 w-60 object-contain opacity-90" />
+                <p className="text-sm font-medium text-zinc-700">这里暂时还没有动态</p>
+                <p className="mt-1 text-xs text-zinc-400">换个分类看看，或稍后再来。</p>
+              </motion.div>
+            ) : (
             <div className="flex gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full">
               {isFetchingPosts ? (
                 Array.from({ length: numCols }).map((_, colIndex) => (
@@ -307,6 +314,7 @@ export default function App() {
                 })
               )}
             </div>
+            )}
             
             <div className="py-12 text-center text-sm text-zinc-400">
               <p>已经到底啦，没有更多内容了。</p>
