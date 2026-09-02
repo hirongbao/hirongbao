@@ -53,6 +53,14 @@ export interface ApiResponse<T> {
   message: string;
 }
 
+export interface PostPageData {
+  items: RawPost[];
+  page: number;
+  size: number;
+  total: number;
+  hasMore: boolean;
+}
+
 // 后端动态原始结构（映射为展示用 Post 前的中间类型）
 export interface RawPost {
   id: number;

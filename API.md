@@ -40,14 +40,15 @@
 
 ## 2. Get Posts
 
-**Endpoint:** `GET /api/posts`（代理到 ServiceHub `/api/hirongbaohub/posts`，公开无需凭证）
+**Endpoint:** `GET /api/posts/page?page=1&size=12&category=food`（代理到 ServiceHub `/api/hirongbaohub/posts/page`，公开无需凭证）
 
 **Response:** (200 OK)
 ```json
 {
   "code": 0,
   "message": "success",
-  "data": [
+  "data": {
+    "items": [
     {
       "id": 1,
       "content": "周末就是不吃对的，只吃爽的",
@@ -60,7 +61,12 @@
         { "id": 1, "author": "访客", "content": "太真实了！", "createdAt": "2026-08-31T10:05:00" }
       ]
     }
-  ]
+    ],
+    "page": 1,
+    "size": 12,
+    "total": 142,
+    "hasMore": true
+  }
 }
 ```
 
@@ -70,6 +76,9 @@
 - `media` 为数组：图片 1~9 张（按 `sortOrder` 排序，首张为封面）或视频 1 条；纯文字动态为空数组。
 - `createdAt` 为原始时间，前端用 `formatRelativeTime` 转相对时间。
 - 评论按时间正序返回。
+- `page` 从 1 开始，`size` 最大 30；首页通过触底自动请求下一页。
+
+兼容接口 `GET /api/posts` 仍保留，返回全部动态，供旧客户端过渡使用。
 
 ---
 
@@ -93,9 +102,20 @@
 
 ---
 
-## 5. Proxy Image (CORS Bypass)
+## 5. Visitor Heartbeat and Statistics
+
+**Endpoint:** `POST /api/heartbeat`
+
+前端每 15 秒发送一次心跳。后端会按 IP 的不可逆摘要持久化独立访客和访问次数，并返回实际在线人数与用于展示的在线人数：
+
+```json
+{ "code": 0, "data": { "onlineCount": 3, "actualOnlineCount": 1, "totalVisitors": 128 }, "message": "success" }
+```
+
+`onlineCount` 在低流量时采用温和基线（不会超过实际在线人数 + 5），访问量上升后自动回归实际在线人数；`totalVisitors` 为持久化累计独立访客数。
+
+## 6. Proxy Image (CORS Bypass)
 
 **Endpoint:** `GET /api/proxy-image?url=<encoded-image-url>`
 
 Returns the binary image data with `Access-Control-Allow-Origin: *` headers attached.
-

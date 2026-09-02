@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Profile } from './components/Profile';
 import { PostCard } from './components/PostCard';
 import { SubscribeModal } from './components/SubscribeModal';
 import { PostDetailModal } from './components/PostDetailModal';
-import { Post, ProfileData, ApiResponse, RawPost, Category } from './types';
+import { Post, ProfileData, ApiResponse, RawPost, Category, PostPageData } from './types';
 import { formatRelativeTime } from './utils/time';
 import { SkeletonCard } from './components/SkeletonCard';
 import { ProfileSkeleton } from './components/ProfileSkeleton';
@@ -41,6 +41,8 @@ export default function App() {
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [postsCache, setPostsCache] = useState<Record<string, Post[]>>({});
+  const [pageByCategory, setPageByCategory] = useState<Record<string, number>>({});
+  const [hasMoreByCategory, setHasMoreByCategory] = useState<Record<string, boolean>>({});
   const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | number>('all');
   
@@ -50,6 +52,7 @@ export default function App() {
   const [retryCount, setRetryCount] = useState(0);
   
   const [numCols, setNumCols] = useState(1);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // 获取当前选中的帖子列表
   const currentPosts = postsCache[selectedCategoryId] || [];
@@ -81,7 +84,7 @@ export default function App() {
       try {
         const [profileRes, postsRes] = await Promise.all([
           fetch('/api/profile'),
-          fetch('/api/posts')
+          fetch('/api/posts/page?page=1&size=12')
         ]);
 
         if (profileRes.ok) {
@@ -105,9 +108,11 @@ export default function App() {
         if (postsRes.ok) {
           const contentType = postsRes.headers.get("content-type");
           if (contentType && contentType.includes("application/json")) {
-            const postsEnvelope: ApiResponse<RawPost[]> = await postsRes.json();
+            const postsEnvelope: ApiResponse<PostPageData> = await postsRes.json();
             if (postsEnvelope.code === 0 && postsEnvelope.data) {
-              setPostsCache({ 'all': postsEnvelope.data.map(mapPost) });
+              setPostsCache({ 'all': postsEnvelope.data.items.map(mapPost) });
+              setPageByCategory({ all: postsEnvelope.data.page });
+              setHasMoreByCategory({ all: postsEnvelope.data.hasMore });
             }
           }
         }
@@ -133,17 +138,19 @@ export default function App() {
     const fetchCategoryPosts = async () => {
       setIsFetchingPosts(true);
       try {
-        const query = selectedCategoryId === 'all' ? '' : `?category=${selectedCategoryId}`;
-        const res = await fetch(`/api/posts${query}`);
+        const query = selectedCategoryId === 'all' ? '' : `&category=${selectedCategoryId}`;
+        const res = await fetch(`/api/posts/page?page=1&size=12${query}`);
         if (res.ok) {
           const contentType = res.headers.get("content-type");
           if (contentType && contentType.includes("application/json")) {
-            const env: ApiResponse<RawPost[]> = await res.json();
+            const env: ApiResponse<PostPageData> = await res.json();
             if (env.code === 0 && env.data) {
               setPostsCache(prev => ({
                 ...prev,
-                [selectedCategoryId]: env.data.map(mapPost)
+                [selectedCategoryId]: env.data.items.map(mapPost)
               }));
+              setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: env.data.page }));
+              setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: env.data.hasMore }));
             }
           }
         }
@@ -156,6 +163,30 @@ export default function App() {
 
     fetchCategoryPosts();
   }, [selectedCategoryId, loading, postsCache]);
+
+  // 滚动到列表底部时自动加载下一页
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target || loading || isFetchingPosts || !hasMoreByCategory[selectedCategoryId]) return;
+    const observer = new IntersectionObserver(entries => {
+      if (!entries[0].isIntersecting) return;
+      const nextPage = (pageByCategory[selectedCategoryId] || 1) + 1;
+      setIsFetchingPosts(true);
+      const query = selectedCategoryId === 'all' ? '' : `&category=${selectedCategoryId}`;
+      fetch(`/api/posts/page?page=${nextPage}&size=12${query}`)
+        .then(res => res.json() as Promise<ApiResponse<PostPageData>>)
+        .then(env => {
+          if (env.code !== 0 || !env.data) return;
+          setPostsCache(prev => ({ ...prev, [selectedCategoryId]: [...(prev[selectedCategoryId] || []), ...env.data.items.map(mapPost)] }));
+          setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: env.data.page }));
+          setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: env.data.hasMore }));
+        })
+        .catch(error => console.error('Failed to load more posts:', error))
+        .finally(() => setIsFetchingPosts(false));
+    }, { rootMargin: '600px 0px' });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [selectedCategoryId, loading, isFetchingPosts, hasMoreByCategory, pageByCategory]);
 
   if (loading) {
     return (
@@ -317,7 +348,8 @@ export default function App() {
             )}
             
             <div className="py-12 text-center text-sm text-zinc-400">
-              <p>已经到底啦，没有更多内容了。</p>
+              <div ref={loadMoreRef} className="h-8" aria-hidden="true" />
+              <p>{isFetchingPosts ? '正在加载更多动态…' : hasMoreByCategory[selectedCategoryId] ? '继续下滑加载更多' : '已经到底啦，没有更多内容了。'}</p>
             </div>
           </div>
         </main>

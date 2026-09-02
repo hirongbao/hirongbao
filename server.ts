@@ -51,6 +51,12 @@ async function startServer() {
     backendProxy(req, res, `/api/hirongbaohub/posts${querySuffix}`);
   });
 
+  // 分页动态代理，供首页无限滚动使用
+  app.get("/api/posts/page", (req, res) => {
+    const qs = new URLSearchParams(req.query as Record<string, string>).toString();
+    backendProxy(req, res, `/api/hirongbaohub/posts/page${qs ? `?${qs}` : ''}`);
+  });
+
   // 3. Like or Unlike a Post
   app.post("/api/posts/:id/like", (req, res) => backendProxy(req, res, `/api/hirongbaohub/posts/${req.params.id}/like`));
 
