@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Profile } from './components/Profile';
 import { PostCard } from './components/PostCard';
 import { SubscribeModal } from './components/SubscribeModal';
@@ -47,11 +47,20 @@ export default function App() {
   const [isFetchingPosts, setIsFetchingPosts] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   const [numCols, setNumCols] = useState(1);
 
   // 获取当前选中的帖子列表
   const currentPosts = postsCache[selectedCategoryId] || [];
+
+  useEffect(() => {
+    const siteName = profile?.name || 'hirongbao';
+    const categoryName = categories.find(category => category.id === selectedCategoryId)?.name;
+    document.title = categoryName && categoryName !== '全部'
+      ? `${categoryName} · ${siteName}`
+      : `动态 · ${siteName}`;
+  }, [profile?.name, categories, selectedCategoryId]);
 
   useEffect(() => {
     const updateCols = () => {
@@ -82,13 +91,15 @@ export default function App() {
             if (profileEnvelope.code === 0 && profileEnvelope.data) {
               setProfile(profileEnvelope.data);
             } else {
-               setErrorMsg(profileEnvelope.message || '获取个人资料失败');
+               setErrorMsg(profileEnvelope.message || '资料加载失败，请稍后再试');
             }
           } else {
-             setErrorMsg('个人资料接口返回了非 JSON 格式的数据');
+             setErrorMsg('服务返回了异常内容，请稍后再试');
           }
         } else {
-           setErrorMsg('后端服务连接失败，请检查内网穿透或后端状态');
+           setErrorMsg(profileRes.status >= 500
+             ? '服务暂时不可用，请稍后再试'
+             : `资料加载失败（${profileRes.status}）`);
         }
 
         if (postsRes.ok) {
@@ -102,14 +113,14 @@ export default function App() {
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
-        setErrorMsg('网络请求失败');
+        setErrorMsg('暂时无法连接服务，请稍后重试');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [retryCount]);
 
   // 监听分类切换，如果没有缓存数据则发起新的请求
   useEffect(() => {
@@ -178,11 +189,18 @@ export default function App() {
 
   if (errorMsg || !profile) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4 text-red-500 bg-red-50 p-6 rounded-2xl max-w-sm text-center">
-          <p className="text-sm font-medium">{errorMsg || '无法加载个人资料'}</p>
-          <p className="text-xs text-red-400">当前内网穿透隧道可能无效，或本地服务未启动。</p>
-        </div>
+      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center px-6">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+            <AlertTriangle size={25} strokeWidth={1.8} />
+          </div>
+          <p className="mb-2 text-base font-semibold text-zinc-900">页面暂时无法加载</p>
+          <p className="mb-6 text-sm leading-6 text-zinc-500">{errorMsg || '服务暂时不可用，请稍后再试。'}</p>
+          <button type="button" onClick={() => { setErrorMsg(null); setProfile(null); setPostsCache({}); setLoading(true); setRetryCount(count => count + 1); }} className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700">
+            <RefreshCw size={15} />
+            重试
+          </button>
+        </motion.div>
       </div>
     );
   }
