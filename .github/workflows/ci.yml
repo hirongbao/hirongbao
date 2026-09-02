@@ -31,3 +31,30 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Prepare deployment archive
+        if: github.event_name == 'push'
+        run: tar -czf hirongbao-web.tar.gz dist package.json package-lock.json
+
+      - name: Upload archive
+        if: github.event_name == 'push'
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/servicehub_deploy
+          chmod 600 ~/.ssh/servicehub_deploy
+          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
+          scp -i ~/.ssh/servicehub_deploy hirongbao-web.tar.gz "$SERVER_USER@$SERVER_HOST:/tmp/hirongbao-web.tar.gz"
+
+      - name: Activate release
+        if: github.event_name == 'push'
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          ssh -i ~/.ssh/servicehub_deploy "$SERVER_USER@$SERVER_HOST" \
+            'set -e; release=/opt/apps/hirongbao-web/releases/$(date +%Y%m%d%H%M%S); mkdir -p "$release"; tar -xzf /tmp/hirongbao-web.tar.gz -C "$release"; cd "$release"; npm ci --omit=dev; ln -sfn "$release" /opt/apps/hirongbao-web/current; systemctl --user restart hirongbao-web.service; systemctl --user is-active --quiet hirongbao-web.service; rm -f /tmp/hirongbao-web.tar.gz'
