@@ -61,6 +61,15 @@ export interface PostPageData {
   hasMore: boolean;
 }
 
+export interface ReleaseLog {
+  id: number;
+  title: string;
+  version?: string | null;
+  summary?: string | null;
+  content?: string | null;
+  publishedAt: string;
+}
+
 // 后端动态原始结构（映射为展示用 Post 前的中间类型）
 export interface RawPost {
   id: number;

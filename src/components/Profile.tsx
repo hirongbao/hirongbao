@@ -16,9 +16,11 @@ const IconMap: Record<string, React.ElementType> = {
 interface ProfileProps {
   profile: ProfileData;
   onSubscribe: () => void;
+  activeSection: 'feed' | 'releases';
+  onSectionChange: (section: 'feed' | 'releases') => void;
 }
 
-export function Profile({ profile, onSubscribe }: ProfileProps) {
+export function Profile({ profile, onSubscribe, activeSection, onSectionChange }: ProfileProps) {
   const [activeQr, setActiveQr] = useState<string | null>(null);
 
   const toggleQr = (platform: string) => {
@@ -135,15 +137,15 @@ export function Profile({ profile, onSubscribe }: ProfileProps) {
         )}
 
         <nav className="space-y-4 pt-2 hidden [@media(min-width:1024px)_and_(min-height:780px)]:block">
-          <div className="flex items-center space-x-4 group cursor-pointer">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-900">01 / 信息流</span>
-            <div className="h-[1px] flex-1 bg-zinc-900 opacity-100"></div>
-          </div>
-          <div className="flex items-center space-x-4 group cursor-pointer opacity-30">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">02 / 精选内容</span>
-            <div className="h-[1px] flex-1 bg-zinc-200"></div>
-          </div>
-          <div className="flex items-center space-x-4 group cursor-pointer opacity-30">
+          <button type="button" onClick={() => onSectionChange('feed')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'feed' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>01 / 信息流</span>
+            <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+          </button>
+          <button type="button" onClick={() => onSectionChange('releases')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'releases' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'releases' ? 'text-zinc-900' : 'text-zinc-400'}`}>02 / 更新日志</span>
+            <div className={`h-[1px] flex-1 ${activeSection === 'releases' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+          </button>
+          <div className="flex items-center space-x-4 group cursor-default opacity-30">
             <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">03 / 历史归档</span>
             <div className="h-[1px] flex-1 bg-zinc-200"></div>
           </div>

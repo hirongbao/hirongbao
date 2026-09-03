@@ -72,6 +72,9 @@ async function startServer() {
     backendProxy(req, res, `/api/hirongbaohub/posts/page${qs ? `?${qs}` : ''}`);
   });
 
+  // 更新日志代理
+  app.get("/api/releases", (req, res) => backendProxy(req, res, "/api/hirongbaohub/releases"));
+
   // 3. Like or Unlike a Post
   app.post("/api/posts/:id/like", (req, res) => backendProxy(req, res, `/api/hirongbaohub/posts/${req.params.id}/like`));
 

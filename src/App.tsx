@@ -5,7 +5,7 @@ import { Profile } from './components/Profile';
 import { PostCard } from './components/PostCard';
 import { SubscribeModal } from './components/SubscribeModal';
 import { PostDetailModal } from './components/PostDetailModal';
-import { Post, ProfileData, ApiResponse, RawPost, Category, PostPageData } from './types';
+import { Post, ProfileData, ApiResponse, RawPost, Category, PostPageData, ReleaseLog } from './types';
 import { formatRelativeTime } from './utils/time';
 import { SkeletonCard } from './components/SkeletonCard';
 import { ProfileSkeleton } from './components/ProfileSkeleton';
@@ -38,6 +38,8 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [activeSection, setActiveSection] = useState<'feed' | 'releases'>('feed');
+  const [releaseLogs, setReleaseLogs] = useState<ReleaseLog[]>([]);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [postsCache, setPostsCache] = useState<Record<string, Post[]>>({});
@@ -62,8 +64,8 @@ export default function App() {
     const categoryName = categories.find(category => category.id === selectedCategoryId)?.name;
     document.title = categoryName && categoryName !== '全部'
       ? `${categoryName} · ${siteName}`
-      : `动态 · ${siteName}`;
-  }, [profile?.name, categories, selectedCategoryId]);
+      : activeSection === 'releases' ? `更新日志 · ${siteName}` : `动态 · ${siteName}`;
+  }, [profile?.name, categories, selectedCategoryId, activeSection]);
 
   useEffect(() => {
     const updateCols = () => {
@@ -82,9 +84,10 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, postsRes] = await Promise.all([
+        const [profileRes, postsRes, releasesRes] = await Promise.all([
           fetch('/api/profile'),
-          fetch('/api/posts/page?page=1&size=12')
+          fetch('/api/posts/page?page=1&size=12'),
+          fetch('/api/releases')
         ]);
 
         if (profileRes.ok) {
@@ -103,6 +106,11 @@ export default function App() {
            setErrorMsg(profileRes.status >= 500
              ? '服务暂时不可用，请稍后再试'
              : `资料加载失败（${profileRes.status}）`);
+        }
+
+        if (releasesRes.ok) {
+          const env: ApiResponse<ReleaseLog[]> = await releasesRes.json();
+          if (env.code === 0 && env.data) setReleaseLogs(env.data);
         }
 
         if (postsRes.ok) {
@@ -260,7 +268,7 @@ export default function App() {
             <X size={20} />
           </button>
         </div>
-        <Profile profile={profile} onSubscribe={() => setIsSubscribeOpen(true)} />
+        <Profile profile={profile} onSubscribe={() => setIsSubscribeOpen(true)} activeSection={activeSection} onSectionChange={setActiveSection} />
       </aside>
 
       {/* Feed Area */}
@@ -280,10 +288,27 @@ export default function App() {
                 >
                   <Menu size={20} />
                 </button>
-                <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">信息流 / 动态</h2>
+                <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">{activeSection === 'releases' ? '更新日志 / CHANGELOG' : '信息流 / 动态'}</h2>
               </div>
             </motion.div>
-            
+            {activeSection === 'releases' ? (
+              <section className="mx-auto max-w-4xl">
+                <div className="mb-10 max-w-xl">
+                  <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400 mb-4">CHANGELOG</p>
+                  <h3 className="text-4xl md:text-5xl font-serif tracking-tight text-zinc-900">持续更新，保持生长。</h3>
+                  <p className="mt-4 text-sm leading-7 text-zinc-500">这里记录网站、服务与产品的每一次重要变化。</p>
+                </div>
+                {releaseLogs.length ? <div className="relative ml-2 border-l border-zinc-200 pl-8 md:pl-12 space-y-10">
+                  {releaseLogs.map(log => <article key={log.id} className="relative rounded-3xl border border-zinc-200/70 bg-white p-6 md:p-8 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+                    <span className="absolute -left-[2.65rem] md:-left-[3.15rem] top-8 h-3 w-3 rounded-full bg-zinc-900 ring-8 ring-[#F8F9FA]" />
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] font-bold tracking-[0.2em] uppercase text-zinc-400"><time>{new Date(log.publishedAt).toLocaleDateString('zh-CN')}</time>{log.version && <span className="rounded-full bg-zinc-900 px-3 py-1 text-white tracking-normal">{log.version}</span>}</div>
+                    <h4 className="mt-4 text-2xl font-serif text-zinc-900">{log.title}</h4>
+                    {log.summary && <p className="mt-3 text-sm leading-7 text-zinc-600">{log.summary}</p>}
+                    {log.content && <p className="mt-4 whitespace-pre-line text-sm leading-7 text-zinc-500">{log.content}</p>}
+                  </article>)}
+                </div> : <div className="rounded-3xl border border-dashed border-zinc-200 bg-white/60 px-6 py-20 text-center text-sm text-zinc-400">暂时还没有更新日志，新的变化会在这里出现。</div>}
+              </section>
+            ) : <>
             {/* 分类筛选器 */}
             <div className="flex gap-4 overflow-x-auto pb-4 mb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {categories.map(cat => (
@@ -351,6 +376,7 @@ export default function App() {
               <div ref={loadMoreRef} className="h-8" aria-hidden="true" />
               <p>{isFetchingPosts ? '正在加载更多动态…' : hasMoreByCategory[selectedCategoryId] ? '继续下滑加载更多' : '已经到底啦，没有更多内容了。'}</p>
             </div>
+            </>}
           </div>
         </main>
       </div>
