@@ -9,6 +9,7 @@ import { Post, ProfileData, ApiResponse, RawPost, Category, PostPageData, Releas
 import { formatRelativeTime } from './utils/time';
 import { SkeletonCard } from './components/SkeletonCard';
 import { ProfileSkeleton } from './components/ProfileSkeleton';
+import { ReleaseLogSection } from './components/ReleaseLogSection';
 
 // 模拟分类数据（后端接入时可以从接口读取）
 const MOCK_CATEGORIES: Category[] = [
@@ -292,22 +293,7 @@ export default function App() {
               </div>
             </motion.div>
             {activeSection === 'releases' ? (
-              <section className="mx-auto max-w-4xl">
-                <div className="mb-10 max-w-xl">
-                  <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400 mb-4">CHANGELOG</p>
-                  <h3 className="text-4xl md:text-5xl font-serif tracking-tight text-zinc-900">持续更新，保持生长。</h3>
-                  <p className="mt-4 text-sm leading-7 text-zinc-500">这里记录网站、服务与产品的每一次重要变化。</p>
-                </div>
-                {releaseLogs.length ? <div className="relative ml-2 border-l border-zinc-200 pl-8 md:pl-12 space-y-10">
-                  {releaseLogs.map(log => <article key={log.id} className="relative rounded-3xl border border-zinc-200/70 bg-white p-6 md:p-8 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
-                    <span className="absolute -left-[2.65rem] md:-left-[3.15rem] top-8 h-3 w-3 rounded-full bg-zinc-900 ring-8 ring-[#F8F9FA]" />
-                    <div className="flex flex-wrap items-center gap-3 text-[10px] font-bold tracking-[0.2em] uppercase text-zinc-400"><time>{new Date(log.publishedAt).toLocaleDateString('zh-CN')}</time>{log.version && <span className="rounded-full bg-zinc-900 px-3 py-1 text-white tracking-normal">{log.version}</span>}</div>
-                    <h4 className="mt-4 text-2xl font-serif text-zinc-900">{log.title}</h4>
-                    {log.summary && <p className="mt-3 text-sm leading-7 text-zinc-600">{log.summary}</p>}
-                    {log.content && <p className="mt-4 whitespace-pre-line text-sm leading-7 text-zinc-500">{log.content}</p>}
-                  </article>)}
-                </div> : <div className="rounded-3xl border border-dashed border-zinc-200 bg-white/60 px-6 py-20 text-center text-sm text-zinc-400">暂时还没有更新日志，新的变化会在这里出现。</div>}
-              </section>
+              <ReleaseLogSection releaseLogs={releaseLogs} />
             ) : <>
             {/* 分类筛选器 */}
             <div className="flex gap-4 overflow-x-auto pb-4 mb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
