@@ -5,8 +5,15 @@ export function OnlineStats() {
   const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
-    // Generate a simple UUID or unique client ID for the session
-    const clientId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    // 为浏览器生成并持久化匿名访客 ID，避免后端只能看到代理地址时统计失效
+    const storageKey = 'hirongbao:visitor-id';
+    let clientId = window.localStorage.getItem(storageKey);
+    if (!clientId) {
+      clientId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+      window.localStorage.setItem(storageKey, clientId);
+    }
     
     let isMounted = true;
     let timer: number;
