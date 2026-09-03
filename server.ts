@@ -10,6 +10,15 @@ import http from "http";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 // 备用内网穿透地址示例: "http://x62e626c.natappfree.cc"
 
+// 从可信反向代理请求中提取客户端地址，避免把用户伪造的转发头传给后端
+function resolveClientIp(req: express.Request) {
+  const remoteAddr = req.socket.remoteAddress?.replace(/^::ffff:/, "") || "";
+  const isLocalProxy = remoteAddr === "127.0.0.1" || remoteAddr === "::1" || remoteAddr === "0:0:0:0:0:0:0:1";
+  if (!isLocalProxy) return remoteAddr;
+  const forwarded = req.header("X-Forwarded-For")?.split(",", 1)[0]?.trim();
+  return forwarded || req.header("X-Real-IP")?.trim() || remoteAddr;
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3001;
@@ -20,9 +29,14 @@ async function startServer() {
   // 通用后端代理：透传状态码与统一响应包装
   const backendProxy = async (req: express.Request, res: express.Response, backendPath: string) => {
     try {
+      const headers: Record<string, string> = {
+        "X-Real-IP": resolveClientIp(req),
+        "X-Forwarded-For": resolveClientIp(req),
+      };
+      if (req.method !== "GET") headers["Content-Type"] = "application/json";
       const backendRes = await fetch(`${BACKEND_URL}${backendPath}`, {
         method: req.method,
-        headers: req.method === "GET" ? undefined : { "Content-Type": "application/json" },
+        headers,
         body: req.method === "GET" ? undefined : JSON.stringify(req.body || {})
       });
       
