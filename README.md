@@ -25,11 +25,11 @@
 
 ### About
 
-我是 hirongbao，一名后端开发工程师。
+我是 hirongbao，一名以后端开发为主的独立开发者。
 
-喜欢写一些真正能解决问题的东西，也喜欢记录正在发生的事情。
+我喜欢把想法做成可以长期运行的东西：一个服务、一套工具，或者一份持续更新的记录。
 
-这个页面是我的 GitHub 入口，而我的个人网站则更像是一份持续更新的数字档案。
+这里是我的 GitHub 入口，个人网站则是我的数字档案。代码解决问题，文字和照片留下时间。
 
 ---
 
@@ -39,24 +39,24 @@
 <tr>
 <td width="50%">
 
-#### ServiceHub
+#### [ServiceHub](https://github.com/hirongbao/servicehub)
 
 个人服务中台。
 
 Spring Boot · MySQL · Sa-Token
 
-一个用于管理个人服务、Token 与文件资源的单体多模块项目。
+一个用于管理个人服务、Token、文件资源和短链接的单体多模块项目。
 
 </td>
 <td width="50%">
 
-#### Personal Website
+#### [Personal Website](https://hirongbao.com)
 
 个人动态与生活记录。
 
 React · TypeScript · Vite
 
-记录日常、照片、想法，以及一些正在发生的事情。
+记录日常、照片、想法，以及一些正在发生的事情。这个网站本身也是一个持续迭代的项目。
 
 </td>
 </tr>
@@ -64,13 +64,13 @@ React · TypeScript · Vite
 <tr>
 <td width="50%">
 
-#### Dashboard
+#### [Dashboard](https://github.com/hirongbao/servicehub-web)
 
-一些临时使用的小工具。
+ServiceHub 的管理后台。
 
-HTML · JavaScript
+Vue · Vite · Tailwind CSS
 
-为自己解决一些实际问题而做的小型 Web 项目。
+用于管理动态、媒体、Token、文件和短链接等个人服务。
 
 </td>
 <td width="50%">
@@ -87,6 +87,16 @@ HTML · JavaScript
 
 ---
 
+### Stack
+
+```text
+backend         Java · Spring Boot · MySQL · MyBatis-Plus
+frontend        React · TypeScript · Vue · Vite · Tailwind CSS
+infrastructure  Linux · Docker · Nginx · GitHub Actions
+```
+
+---
+
 ### Now
 
 ```text
@@ -94,3 +104,19 @@ building        ServiceHub
 maintaining     personal website
 recording       everyday life
 learning        something new
+```
+
+---
+
+### Find me
+
+<a href="https://hirongbao.com">Website</a>
+&nbsp;&nbsp;·&nbsp;&nbsp;
+<a href="https://github.com/hirongbao">GitHub</a>
+&nbsp;&nbsp;·&nbsp;&nbsp;
+<a href="https://github.com/hirongbao/servicehub">ServiceHub</a>
+
+<br>
+<br>
+
+<sub>Built slowly, kept simple.</sub>
