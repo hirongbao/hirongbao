@@ -37,12 +37,13 @@ async function startServer() {
       const backendRes = await fetch(`${BACKEND_URL}${backendPath}`, {
         method: req.method,
         headers,
-        body: req.method === "GET" ? undefined : JSON.stringify(req.body || {})
+        body: req.method === "GET" ? undefined : JSON.stringify(req.body || {}),
+        signal: AbortSignal.timeout(10_000),
       });
       
       const contentType = backendRes.headers.get("content-type");
-      if (!backendRes.ok || !contentType || !contentType.includes("application/json")) {
-          throw new Error(`Backend returned error or non-JSON: ${backendRes.status} ${contentType}`);
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error(`Backend returned non-JSON response: ${backendRes.status} ${contentType}`);
       }
       
       const body = await backendRes.text();
