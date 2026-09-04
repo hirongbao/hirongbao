@@ -30,27 +30,27 @@ function renderFormattedContentLine(line: string) {
     const rawTag = tagMatch[2] || tagMatch[3]?.replace(':', '');
     const restText = tagMatch[4];
 
-    let badgeClass = 'text-zinc-500 bg-zinc-100';
+    let badgeClass = 'text-zinc-500 bg-zinc-100/80 border-zinc-200/50';
     let dotClass = 'bg-zinc-400';
     
     if (/新增|功能|feat/i.test(rawTag)) {
-      badgeClass = 'text-emerald-700 bg-emerald-50';
+      badgeClass = 'text-emerald-700 bg-emerald-50/80 border-emerald-200/50';
       dotClass = 'bg-emerald-500';
     } else if (/优化|改进|perf|improve/i.test(rawTag)) {
-      badgeClass = 'text-blue-700 bg-blue-50';
+      badgeClass = 'text-blue-700 bg-blue-50/80 border-blue-200/50';
       dotClass = 'bg-blue-500';
     } else if (/修复|fix|bug/i.test(rawTag)) {
-      badgeClass = 'text-amber-700 bg-amber-50';
+      badgeClass = 'text-amber-700 bg-amber-50/80 border-amber-200/50';
       dotClass = 'bg-amber-500';
     }
 
     return (
-      <div className="flex items-start gap-4 my-3 group/line">
-        <div className={`mt-1.5 shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5 ${badgeClass}`}>
+      <div className="flex items-start gap-4 my-4 group/line">
+        <div className={`mt-1 shrink-0 px-2 py-0.5 rounded-[4px] border text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5 ${badgeClass}`}>
           <span className={`w-1 h-1 rounded-full ${dotClass}`} />
           {rawTag}
         </div>
-        <span className="text-zinc-700 text-sm md:text-base leading-relaxed">{restText}</span>
+        <span className="text-zinc-800 text-base leading-relaxed tracking-wide font-light">{restText}</span>
       </div>
     );
   }
@@ -59,16 +59,16 @@ function renderFormattedContentLine(line: string) {
   if (/^[-*•]\s+/.test(trimmed)) {
     const text = trimmed.replace(/^[-*•]\s+/, '');
     return (
-      <div className="flex items-start gap-4 my-2.5">
-        <div className="w-1 h-1 rounded-full bg-zinc-300 mt-2.5 shrink-0" />
-        <span className="text-zinc-600 text-sm md:text-base leading-relaxed">{text}</span>
+      <div className="flex items-start gap-4 my-3.5">
+        <div className="w-1 h-1 rounded-full bg-zinc-300 mt-[11px] shrink-0" />
+        <span className="text-zinc-800 text-base leading-relaxed tracking-wide font-light">{text}</span>
       </div>
     );
   }
 
   // 普通文本段落
   return (
-    <p className="text-zinc-600 text-sm md:text-base leading-relaxed my-2.5">
+    <p className="text-zinc-800 text-base leading-relaxed tracking-wide font-light my-3.5">
       {trimmed}
     </p>
   );
@@ -106,7 +106,7 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
         <h3 className="text-4xl md:text-6xl font-serif tracking-tighter text-zinc-900 leading-[1.2] mb-6 max-w-3xl">
           持续进化，<span className="italic font-light text-zinc-500">见证每一次生长。</span>
         </h3>
-        <p className="text-base text-zinc-500 font-light max-w-xl mx-auto leading-relaxed">
+        <p className="text-base text-zinc-500 font-light max-w-2xl md:max-w-3xl mx-auto leading-relaxed whitespace-pre-wrap">
           这里记录了产品架构、设计语言与核心体验的演进史。当前已完成 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.total}</span> 次重要迭代，最新版本停留在 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.latestVersion}</span>。
         </p>
       </motion.div>
