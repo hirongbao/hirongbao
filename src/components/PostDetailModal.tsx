@@ -31,6 +31,16 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
     }
   }, [post]);
 
+  React.useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && post) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [post, onClose]);
+
   // 提交评论到后端并展示审核提示
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();

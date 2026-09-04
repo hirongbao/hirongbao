@@ -20,6 +20,16 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
     }, 300);
   };
 
+  React.useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleClose();
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
