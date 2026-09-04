@@ -45,7 +45,7 @@ function renderFormattedContentLine(line: string) {
     }
 
     return (
-      <div className="flex items-start gap-4 my-4 group/line">
+      <div className="flex items-start gap-4 my-2.5 group/line">
         <div className={`mt-1 shrink-0 px-2 py-0.5 rounded-[4px] border text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5 ${badgeClass}`}>
           <span className={`w-1 h-1 rounded-full ${dotClass}`} />
           {rawTag}
@@ -59,7 +59,7 @@ function renderFormattedContentLine(line: string) {
   if (/^[-*•]\s+/.test(trimmed)) {
     const text = trimmed.replace(/^[-*•]\s+/, '');
     return (
-      <div className="flex items-start gap-4 my-3.5">
+      <div className="flex items-start gap-4 my-2.5">
         <div className="w-1 h-1 rounded-full bg-zinc-300 mt-[11px] shrink-0" />
         <span className="text-zinc-800 text-base leading-relaxed tracking-wide font-light">{text}</span>
       </div>
@@ -68,7 +68,7 @@ function renderFormattedContentLine(line: string) {
 
   // 普通文本段落
   return (
-    <p className="text-zinc-800 text-base leading-relaxed tracking-wide font-light my-3.5">
+    <p className="text-zinc-800 text-base leading-relaxed tracking-wide font-light my-2.5">
       {trimmed}
     </p>
   );
@@ -96,9 +96,9 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-10 md:mb-14 flex flex-col items-center text-center"
+        className="mb-8 md:mb-10 flex flex-col items-center text-center"
       >
-        <div className="w-px h-12 md:h-16 bg-gradient-to-b from-transparent to-zinc-300 mb-6"></div>
+        <div className="w-px h-8 md:h-12 bg-gradient-to-b from-transparent to-zinc-300 mb-6"></div>
         <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-4 flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           Changelog & Updates
@@ -125,7 +125,7 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="relative flex flex-col md:flex-row gap-6 md:gap-8 py-8 md:py-12 border-b border-zinc-200/60 last:border-0 group"
+                className="relative flex flex-col md:flex-row gap-6 md:gap-8 py-6 md:py-8 border-b border-zinc-200/60 last:border-0 group"
               >
                 {/* 左侧：日期与版本 */}
                 <div className="w-full md:w-[180px] shrink-0 flex flex-col gap-3">
