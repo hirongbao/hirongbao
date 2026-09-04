@@ -96,17 +96,17 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-12 md:mb-20 flex flex-col items-center text-center"
+        className="mb-10 md:mb-14 flex flex-col items-center text-center"
       >
-        <div className="w-px h-16 md:h-20 bg-gradient-to-b from-transparent to-zinc-300 mb-8"></div>
-        <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-6 flex items-center gap-3">
+        <div className="w-px h-12 md:h-16 bg-gradient-to-b from-transparent to-zinc-300 mb-6"></div>
+        <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-4 flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           Changelog & Updates
         </span>
-        <h3 className="text-4xl md:text-6xl font-serif tracking-tighter text-zinc-900 leading-[1.2] mb-6 max-w-3xl">
+        <h3 className="text-4xl md:text-5xl font-serif tracking-tighter text-zinc-900 leading-[1.2] mb-4 whitespace-nowrap">
           持续进化，<span className="italic font-light text-zinc-500">见证每一次生长。</span>
         </h3>
-        <p className="text-base text-zinc-500 font-light max-w-2xl md:max-w-3xl mx-auto leading-relaxed whitespace-pre-wrap">
+        <p className="text-base text-zinc-500 font-light mx-auto leading-relaxed whitespace-nowrap">
           这里记录了产品架构、设计语言与核心体验的演进史。当前已完成 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.total}</span> 次重要迭代，最新版本停留在 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.latestVersion}</span>。
         </p>
       </motion.div>
@@ -125,10 +125,10 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="relative flex flex-col md:flex-row gap-6 md:gap-12 py-10 md:py-16 border-b border-zinc-200/60 last:border-0 group"
+                className="relative flex flex-col md:flex-row gap-6 md:gap-8 py-8 md:py-12 border-b border-zinc-200/60 last:border-0 group"
               >
                 {/* 左侧：日期与版本 */}
-                <div className="w-full md:w-[200px] shrink-0 flex flex-col gap-3">
+                <div className="w-full md:w-[180px] shrink-0 flex flex-col gap-3">
                   {isLatest && (
                     <div className="flex items-center gap-2 mb-1">
                       <span className="relative flex items-center justify-center w-2 h-2">
