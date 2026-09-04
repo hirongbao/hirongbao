@@ -33,10 +33,10 @@ function SlideImage({ src, mode, onViewFull }: SlideImageProps) {
       >
         {/* Ambient blurred background */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-          <img src={src} alt="" className="w-full h-full object-cover blur-3xl opacity-50 scale-110" />
+          <img referrerPolicy="no-referrer" src={src} alt="" className="w-full h-full object-cover blur-3xl opacity-50 scale-110" />
         </div>
         
-        <img src={src} onLoad={classify} alt="" className="relative z-10 w-full h-full object-contain drop-shadow-2xl pointer-events-none" />
+        <img referrerPolicy="no-referrer" src={src} onLoad={classify} alt="" className="relative z-10 w-full h-full object-contain drop-shadow-2xl pointer-events-none" />
         
         {tall && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-4 py-1.5 rounded-full whitespace-nowrap pointer-events-none z-20">
@@ -53,7 +53,7 @@ function SlideImage({ src, mode, onViewFull }: SlideImageProps) {
         className="relative w-full cursor-zoom-in overflow-hidden max-h-[560px]"
         onClick={e => { e.stopPropagation(); onViewFull(); }}
       >
-        <img src={src} onLoad={classify} alt="" className="w-full object-cover object-top" />
+        <img referrerPolicy="no-referrer" src={src} onLoad={classify} alt="" className="w-full object-cover object-top" />
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-4 py-1.5 rounded-full whitespace-nowrap">
           长图 · 点击查看大图
         </div>
@@ -63,6 +63,7 @@ function SlideImage({ src, mode, onViewFull }: SlideImageProps) {
 
   return (
     <img
+      referrerPolicy="no-referrer"
       src={src}
       onLoad={classify}
       alt=""
@@ -106,6 +107,7 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
         onClick={e => e.stopPropagation()}
       >
         <img
+          referrerPolicy="no-referrer"
           src={src}
           onLoad={e => {
             const img = e.currentTarget;
