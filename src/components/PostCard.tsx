@@ -18,9 +18,6 @@ interface PostCardProps {
 export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(post.likeCount);
-  const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState<Comment[]>(post.comments);
-  const [newComment, setNewComment] = useState('');
 
   const posterRef = useRef<HTMLDivElement>(null);
   const [isSharing, setIsSharing] = useState(false);
@@ -54,29 +51,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
     }
   };
 
-  // 提交评论到后端并追加到列表
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const content = newComment.trim();
-    if (!content) return;
-    try {
-      const res = await fetch(`/api/posts/${post.id}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
-      });
-      const payload = await res.json();
-      if (res.ok && payload.code === 0) {
-        const c = payload.data;
-        setComments([...comments, { id: String(c.id), author: c.author, content: c.content, createdAt: formatRelativeTime(c.createdAt) }]);
-        setNewComment('');
-      } else {
-        alert(payload.message || '评论失败，请稍后重试');
-      }
-    } catch {
-      alert('评论失败，请稍后重试');
-    }
-  };
+
 
   const handleShare = async () => {
     if (!posterRef.current || isSharing) return;
@@ -164,13 +139,13 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
               </div>
               
               <div 
-                onClick={() => setShowComments(!showComments)}
+                onClick={onClick}
                 className="group flex items-center space-x-3 cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-full border border-zinc-100 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white text-zinc-900 transition-all">
+                <div className="w-10 h-10 rounded-full border border-zinc-100 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white text-zinc-900 transition-all shadow-xs">
                   <MessageCircle size={16} />
                 </div>
-                <span className="text-xs font-bold font-mono text-zinc-700">{comments.length}</span>
+                <span className="text-xs font-bold font-mono text-zinc-700">{post.comments.length}</span>
               </div>
 
               <div 
@@ -189,61 +164,6 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
           </div>
         </div>
 
-        {/* Comments Section */}
-        <AnimatePresence initial={false}>
-          {showComments && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="overflow-hidden bg-[#F8F9FA] border-t border-zinc-100"
-            >
-              <div className="p-8 lg:px-12 lg:py-8 space-y-6">
-                {comments.length > 0 ? (
-                  <div className="space-y-6">
-                    {comments.map(comment => (
-                      <div key={comment.id} className="flex space-x-4 text-sm">
-                        <div className="w-10 h-10 rounded-full bg-white border border-zinc-200 flex items-center justify-center shrink-0">
-                          <span className="text-zinc-900 font-serif italic text-sm">
-                            {comment.author.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-baseline space-x-3 mb-1">
-                            <span className="font-bold text-zinc-900 tracking-tight">{comment.author}</span>
-                            <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">{comment.createdAt}</span>
-                          </div>
-                          <p className="text-zinc-600 leading-relaxed">{comment.content}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-sm text-zinc-400 py-4 font-light">暂无评论，留下你的想法吧。</p>
-                )}
-                
-                {/* Add Comment */}
-                <form onSubmit={handleAddComment} className="mt-6 relative">
-                  <input
-                    type="text"
-                    placeholder="写下评论..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="w-full bg-white border border-zinc-200 rounded-full pl-6 pr-14 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 transition-all placeholder:text-zinc-400 font-light shadow-sm"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!newComment.trim()}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-zinc-400 hover:bg-zinc-900 hover:text-white disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-zinc-400 transition-all"
-                  >
-                    <Send size={16} />
-                  </button>
-                </form>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
 
       {/* Hidden Poster Generation Element */}
