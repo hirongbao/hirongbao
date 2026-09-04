@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Heart, MessageCircle, Share, Send, Loader2 } from 'lucide-react';
+import { X, Heart, MessageCircle, Share, Send, Loader2, CheckCircle } from 'lucide-react';
 import { Post, Comment } from '../types';
 import { PostMedia } from './PostMedia';
 import { formatRelativeTime } from '../utils/time';
@@ -17,6 +17,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
   const [isLiked, setIsLiked] = useState(false);
   const [comments, setComments] = useState<Comment[]>(post?.comments || []);
   const [likes, setLikes] = useState(post?.likeCount || 0);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   const likeBusy = React.useRef(false);
 
   // Update local state when post changes (e.g. when opening a new post)
@@ -26,10 +27,11 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
       setLikes(post.likeCount);
       setIsLiked(false);
       setNewComment('');
+      setSubmitSuccess(false);
     }
   }, [post]);
 
-  // 提交评论到后端并插入列表头部
+  // 提交评论到后端并展示审核提示
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     const content = newComment.trim();
@@ -42,9 +44,9 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
       });
       const payload = await res.json();
       if (res.ok && payload.code === 0) {
-        const c = payload.data;
-        setComments([{ id: String(c.id), author: c.author, content: c.content, createdAt: formatRelativeTime(c.createdAt) }, ...comments]);
         setNewComment('');
+        setSubmitSuccess(true);
+        setTimeout(() => setSubmitSuccess(false), 4000);
       } else {
         alert(payload.message || '评论失败，请稍后重试');
       }
@@ -189,7 +191,22 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                       <span className="text-sm font-bold">{comments.length}</span>
                     </div>
                   </div>
-                  <div className="p-4">
+                  <div className="p-4 relative">
+                    <AnimatePresence>
+                      {submitSuccess && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          className="absolute -top-12 left-0 right-0 flex justify-center z-10 pointer-events-none"
+                        >
+                          <div className="bg-zinc-900 text-white text-xs px-4 py-2 rounded-full shadow-lg flex items-center space-x-2 border border-zinc-800">
+                            <CheckCircle size={14} className="text-emerald-400" />
+                            <span>评论已提交，审核通过后将公开展示</span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                     <form onSubmit={handleAddComment} className="relative">
                       <input
                         type="text"
