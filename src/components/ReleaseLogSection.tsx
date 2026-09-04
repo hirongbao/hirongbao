@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Calendar, Tag, ArrowRight } from 'lucide-react';
+import { Calendar, Tag } from 'lucide-react';
 import { ReleaseLog } from '../types';
 
 interface ReleaseLogSectionProps {
@@ -45,12 +45,12 @@ function renderFormattedContentLine(line: string) {
     }
 
     return (
-      <div className="flex items-start gap-4 my-4 group/line">
-        <div className={`mt-1.5 shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5 ${badgeClass}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
+      <div className="flex items-start gap-4 my-3 group/line">
+        <div className={`mt-1.5 shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5 ${badgeClass}`}>
+          <span className={`w-1 h-1 rounded-full ${dotClass}`} />
           {rawTag}
         </div>
-        <span className="text-zinc-700 text-base md:text-lg leading-relaxed">{restText}</span>
+        <span className="text-zinc-700 text-sm md:text-base leading-relaxed">{restText}</span>
       </div>
     );
   }
@@ -59,16 +59,16 @@ function renderFormattedContentLine(line: string) {
   if (/^[-*•]\s+/.test(trimmed)) {
     const text = trimmed.replace(/^[-*•]\s+/, '');
     return (
-      <div className="flex items-start gap-4 my-3">
-        <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 mt-2.5 shrink-0" />
-        <span className="text-zinc-600 text-base md:text-lg leading-relaxed">{text}</span>
+      <div className="flex items-start gap-4 my-2.5">
+        <div className="w-1 h-1 rounded-full bg-zinc-300 mt-2.5 shrink-0" />
+        <span className="text-zinc-600 text-sm md:text-base leading-relaxed">{text}</span>
       </div>
     );
   }
 
   // 普通文本段落
   return (
-    <p className="text-zinc-600 text-base md:text-lg leading-relaxed my-3">
+    <p className="text-zinc-600 text-sm md:text-base leading-relaxed my-2.5">
       {trimmed}
     </p>
   );
@@ -89,126 +89,91 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
   }, [releaseLogs]);
 
   return (
-    <section className="mx-auto w-full max-w-5xl pb-24">
+    <section className="mx-auto w-full max-w-4xl pb-24">
       
       {/* 顶部 Header：极致排版 */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-16 md:mb-24 flex flex-col items-center text-center"
+        className="mb-12 md:mb-20 flex flex-col items-center text-center"
       >
-        <div className="w-px h-16 md:h-24 bg-gradient-to-b from-transparent to-zinc-300 mb-8"></div>
+        <div className="w-px h-16 md:h-20 bg-gradient-to-b from-transparent to-zinc-300 mb-8"></div>
         <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-6 flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           Changelog & Updates
         </span>
-        <h3 className="text-5xl md:text-7xl font-serif tracking-tighter text-zinc-900 leading-[1.1] mb-6 max-w-3xl">
-          持续进化，<br className="md:hidden" /><span className="italic font-light text-zinc-500">见证每一次生长。</span>
+        <h3 className="text-4xl md:text-6xl font-serif tracking-tighter text-zinc-900 leading-[1.2] mb-6 max-w-3xl">
+          持续进化，<span className="italic font-light text-zinc-500">见证每一次生长。</span>
         </h3>
-        <p className="text-lg text-zinc-500 font-light max-w-xl mx-auto leading-relaxed">
+        <p className="text-base text-zinc-500 font-light max-w-xl mx-auto leading-relaxed">
           这里记录了产品架构、设计语言与核心体验的演进史。当前已完成 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.total}</span> 次重要迭代，最新版本停留在 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.latestVersion}</span>。
         </p>
       </motion.div>
 
       {/* 时间轴与日志列表 */}
       {releaseLogs && releaseLogs.length > 0 ? (
-        <div className="relative space-y-16 md:space-y-24 before:absolute before:inset-0 before:ml-[28px] md:before:ml-[50%] md:before:-translate-x-px md:before:translate-y-20 before:h-full before:w-px before:-z-10 before:bg-gradient-to-b before:from-zinc-200 before:via-zinc-200 before:to-transparent">
+        <div className="relative space-y-0">
           {releaseLogs.map((log, index) => {
             const isLatest = index === 0;
             const contentLines = log.content ? log.content.split('\n') : [];
-            // Alternating sides for desktop
-            const isEven = index % 2 === 0;
 
             return (
               <motion.article 
                 key={log.id}
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="relative flex flex-col md:flex-row justify-between items-start md:items-center w-full group"
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="relative flex flex-col md:flex-row gap-6 md:gap-12 py-10 md:py-16 border-b border-zinc-200/60 last:border-0 group"
               >
-                {/* 居中时间轴节点 (Desktop) */}
-                <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 justify-center items-center w-12 h-12 z-10">
-                  {isLatest ? (
-                    <div className="relative flex items-center justify-center">
-                      <span className="absolute w-8 h-8 rounded-full bg-emerald-500/20 animate-ping" />
-                      <span className="relative w-4 h-4 rounded-full bg-emerald-500 ring-[6px] ring-[#F8F9FA]" />
+                {/* 左侧：日期与版本 */}
+                <div className="w-full md:w-[200px] shrink-0 flex flex-col gap-3">
+                  {isLatest && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="relative flex items-center justify-center w-2 h-2">
+                        <span className="absolute w-2 h-2 rounded-full bg-emerald-500/40 animate-ping" />
+                        <span className="relative w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      </span>
+                      <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-emerald-600">
+                        Latest
+                      </span>
                     </div>
-                  ) : (
-                    <span className="w-3 h-3 rounded-full bg-zinc-300 ring-[6px] ring-[#F8F9FA] group-hover:bg-zinc-500 transition-colors duration-500" />
+                  )}
+                  <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400 font-mono">
+                    {formatDate(log.publishedAt)}
+                  </div>
+                  {log.version && (
+                    <div className="inline-flex items-center gap-1.5 self-start px-2 py-0.5 mt-1 rounded text-zinc-500 border border-zinc-200/80 bg-zinc-50">
+                      <Tag size={10} className="opacity-60" />
+                      <span className="font-mono text-[10px] font-bold tracking-widest">{log.version}</span>
+                    </div>
                   )}
                 </div>
 
-                {/* 卡片容器 */}
-                <div className={`w-full md:w-[45%] pl-[60px] md:pl-0 ${isEven ? 'md:pr-[5%]' : 'md:pl-[5%] md:ml-auto'}`}>
-                  
-                  {/* 时间节点 (Mobile) */}
-                  <div className="absolute left-[28px] -translate-x-1/2 top-[48px] md:hidden z-10">
-                    {isLatest ? (
-                      <div className="relative flex items-center justify-center">
-                        <span className="absolute w-6 h-6 rounded-full bg-emerald-500/20 animate-ping" />
-                        <span className="relative w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-[#F8F9FA]" />
-                      </div>
-                    ) : (
-                      <span className="block w-2.5 h-2.5 rounded-full bg-zinc-300 ring-4 ring-[#F8F9FA]" />
-                    )}
-                  </div>
+                {/* 右侧：标题与内容 */}
+                <div className="flex-1">
+                  <h4 className="text-2xl md:text-3xl font-serif tracking-tight text-zinc-900 mb-4 group-hover:text-zinc-700 transition-colors leading-snug">
+                    {log.title}
+                  </h4>
 
-                  <div className="bg-white rounded-[2rem] lg:rounded-[3rem] shadow-xl shadow-zinc-200/40 border border-zinc-100 overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl hover:shadow-zinc-300/50 hover:-translate-y-2 group-hover:border-zinc-200">
-                    
-                    {/* Header: Date & Version */}
-                    <div className="p-8 lg:p-12 pb-0">
-                      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                        <div className="flex items-center gap-3">
-                          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-300">
-                            UPDATE / {formatDate(log.publishedAt)}
-                          </span>
-                        </div>
-                        {log.version && (
-                          <div className="px-4 py-1.5 rounded-full bg-zinc-900 text-white flex items-center gap-2 shadow-md">
-                            <Tag size={12} className="opacity-70" />
-                            <span className="font-mono text-xs font-bold tracking-wider">{log.version}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <h4 className="text-3xl lg:text-4xl font-serif tracking-tight text-zinc-900 mb-6 leading-[1.15]">
-                        {log.title}
-                      </h4>
-
-                      {/* 摘要块 */}
-                      {log.summary && (
-                        <p className="text-xl lg:text-2xl font-serif leading-[1.4] italic text-zinc-500 mb-8">
-                          "{log.summary}"
-                        </p>
-                      )}
+                  {log.summary && (
+                    <div className="mb-6 pl-4 border-l-2 border-zinc-900/80">
+                      <p className="text-lg font-serif leading-[1.6] italic text-zinc-600">
+                        "{log.summary}"
+                      </p>
                     </div>
+                  )}
 
-                    {/* Content */}
-                    {contentLines.length > 0 && (
-                      <div className="px-8 lg:px-12 pb-8">
-                        <div className="h-px w-16 bg-zinc-200 mb-8"></div>
-                        <div className="space-y-2">
-                          {contentLines.map((line, lIdx) => (
-                            <React.Fragment key={lIdx}>
-                              {renderFormattedContentLine(line)}
-                            </React.Fragment>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Footer bar */}
-                    <div className="mt-auto pt-6 px-8 lg:px-12 pb-8 bg-zinc-50/50 border-t border-zinc-100 flex items-center justify-between">
-                      <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                        {isLatest ? 'LATEST RELEASE' : 'ARCHIVED'}
-                      </div>
-                      <ArrowRight size={16} className="text-zinc-300 group-hover:text-zinc-900 transition-colors -translate-x-2 group-hover:translate-x-0 duration-300" />
+                  {contentLines.length > 0 && (
+                    <div className="space-y-1 mt-2">
+                      {contentLines.map((line, lIdx) => (
+                        <React.Fragment key={lIdx}>
+                          {renderFormattedContentLine(line)}
+                        </React.Fragment>
+                      ))}
                     </div>
-
-                  </div>
+                  )}
                 </div>
               </motion.article>
             );
