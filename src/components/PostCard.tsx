@@ -54,23 +54,28 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
 
 
   const handleShare = async () => {
-    if (!posterRef.current || isSharing) return;
+    if (isSharing) return;
     setIsSharing(true);
-    try {
-      const canvas = await html2canvas(posterRef.current, {
-        useCORS: true,
-        scale: 2,
-        backgroundColor: '#ffffff',
-        logging: false
-      });
-      const dataUrl = canvas.toDataURL('image/png');
-      setShareImageUrl(dataUrl);
-    } catch (err) {
-      console.error('Failed to generate image', err);
-      alert('生成分享图片失败，请稍后重试。可能由于图片跨域限制。');
-    } finally {
-      setIsSharing(false);
-    }
+    
+    // Give React time to render the hidden poster element
+    setTimeout(async () => {
+      try {
+        if (!posterRef.current) return;
+        const canvas = await html2canvas(posterRef.current, {
+          useCORS: true,
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false
+        });
+        const dataUrl = canvas.toDataURL('image/png');
+        setShareImageUrl(dataUrl);
+      } catch (err) {
+        console.error('Failed to generate image', err);
+        alert('生成分享图片失败，请稍后重试。可能由于图片跨域限制。');
+      } finally {
+        setIsSharing(false);
+      }
+    }, 100);
   };
 
   const handleDownloadImage = () => {
@@ -167,81 +172,83 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
       </motion.div>
 
       {/* Hidden Poster Generation Element */}
-      <div className="fixed -left-[9999px] -top-[9999px] pointer-events-none z-0">
-        <div 
-          ref={posterRef} 
-          className="w-[800px] bg-white p-16 flex flex-col border border-[#f4f4f5] text-[#18181b]"
-          style={{ fontFamily: "inherit" }}
-        >
-          {/* Header */}
-          <div className="flex justify-between items-start mb-16">
-            <div className="flex items-center space-x-6">
-              <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar)} alt="author" loading="lazy" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
-              <div>
-                <h3 className="text-2xl font-serif italic text-[#18181b]">{authorName}</h3>
-                <p className="text-[#a1a1aa] font-bold uppercase tracking-widest text-xs mt-1">@hirongbao</p>
+      {isSharing && (
+        <div className="fixed -left-[9999px] -top-[9999px] pointer-events-none z-0">
+          <div 
+            ref={posterRef} 
+            className="w-[800px] bg-white p-16 flex flex-col border border-[#f4f4f5] text-[#18181b]"
+            style={{ fontFamily: "inherit" }}
+          >
+            {/* Header */}
+            <div className="flex justify-between items-start mb-16">
+              <div className="flex items-center space-x-6">
+                <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar)} alt="author" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
+                <div>
+                  <h3 className="text-2xl font-serif italic text-[#18181b]">{authorName}</h3>
+                  <p className="text-[#a1a1aa] font-bold uppercase tracking-widest text-xs mt-1">@hirongbao</p>
+                </div>
               </div>
+              <div className="w-4 h-4 bg-[#18181b] rounded-full"></div>
             </div>
-            <div className="w-4 h-4 bg-[#18181b] rounded-full"></div>
-          </div>
 
-          {/* Media Content */}
-          {coverImage && (
-             <div className="mb-12 rounded-[2rem] overflow-hidden bg-[#f4f4f5] border border-[#f4f4f5] flex items-center justify-center">
-              <img crossOrigin="anonymous" src={getProxiedImageUrl(coverImage.mediaUrl)} alt="Post content" loading="lazy" className="w-full h-auto max-h-[600px] object-cover" />
-            </div>
-          )}
-          
-          {hasVideo && (
-            <div className="mb-12 rounded-[2rem] overflow-hidden bg-[#18181b] border border-[#18181b] h-[400px] flex flex-col items-center justify-center relative">
-              <div className="text-[rgba(255,255,255,0.3)] font-serif italic text-4xl mb-4">Motion Asset</div>
-              <div className="w-16 h-16 rounded-full border border-[rgba(255,255,255,0.2)] flex items-center justify-center">
-                <div className="w-0 h-0 border-t-8 border-b-8 border-l-[12px] border-t-transparent border-b-transparent border-l-[rgba(255,255,255,0.3)] ml-1"></div>
+            {/* Media Content */}
+            {coverImage && (
+               <div className="mb-12 rounded-[2rem] overflow-hidden bg-[#f4f4f5] border border-[#f4f4f5] flex items-center justify-center">
+                <img crossOrigin="anonymous" src={getProxiedImageUrl(coverImage.mediaUrl)} alt="Post content" className="w-full h-auto max-h-[600px] object-cover" />
               </div>
-            </div>
-          )}
-
-          {/* Text Content */}
-          <div className="flex-1 mb-16">
-            {post.media.length > 0 && post.content && (
-              <p className="text-3xl text-[#27272a] leading-snug">
-                {post.content}
-              </p>
             )}
-            {!post.media.length && (
-              <p className="text-5xl font-serif leading-[1.2] italic text-[#27272a]">
-                "{post.content}"
-              </p>
-            )}
-          </div>
-
-          <div className="h-[1px] w-full bg-[#f4f4f5] mb-8"></div>
-          
-          {/* Footer */}
-          <div className="flex justify-between items-end">
-            <div className="flex flex-col space-y-4">
-              <span className="text-[12px] font-bold uppercase tracking-[0.3em] text-[#a1a1aa]">
-                {categoryLabel} / {post.createdAt}
-              </span>
-              <div>
-                <div className="text-sm font-bold tracking-[0.2em] uppercase text-[#18181b]">Personal Feed</div>
-                <div className="text-[10px] text-[#a1a1aa] mt-1 uppercase tracking-widest">hrb.design</div>
-              </div>
-            </div>
             
-            {/* QR Code Placeholder */}
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#18181b]">Scan to View</div>
-                <div className="text-[9px] text-[#a1a1aa] mt-1 uppercase tracking-widest">扫码查看原动态</div>
+            {hasVideo && (
+              <div className="mb-12 rounded-[2rem] overflow-hidden bg-[#18181b] border border-[#18181b] h-[400px] flex flex-col items-center justify-center relative">
+                <div className="text-[rgba(255,255,255,0.3)] font-serif italic text-4xl mb-4">Motion Asset</div>
+                <div className="w-16 h-16 rounded-full border border-[rgba(255,255,255,0.2)] flex items-center justify-center">
+                  <div className="w-0 h-0 border-t-8 border-b-8 border-l-[12px] border-t-transparent border-b-transparent border-l-[rgba(255,255,255,0.3)] ml-1"></div>
+                </div>
               </div>
-              <div className="w-[68px] h-[68px] bg-[#f4f4f5] border border-[#e4e4e7] p-2 rounded-xl flex items-center justify-center text-[#a1a1aa]">
-                <QrCode size={36} strokeWidth={1.5} />
+            )}
+
+            {/* Text Content */}
+            <div className="flex-1 mb-16">
+              {post.media.length > 0 && post.content && (
+                <p className="text-3xl text-[#27272a] leading-snug">
+                  {post.content}
+                </p>
+              )}
+              {!post.media.length && (
+                <p className="text-5xl font-serif leading-[1.2] italic text-[#27272a]">
+                  "{post.content}"
+                </p>
+              )}
+            </div>
+
+            <div className="h-[1px] w-full bg-[#f4f4f5] mb-8"></div>
+            
+            {/* Footer */}
+            <div className="flex justify-between items-end">
+              <div className="flex flex-col space-y-4">
+                <span className="text-[12px] font-bold uppercase tracking-[0.3em] text-[#a1a1aa]">
+                  {categoryLabel} / {post.createdAt}
+                </span>
+                <div>
+                  <div className="text-sm font-bold tracking-[0.2em] uppercase text-[#18181b]">Personal Feed</div>
+                  <div className="text-[10px] text-[#a1a1aa] mt-1 uppercase tracking-widest">hrb.design</div>
+                </div>
+              </div>
+              
+              {/* QR Code Placeholder */}
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#18181b]">Scan to View</div>
+                  <div className="text-[9px] text-[#a1a1aa] mt-1 uppercase tracking-widest">扫码查看原动态</div>
+                </div>
+                <div className="w-[68px] h-[68px] bg-[#f4f4f5] border border-[#e4e4e7] p-2 rounded-xl flex items-center justify-center text-[#a1a1aa]">
+                  <QrCode size={36} strokeWidth={1.5} />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Share Modal */}
       <AnimatePresence>

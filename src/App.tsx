@@ -296,15 +296,15 @@ export default function App() {
               <ReleaseLogSection releaseLogs={releaseLogs} />
             ) : <>
             {/* 分类筛选器 */}
-            <div className="flex gap-4 overflow-x-auto pb-4 mb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="flex gap-4 overflow-x-auto pb-4 mb-4 px-2 -mx-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {categories.map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategoryId(cat.id)}
-                  className={`px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
+                  className={`px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 border ${
                     selectedCategoryId === cat.id 
-                      ? 'bg-zinc-900 text-white shadow-md scale-105' 
-                      : 'bg-white text-zinc-600 hover:bg-zinc-100 border border-zinc-200/60'
+                      ? 'bg-zinc-900 text-white border-zinc-900 shadow-md scale-105' 
+                      : 'bg-white text-zinc-600 hover:bg-zinc-100 border-zinc-200/60'
                   }`}
                 >
                   {cat.name}
