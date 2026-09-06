@@ -101,7 +101,10 @@ async function startServer() {
 
     try {
       const client = imageUrl.startsWith("https") ? https : http;
-      client.get(imageUrl, (proxyRes) => {
+      // Extract URL without the ?_t=... param if it's there
+      const cleanUrl = imageUrl.split('?_t=')[0].split('&_t=')[0];
+      
+      client.get(cleanUrl, { rejectUnauthorized: false }, (proxyRes) => {
         if (proxyRes.statusCode !== 200) {
           res.status(proxyRes.statusCode || 500).send("Failed to fetch image");
           return;

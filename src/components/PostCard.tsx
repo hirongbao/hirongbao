@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Heart, MessageCircle, Send, Share, Loader2, X, Download, QrCode } from 'lucide-react';
+import { Heart, MessageCircle, Send, Share, Loader2, X, Download, QrCode, AlertCircle } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { Post, Comment } from '../types';
 import { PostMedia } from './PostMedia';
@@ -22,6 +22,12 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
   const posterRef = useRef<HTMLDivElement>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [shareImageUrl, setShareImageUrl] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -83,7 +89,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
         setShareImageUrl(dataUrl);
       } catch (err) {
         console.error('Failed to generate image', err);
-        alert('生成分享图片失败，请稍后重试。可能由于图片跨域限制。');
+        showToast('生成分享图片失败，请稍后重试。可能由于图片跨域限制。', 'error');
       } finally {
         setIsSharing(false);
       }
@@ -100,6 +106,19 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
 
   return (
     <>
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-full flex items-center space-x-2 text-[13px] font-medium z-[200] shadow-xl bg-zinc-900 text-white whitespace-nowrap"
+          >
+            <AlertCircle size={15} className="text-zinc-400" />
+            <span>{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <motion.div 
         layout
         initial={{ opacity: 0, y: 20 }}
@@ -194,7 +213,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             {/* Header */}
             <div className="flex justify-between items-start mb-16">
               <div className="flex items-center space-x-6">
-                <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar)} alt="author" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
+                <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar, true)} alt="author" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
                 <div>
                   <h3 className="text-2xl font-serif italic text-[#18181b]">{authorName}</h3>
                   <p className="text-[#a1a1aa] font-bold uppercase tracking-widest text-xs mt-1">@hirongbao</p>
@@ -206,7 +225,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             {/* Media Content */}
             {coverImage && (
                <div className="mb-12 rounded-[2rem] overflow-hidden bg-[#f4f4f5] border border-[#f4f4f5] flex items-center justify-center">
-                <img crossOrigin="anonymous" src={getProxiedImageUrl(coverImage.mediaUrl)} alt="Post content" className="w-full h-auto max-h-[600px] object-cover" />
+                <img crossOrigin="anonymous" src={getProxiedImageUrl(coverImage.mediaUrl, true)} alt="Post content" className="w-full h-auto max-h-[600px] object-cover" />
               </div>
             )}
             
