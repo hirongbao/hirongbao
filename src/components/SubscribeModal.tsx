@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send } from 'lucide-react';
+import { X, Send, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface SubscribeModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
   const [code, setCode] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -20,12 +21,18 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
     }
   }, [countdown]);
 
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const handleClose = () => {
     onClose();
     setTimeout(() => {
       setEmail('');
       setCode('');
       setCountdown(0);
+      setToast(null);
     }, 300);
   };
 
@@ -48,15 +55,25 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
-      const data = await res.json();
+      
+      // Attempt to parse JSON response, fallback if Nginx returns HTML error page
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        showToast('服务器开小差了，请稍后再试', 'error');
+        setIsSending(false);
+        return;
+      }
+
       if (res.ok && data.code === 0) {
-        alert('验证码已发送至您的邮箱，请注意查收');
+        showToast('验证码已发送至邮箱，请查收', 'success');
         setCountdown(60);
       } else {
-        alert(data.message || '发送失败，请稍后再试');
+        showToast(data.message || '发送失败，请稍后再试', 'error');
       }
     } catch (error) {
-      alert('网络异常，请稍后再试');
+      showToast('网络异常，请稍后再试', 'error');
     } finally {
       setIsSending(false);
     }
@@ -70,15 +87,23 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code })
       });
-      const data = await res.json();
+      
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        showToast('服务器开小差了，请稍后再试', 'error');
+        return;
+      }
+
       if (res.ok && data.code === 0) {
-        alert('订阅成功！您将收到最新的动态通知。');
-        handleClose();
+        showToast('订阅成功！', 'success');
+        setTimeout(() => handleClose(), 1500);
       } else {
-        alert(data.message || '验证失败，请检查验证码是否正确');
+        showToast(data.message || '验证码错误，请重新输入', 'error');
       }
     } catch (error) {
-      alert('网络异常，请稍后再试');
+      showToast('网络异常，请稍后再试', 'error');
     }
   };
 
@@ -99,6 +124,23 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-[2rem] overflow-hidden shadow-2xl max-w-[400px] w-full p-8 relative"
           >
+            {/* Toast Notification */}
+            <AnimatePresence>
+              {toast && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className={`absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full flex items-center space-x-2 text-xs font-medium z-10 shadow-sm ${
+                    toast.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
+                  }`}
+                >
+                  {toast.type === 'error' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
+                  <span>{toast.message}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <button 
               onClick={handleClose}
               className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 transition-colors"
