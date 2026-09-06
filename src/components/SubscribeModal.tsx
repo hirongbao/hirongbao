@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Send } from 'lucide-react';
 
@@ -11,12 +11,21 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   const handleClose = () => {
     onClose();
     setTimeout(() => {
       setEmail('');
       setCode('');
+      setCountdown(0);
     }, 300);
   };
 
@@ -29,6 +38,49 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
     document.addEventListener('keydown', handleEsc);
     return () => document.removeEventListener('keydown', handleEsc);
   }, [isOpen]);
+
+  const handleRequestCode = async () => {
+    if (!email) return;
+    setIsSending(true);
+    try {
+      const res = await fetch('/api/hirongbaohub/subscribe/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (res.ok && data.code === 0) {
+        alert('验证码已发送至您的邮箱，请注意查收');
+        setCountdown(60);
+      } else {
+        alert(data.message || '发送失败，请稍后再试');
+      }
+    } catch (error) {
+      alert('网络异常，请稍后再试');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleSubscribe = async () => {
+    if (!email || !code) return;
+    try {
+      const res = await fetch('/api/hirongbaohub/subscribe/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      });
+      const data = await res.json();
+      if (res.ok && data.code === 0) {
+        alert('订阅成功！您将收到最新的动态通知。');
+        handleClose();
+      } else {
+        alert(data.message || '验证失败，请检查验证码是否正确');
+      }
+    } catch (error) {
+      alert('网络异常，请稍后再试');
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -88,25 +140,21 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
                     className="flex-1 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
                   />
                   <button 
-                    onClick={() => {
-                      setIsSending(true);
-                      setTimeout(() => setIsSending(false), 2000); // Simulate API call
-                    }}
-                    disabled={!email || isSending}
-                    className="whitespace-nowrap px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center space-x-2"
+                    onClick={handleRequestCode}
+                    disabled={!email || isSending || countdown > 0}
+                    className="whitespace-nowrap px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center space-x-2 min-w-[120px] justify-center"
                   >
                     {isSending ? (
                       <div className="w-4 h-4 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin"></div>
                     ) : (
-                      <Send size={14} />
+                      countdown > 0 ? <span>{countdown}s 后重试</span> : <><Send size={14} /><span>获取验证码</span></>
                     )}
-                    <span>{isSending ? '发送中' : '获取验证码'}</span>
                   </button>
                 </div>
               </div>
 
               <button 
-                onClick={handleClose}
+                onClick={handleSubscribe}
                 disabled={!email || !code}
                 className="w-full mt-4 py-4 bg-zinc-900 text-white rounded-full text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-800 disabled:opacity-50 disabled:hover:bg-zinc-900 transition-all"
               >
