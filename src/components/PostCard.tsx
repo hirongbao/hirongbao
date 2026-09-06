@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, MessageCircle, Send, Share, Loader2, X, Download, QrCode } from 'lucide-react';
 import html2canvas from 'html2canvas';
@@ -22,6 +22,18 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
   const posterRef = useRef<HTMLDivElement>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [shareImageUrl, setShareImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && shareImageUrl) {
+        setShareImageUrl(null);
+      }
+    };
+    if (shareImageUrl) {
+      document.addEventListener('keydown', handleEsc);
+      return () => document.removeEventListener('keydown', handleEsc);
+    }
+  }, [shareImageUrl]);
 
   // 封面图与分类文案（视频优先，其次图片，纯文字为随笔）
   const coverImage = post.media.find(m => m.mediaType === 'image');
@@ -110,12 +122,12 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
 
             {/* Content */}
             {post.content && post.media.length > 0 && (
-              <p className="text-xl text-zinc-800 leading-snug mb-8">
+              <p className="whitespace-pre-wrap text-xl text-zinc-800 leading-snug mb-8">
                 {post.content}
               </p>
             )}
             {post.content && !post.media.length && (
-              <p className="text-3xl lg:text-4xl font-serif leading-[1.2] italic text-zinc-800 mb-8">
+              <p className="whitespace-pre-wrap text-3xl lg:text-4xl font-serif leading-[1.2] italic text-zinc-800 mb-8">
                 "{post.content}"
               </p>
             )}
@@ -207,15 +219,15 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
               </div>
             )}
 
-            {/* Text Content */}
-            <div className="flex-1 mb-16">
+            {/* Text section for Poster */}
+            <div className="p-12 pb-16 flex-1 flex flex-col justify-center">
               {post.media.length > 0 && post.content && (
-                <p className="text-3xl text-[#27272a] leading-snug">
+                <p className="whitespace-pre-wrap text-3xl text-zinc-800 leading-snug mb-12">
                   {post.content}
                 </p>
               )}
-              {!post.media.length && (
-                <p className="text-5xl font-serif leading-[1.2] italic text-[#27272a]">
+              {!post.media.length && post.content && (
+                <p className="whitespace-pre-wrap text-4xl font-serif leading-[1.3] italic text-zinc-800 mb-12">
                   "{post.content}"
                 </p>
               )}

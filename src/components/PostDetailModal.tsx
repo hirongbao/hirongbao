@@ -126,7 +126,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                   </div>
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-950 p-12 text-center">
-                    <p className="text-3xl lg:text-5xl font-serif leading-[1.3] italic text-zinc-100">
+                    <p className="whitespace-pre-wrap text-3xl lg:text-5xl font-serif leading-[1.3] italic text-zinc-100">
                       "{post.content}"
                     </p>
                   </div>
@@ -152,7 +152,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                     </div>
 
                     {post.content && post.media.length > 0 && (
-                      <p className="text-zinc-800 leading-relaxed text-sm">
+                      <p className="whitespace-pre-wrap text-zinc-800 leading-relaxed text-sm">
                         {post.content}
                       </p>
                     )}
