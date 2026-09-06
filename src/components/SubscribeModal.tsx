@@ -43,7 +43,7 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
     if (!email) return;
     setIsSending(true);
     try {
-      const res = await fetch('/api/hirongbaohub/subscribe/request', {
+      const res = await fetch('/api/subscribe/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -65,7 +65,7 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
   const handleSubscribe = async () => {
     if (!email || !code) return;
     try {
-      const res = await fetch('/api/hirongbaohub/subscribe/verify', {
+      const res = await fetch('/api/subscribe/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code })
