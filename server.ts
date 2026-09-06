@@ -93,34 +93,36 @@ async function startServer() {
   app.post("/api/subscribe/unsubscribe", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/unsubscribe"));
 
   // API Route for proxying images to bypass CORS
-  app.get("/api/proxy-image", (req, res) => {
+  app.get("/api/proxy-image", async (req, res) => {
     const imageUrl = req.query.url as string;
     if (!imageUrl) {
       return res.status(400).send("URL is required");
     }
 
     try {
-      const client = imageUrl.startsWith("https") ? https : http;
-      // Extract URL without the ?_t=... param if it's there
       const cleanUrl = imageUrl.split('?_t=')[0].split('&_t=')[0];
       
-      client.get(cleanUrl, { rejectUnauthorized: false }, (proxyRes) => {
-        if (proxyRes.statusCode !== 200) {
-          res.status(proxyRes.statusCode || 500).send("Failed to fetch image");
-          return;
-        }
-        // Set CORS headers
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Content-Type", proxyRes.headers["content-type"] || "image/jpeg");
-        res.setHeader("Cache-Control", "public, max-age=31536000");
-        proxyRes.pipe(res);
-      }).on("error", (err) => {
-        console.error("Proxy error:", err);
-        res.status(500).send("Error fetching image");
+      const fetchRes = await fetch(cleanUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8'
+        },
+        signal: AbortSignal.timeout(10_000)
       });
+
+      if (!fetchRes.ok) {
+        return res.status(fetchRes.status || 500).send("Failed to fetch image");
+      }
+
+      const buffer = await fetchRes.arrayBuffer();
+      
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Content-Type", fetchRes.headers.get("content-type") || "image/jpeg");
+      res.setHeader("Cache-Control", "public, max-age=31536000");
+      res.send(Buffer.from(buffer));
     } catch (err) {
-      console.error("Server error:", err);
-      res.status(500).send("Server Error");
+      console.error("Proxy error:", err);
+      res.status(500).send("Error fetching image");
     }
   });
 

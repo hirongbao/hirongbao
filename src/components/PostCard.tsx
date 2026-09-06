@@ -79,17 +79,30 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
     setTimeout(async () => {
       try {
         if (!posterRef.current) return;
+        
+        // Wait for all images inside the poster to finish loading
+        const images = Array.from(posterRef.current.querySelectorAll('img'));
+        await Promise.all(images.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve; // Continue even if one fails
+          });
+        }));
+
         const canvas = await html2canvas(posterRef.current, {
           useCORS: true,
+          allowTaint: false,
           scale: 2,
           backgroundColor: '#ffffff',
-          logging: false
+          logging: true // Enable logging to see the reason if it fails
         });
+        
         const dataUrl = canvas.toDataURL('image/png');
         setShareImageUrl(dataUrl);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to generate image', err);
-        showToast('生成分享图片失败，请稍后重试。可能由于图片跨域限制。', 'error');
+        showToast('生成失败: ' + (err.message || String(err)), 'error');
       } finally {
         setIsSharing(false);
       }
@@ -204,7 +217,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
 
       {/* Hidden Poster Generation Element */}
       {isSharing && (
-        <div className="fixed -left-[9999px] -top-[9999px] pointer-events-none z-0">
+        <div className="absolute top-0 left-0 opacity-0 -z-50 pointer-events-none">
           <div 
             ref={posterRef} 
             className="w-[800px] bg-white p-16 flex flex-col border border-[#f4f4f5] text-[#18181b]"
@@ -213,7 +226,11 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             {/* Header */}
             <div className="flex justify-between items-start mb-16">
               <div className="flex items-center space-x-6">
-                <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar, true)} alt="author" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
+                {authorAvatar ? (
+                  <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar, true)} alt="author" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-zinc-200 border border-[#f4f4f5]" />
+                )}
                 <div>
                   <h3 className="text-2xl font-serif italic text-[#18181b]">{authorName}</h3>
                   <p className="text-[#a1a1aa] font-bold uppercase tracking-widest text-xs mt-1">@hirongbao</p>
@@ -223,7 +240,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             </div>
 
             {/* Media Content */}
-            {coverImage && (
+            {coverImage && coverImage.mediaUrl && (
                <div className="mb-12 rounded-[2rem] overflow-hidden bg-[#f4f4f5] border border-[#f4f4f5] flex items-center justify-center">
                 <img crossOrigin="anonymous" src={getProxiedImageUrl(coverImage.mediaUrl, true)} alt="Post content" className="w-full h-auto max-h-[600px] object-cover" />
               </div>
