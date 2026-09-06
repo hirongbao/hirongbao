@@ -4,6 +4,7 @@ import { Menu, X, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Profile } from './components/Profile';
 import { PostCard } from './components/PostCard';
 import { SubscribeModal } from './components/SubscribeModal';
+import { UnsubscribeModal } from './components/UnsubscribeModal';
 import { PostDetailModal } from './components/PostDetailModal';
 import { Post, ProfileData, ApiResponse, RawPost, Category, PostPageData, ReleaseLog } from './types';
 import { formatRelativeTime } from './utils/time';
@@ -38,6 +39,7 @@ const mapPost = (p: RawPost): Post => ({
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
+  const [unsubscribeData, setUnsubscribeData] = useState<{email: string, token: string} | null>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [activeSection, setActiveSection] = useState<'feed' | 'releases'>('feed');
   const [releaseLogs, setReleaseLogs] = useState<ReleaseLog[]>([]);
@@ -80,6 +82,32 @@ export default function App() {
     updateCols();
     window.addEventListener('resize', updateCols);
     return () => window.removeEventListener('resize', updateCols);
+  }, []);
+
+  // 处理从外部点进来的 URL 参数（postId 或 退订链接）
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get('postId');
+    const unsubscribe = params.get('unsubscribe');
+    const email = params.get('email');
+    const token = params.get('token');
+
+    if (postId) {
+      fetch(`/api/posts/${postId}`)
+        .then(res => res.json())
+        .then((env: ApiResponse<RawPost>) => {
+          if (env.code === 0 && env.data) {
+            setSelectedPost(mapPost(env.data));
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        })
+        .catch(console.error);
+    }
+
+    if (unsubscribe === 'true' && email && token) {
+      setUnsubscribeData({ email, token });
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, []);
 
   useEffect(() => {
@@ -370,6 +398,13 @@ export default function App() {
       <SubscribeModal 
         isOpen={isSubscribeOpen} 
         onClose={() => setIsSubscribeOpen(false)} 
+      />
+
+      <UnsubscribeModal
+        isOpen={unsubscribeData !== null}
+        email={unsubscribeData?.email || ''}
+        token={unsubscribeData?.token || ''}
+        onClose={() => setUnsubscribeData(null)}
       />
 
       <PostDetailModal

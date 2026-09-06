@@ -66,6 +66,9 @@ async function startServer() {
     backendProxy(req, res, `/api/hirongbaohub/posts${querySuffix}`);
   });
 
+  // 单条动态查询
+  app.get("/api/posts/:id", (req, res) => backendProxy(req, res, `/api/hirongbaohub/posts/${req.params.id}`));
+
   // 分页动态代理，供首页无限滚动使用
   app.get("/api/posts/page", (req, res) => {
     const qs = new URLSearchParams(req.query as Record<string, string>).toString();
@@ -87,6 +90,7 @@ async function startServer() {
   // 6. Subscribe Email
   app.post("/api/subscribe/request", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/request"));
   app.post("/api/subscribe/verify", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/verify"));
+  app.post("/api/subscribe/unsubscribe", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/unsubscribe"));
 
   // API Route for proxying images to bypass CORS
   app.get("/api/proxy-image", (req, res) => {
