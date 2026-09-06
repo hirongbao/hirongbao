@@ -131,11 +131,9 @@ export function SubscribeModal({ isOpen, onClose }: SubscribeModalProps) {
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className={`absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full flex items-center space-x-2 text-xs font-medium z-10 shadow-sm ${
-                    toast.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
-                  }`}
+                  className="absolute top-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-full flex items-center space-x-2 text-[13px] font-medium z-10 shadow-xl bg-zinc-900 text-white whitespace-nowrap"
                 >
-                  {toast.type === 'error' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
+                  {toast.type === 'error' ? <AlertCircle size={15} className="text-zinc-400" /> : <CheckCircle2 size={15} className="text-zinc-400" />}
                   <span>{toast.message}</span>
                 </motion.div>
               )}
