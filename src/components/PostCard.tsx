@@ -229,7 +229,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
                 {authorAvatar ? (
                   <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar, true)} alt="author" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-zinc-200 border border-[#f4f4f5]" />
+                  <div className="w-16 h-16 rounded-full bg-[#e4e4e7] border border-[#f4f4f5]" />
                 )}
                 <div>
                   <h3 className="text-2xl font-serif italic text-[#18181b]">{authorName}</h3>
@@ -258,12 +258,12 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             {/* Text section for Poster */}
             <div className="p-12 pb-16 flex-1 flex flex-col justify-center">
               {post.media.length > 0 && post.content && (
-                <p className="whitespace-pre-wrap text-3xl text-zinc-800 leading-snug mb-12">
+                <p className="whitespace-pre-wrap text-3xl text-[#27272a] leading-snug mb-12">
                   {post.content}
                 </p>
               )}
               {!post.media.length && post.content && (
-                <p className="whitespace-pre-wrap text-4xl font-serif leading-[1.3] italic text-zinc-800 mb-12">
+                <p className="whitespace-pre-wrap text-4xl font-serif leading-[1.3] italic text-[#27272a] mb-12">
                   "{post.content}"
                 </p>
               )}
