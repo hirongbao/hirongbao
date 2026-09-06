@@ -81,7 +81,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
         if (!posterRef.current) return;
         
         // Wait for all images inside the poster to finish loading
-        const images = Array.from(posterRef.current.querySelectorAll('img'));
+        const images = Array.from(posterRef.current.querySelectorAll('img')) as HTMLImageElement[];
         await Promise.all(images.map(img => {
           if (img.complete) return Promise.resolve();
           return new Promise((resolve) => {
