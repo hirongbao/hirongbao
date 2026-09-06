@@ -84,6 +84,10 @@ async function startServer() {
   // 5. Heartbeat (Online Count)
   app.post("/api/heartbeat", (req, res) => backendProxy(req, res, "/api/hirongbaohub/heartbeat"));
 
+  // 6. Subscribe Email
+  app.post("/api/subscribe/request", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/request"));
+  app.post("/api/subscribe/verify", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/verify"));
+
   // API Route for proxying images to bypass CORS
   app.get("/api/proxy-image", (req, res) => {
     const imageUrl = req.query.url as string;
