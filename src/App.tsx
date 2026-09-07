@@ -21,20 +21,27 @@ const MOCK_CATEGORIES: Category[] = [
 ];
 
 // 后端动态原始数据映射为展示模型（时间转相对时间、id 转字符串）
-const mapPost = (p: RawPost): Post => ({
-  id: String(p.id),
-  content: p.content || '',
-  media: p.media || [],
-  createdAt: formatRelativeTime(p.createdAt),
-  likeCount: p.likeCount || 0,
-  category: p.category ? { id: String(p.category.id), name: p.category.name } : null,
-  comments: (p.comments || []).map(c => ({
-    id: String(c.id),
-    author: c.author,
-    content: c.content,
-    createdAt: formatRelativeTime(c.createdAt)
-  }))
-});
+const mapPost = (p: RawPost): Post => {
+  const cat = p.category
+    ? { id: String(p.category.id), name: p.category.name }
+    : (p.categoryId || p.categoryName)
+    ? { id: String(p.categoryId || 'notes'), name: p.categoryName || '随笔' }
+    : null;
+  return {
+    id: String(p.id),
+    content: p.content || '',
+    media: p.media || [],
+    createdAt: formatRelativeTime(p.createdAt),
+    likeCount: p.likeCount || 0,
+    category: cat,
+    comments: (p.comments || []).map(c => ({
+      id: String(c.id),
+      author: c.author,
+      content: c.content,
+      createdAt: formatRelativeTime(c.createdAt)
+    }))
+  };
+};
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

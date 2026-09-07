@@ -41,10 +41,10 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
     }
   }, [shareImageUrl]);
 
-  // 封面图与分类文案（视频优先，其次图片，纯文字为随笔）
+  // 封面图与分类文案（分类名称优先，缺省时依媒体类型推断）
   const coverImage = post.media.find(m => m.mediaType === 'image');
   const hasVideo = post.media.some(m => m.mediaType === 'video');
-  const categoryLabel = hasVideo ? '动态影像' : post.media.length ? '视觉日志' : '日常随笔';
+  const categoryLabel = post.category?.name || (hasVideo ? '动态影像' : post.media.length ? '视觉日志' : '日常随笔');
 
   // 点赞/取消点赞，以后端返回的计数为准
   const handleLike = async () => {

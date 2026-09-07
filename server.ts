@@ -66,14 +66,14 @@ async function startServer() {
     backendProxy(req, res, `/api/hirongbaohub/posts${querySuffix}`);
   });
 
-  // 单条动态查询
-  app.get("/api/posts/:id", (req, res) => backendProxy(req, res, `/api/hirongbaohub/posts/${req.params.id}`));
-
   // 分页动态代理，供首页无限滚动使用
   app.get("/api/posts/page", (req, res) => {
     const qs = new URLSearchParams(req.query as Record<string, string>).toString();
     backendProxy(req, res, `/api/hirongbaohub/posts/page${qs ? `?${qs}` : ''}`);
   });
+
+  // 单条动态查询（限制为数字ID，避免拦截其它路径）
+  app.get("/api/posts/:id(\\d+)", (req, res) => backendProxy(req, res, `/api/hirongbaohub/posts/${req.params.id}`));
 
   // 更新日志代理
   app.get("/api/releases", (req, res) => backendProxy(req, res, "/api/hirongbaohub/releases"));

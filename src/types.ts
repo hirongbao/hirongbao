@@ -78,5 +78,7 @@ export interface RawPost {
   createdAt: string;
   media: Array<{ mediaType: 'image' | 'video'; mediaUrl: string; sortOrder: number }>;
   comments: Array<{ id: number; author: string; content: string; createdAt: string }>;
+  categoryId?: string | null;
+  categoryName?: string | null;
   category?: { id: number | string; name: string } | null;
 }
