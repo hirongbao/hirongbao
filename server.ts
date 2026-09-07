@@ -10,17 +10,21 @@ import http from "http";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 // 备用内网穿透地址示例: "http://x62e626c.natappfree.cc"
 
-// 从可信反向代理请求中提取客户端地址，避免把用户伪造的转发头传给后端
+// 优先信任 Nginx 反向代理传入的真实客户端地址，并规范化格式
 function resolveClientIp(req: express.Request) {
+  if (req.ip) {
+    return req.ip.replace(/^::ffff:/, "");
+  }
   const remoteAddr = req.socket.remoteAddress?.replace(/^::ffff:/, "") || "";
   const isLocalProxy = remoteAddr === "127.0.0.1" || remoteAddr === "::1" || remoteAddr === "0:0:0:0:0:0:0:1";
-  if (!isLocalProxy) return remoteAddr;
+  if (!isLocalProxy && remoteAddr) return remoteAddr;
   const forwarded = req.header("X-Forwarded-For")?.split(",", 1)[0]?.trim();
-  return forwarded || req.header("X-Real-IP")?.trim() || remoteAddr;
+  return forwarded || req.header("X-Real-IP")?.trim() || remoteAddr || "127.0.0.1";
 }
 
 async function startServer() {
   const app = express();
+  app.set("trust proxy", true);
   const PORT = 3001;
 
   // Add JSON body parser for POST requests
@@ -91,6 +95,10 @@ async function startServer() {
   app.post("/api/subscribe/request", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/request"));
   app.post("/api/subscribe/verify", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/verify"));
   app.post("/api/subscribe/unsubscribe", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/unsubscribe"));
+
+  // 7. Health & IP Check
+  app.get("/api/health", (req, res) => backendProxy(req, res, "/api/health"));
+  app.get("/api/health/ip", (req, res) => backendProxy(req, res, "/api/health/ip"));
 
   // API Route for proxying images to bypass CORS
   app.get("/api/proxy-image", (req, res) => {
