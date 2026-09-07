@@ -106,13 +106,7 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
                     {log.title}
                   </h4>
 
-                  {log.summary && (
-                    <div className="mb-6 pl-4 border-l-2 border-zinc-900/80">
-                      <p className="text-lg font-serif leading-[1.6] italic text-zinc-600">
-                        "{log.summary}"
-                      </p>
-                    </div>
-                  )}
+
 
                   {log.content && (
                     <div 
