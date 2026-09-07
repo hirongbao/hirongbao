@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Heart, MessageCircle, Send, Share, Loader2, X, Download, QrCode, AlertCircle } from 'lucide-react';
+import { Heart, MessageCircle, Send, Share, Loader2, X, Download, QrCode, AlertCircle, Check } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import QRCode from 'qrcode';
 import { Post, Comment } from '../types';
 import { PostMedia } from './PostMedia';
 import { formatRelativeTime } from '../utils/time';
@@ -22,6 +23,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
   const posterRef = useRef<HTMLDivElement>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [shareImageUrl, setShareImageUrl] = useState<string | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -74,8 +76,47 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
   const handleShare = async () => {
     if (isSharing) return;
     setIsSharing(true);
-    
-    // Give React time to render the hidden poster element
+
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hirongbao.com';
+    const shareUrl = `${origin}/?postId=${post.id}`;
+
+    // 1. 自动复制分享链接到剪贴板并弹出提示
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      showToast('分享链接已复制', 'success');
+    } catch (copyErr) {
+      console.error('Failed to copy share URL:', copyErr);
+    }
+
+    // 2. 生成真实动态二维码 DataURL
+    try {
+      const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+        width: 180,
+        margin: 1,
+        color: {
+          dark: '#18181b',
+          light: '#ffffff'
+        }
+      });
+      setQrCodeUrl(qrDataUrl);
+    } catch (qrErr) {
+      console.error('Failed to generate QR code:', qrErr);
+    }
+
+    // 3. 给 React 渲染留足缓冲后生成海报
     setTimeout(async () => {
       try {
         if (!posterRef.current) return;
@@ -95,7 +136,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
           allowTaint: false,
           scale: 2,
           backgroundColor: '#ffffff',
-          logging: true // Enable logging to see the reason if it fails
+          logging: false
         });
         
         const dataUrl = canvas.toDataURL('image/png');
@@ -106,7 +147,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
       } finally {
         setIsSharing(false);
       }
-    }, 100);
+    }, 120);
   };
 
   const handleDownloadImage = () => {
@@ -127,7 +168,11 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             exit={{ opacity: 0, y: -20 }}
             className="fixed top-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-full flex items-center space-x-2 text-[13px] font-medium z-[200] shadow-xl bg-zinc-900 text-white whitespace-nowrap"
           >
-            <AlertCircle size={15} className="text-zinc-400" />
+            {toast.type === 'success' ? (
+              <Check size={15} className="text-emerald-400" />
+            ) : (
+              <AlertCircle size={15} className="text-red-400" />
+            )}
             <span>{toast.message}</span>
           </motion.div>
         )}
@@ -279,18 +324,22 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
                 </span>
                 <div>
                   <div className="text-sm font-bold tracking-[0.2em] uppercase text-[#18181b]">Personal Feed</div>
-                  <div className="text-[10px] text-[#a1a1aa] mt-1 uppercase tracking-widest">hrb.design</div>
+                  <div className="text-[10px] text-[#a1a1aa] mt-1 uppercase tracking-widest">hirongbao.com</div>
                 </div>
               </div>
               
-              {/* QR Code Placeholder */}
+              {/* Real QR Code */}
               <div className="flex items-center space-x-4">
                 <div className="text-right">
                   <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#18181b]">Scan to View</div>
                   <div className="text-[9px] text-[#a1a1aa] mt-1 uppercase tracking-widest">扫码查看原动态</div>
                 </div>
-                <div className="w-[68px] h-[68px] bg-[#f4f4f5] border border-[#e4e4e7] p-2 rounded-xl flex items-center justify-center text-[#a1a1aa]">
-                  <QrCode size={36} strokeWidth={1.5} />
+                <div className="w-[68px] h-[68px] bg-white border border-[#e4e4e7] p-1 rounded-xl flex items-center justify-center overflow-hidden shadow-sm">
+                  {qrCodeUrl ? (
+                    <img src={qrCodeUrl} alt="QR Code" className="w-full h-full object-contain" />
+                  ) : (
+                    <QrCode size={36} strokeWidth={1.5} className="text-[#a1a1aa]" />
+                  )}
                 </div>
               </div>
             </div>
