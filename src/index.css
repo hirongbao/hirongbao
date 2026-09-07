@@ -8,3 +8,57 @@
 body {
   @apply bg-[#F8F9FA] text-zinc-900 antialiased h-full;
 }
+
+/* 更新日志 Markdown 渲染样式 */
+.release-markdown h1 {
+  @apply text-2xl font-serif font-bold text-zinc-900 mt-8 mb-4 tracking-tight;
+}
+.release-markdown h2 {
+  @apply text-xl font-serif font-bold text-zinc-900 mt-6 mb-3 tracking-tight;
+}
+.release-markdown h3 {
+  @apply text-lg font-bold text-zinc-800 mt-5 mb-2;
+}
+.release-markdown p {
+  @apply text-base text-zinc-700 leading-relaxed my-2.5 font-light;
+}
+.release-markdown ul {
+  @apply list-none space-y-1.5 my-3 pl-0;
+}
+.release-markdown ul li {
+  @apply relative pl-5 text-base text-zinc-700 leading-relaxed font-light;
+}
+.release-markdown ul li::before {
+  content: '';
+  @apply absolute left-0 top-[11px] w-1.5 h-1.5 rounded-full bg-zinc-300;
+}
+.release-markdown ol {
+  @apply list-decimal pl-5 space-y-1.5 my-3;
+}
+.release-markdown ol li {
+  @apply text-base text-zinc-700 leading-relaxed font-light;
+}
+.release-markdown blockquote {
+  @apply pl-4 border-l-2 border-zinc-300 italic text-zinc-500 my-4;
+}
+.release-markdown blockquote em {
+  @apply text-zinc-600 font-serif text-lg;
+}
+.release-markdown strong {
+  @apply font-bold text-zinc-900;
+}
+.release-markdown code {
+  @apply bg-zinc-100 text-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono;
+}
+.release-markdown pre {
+  @apply bg-zinc-100 rounded-xl p-4 overflow-x-auto my-4;
+}
+.release-markdown pre code {
+  @apply bg-transparent p-0;
+}
+.release-markdown hr {
+  @apply border-zinc-200 my-6;
+}
+.release-markdown a {
+  @apply text-zinc-900 underline underline-offset-2 hover:text-zinc-600 transition-colors;
+}

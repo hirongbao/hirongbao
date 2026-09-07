@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { Calendar, Tag } from 'lucide-react';
+import { marked } from 'marked';
 import { ReleaseLog } from '../types';
 
 interface ReleaseLogSectionProps {
@@ -18,60 +19,10 @@ function formatDate(dateStr: string) {
   return `${year}.${month}.${day}`;
 }
 
-// 识别特性标签并渲染带样式的微徽章
-function renderFormattedContentLine(line: string) {
-  const trimmed = line.trim();
-  if (!trimmed) return null;
-
-  // 匹配常见的日志标签前缀，如 [新增]、[优化]、[修复]、[功能] 等
-  const tagMatch = trimmed.match(/^(\[([\u4e00-\u9fa5\w]+)\]|([a-zA-Z]+:))\s*(.*)$/);
-
-  if (tagMatch) {
-    const rawTag = tagMatch[2] || tagMatch[3]?.replace(':', '');
-    const restText = tagMatch[4];
-
-    let badgeClass = 'text-zinc-500 bg-zinc-100/80 border-zinc-200/50';
-    let dotClass = 'bg-zinc-400';
-    
-    if (/新增|功能|feat/i.test(rawTag)) {
-      badgeClass = 'text-emerald-700 bg-emerald-50/80 border-emerald-200/50';
-      dotClass = 'bg-emerald-500';
-    } else if (/优化|改进|perf|improve/i.test(rawTag)) {
-      badgeClass = 'text-blue-700 bg-blue-50/80 border-blue-200/50';
-      dotClass = 'bg-blue-500';
-    } else if (/修复|fix|bug/i.test(rawTag)) {
-      badgeClass = 'text-amber-700 bg-amber-50/80 border-amber-200/50';
-      dotClass = 'bg-amber-500';
-    }
-
-    return (
-      <div className="flex items-start gap-4 my-2.5 group/line">
-        <div className={`mt-1 shrink-0 px-2 py-0.5 rounded-[4px] border text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5 ${badgeClass}`}>
-          <span className={`w-1 h-1 rounded-full ${dotClass}`} />
-          {rawTag}
-        </div>
-        <span className="text-zinc-800 text-base leading-relaxed tracking-wide font-light">{restText}</span>
-      </div>
-    );
-  }
-
-  // 列表符号前缀（-、*、• 等）
-  if (/^[-*•]\s+/.test(trimmed)) {
-    const text = trimmed.replace(/^[-*•]\s+/, '');
-    return (
-      <div className="flex items-start gap-4 my-2.5">
-        <div className="w-1 h-1 rounded-full bg-zinc-300 mt-[11px] shrink-0" />
-        <span className="text-zinc-800 text-base leading-relaxed tracking-wide font-light">{text}</span>
-      </div>
-    );
-  }
-
-  // 普通文本段落
-  return (
-    <p className="text-zinc-800 text-base leading-relaxed tracking-wide font-light my-2.5">
-      {trimmed}
-    </p>
-  );
+// 将 Markdown 内容转为 HTML
+function renderMarkdown(content: string): string {
+  if (!content) return '';
+  return marked.parse(content, { breaks: true, gfm: true }) as string;
 }
 
 export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
@@ -116,8 +67,6 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
         <div className="relative space-y-0">
           {releaseLogs.map((log, index) => {
             const isLatest = index === 0;
-            const contentLines = log.content ? log.content.split('\n') : [];
-
             return (
               <motion.article 
                 key={log.id}
@@ -165,14 +114,11 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
                     </div>
                   )}
 
-                  {contentLines.length > 0 && (
-                    <div className="space-y-1 mt-2">
-                      {contentLines.map((line, lIdx) => (
-                        <React.Fragment key={lIdx}>
-                          {renderFormattedContentLine(line)}
-                        </React.Fragment>
-                      ))}
-                    </div>
+                  {log.content && (
+                    <div 
+                      className="release-markdown mt-2 text-zinc-800 text-base leading-relaxed tracking-wide font-light"
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(log.content) }}
+                    />
                   )}
                 </div>
               </motion.article>

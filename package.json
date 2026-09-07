@@ -18,6 +18,7 @@
     "framer-motion": "^13.1.1",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.546.0",
+    "marked": "^18.0.11",
     "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
