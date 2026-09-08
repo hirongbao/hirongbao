@@ -1,15 +1,30 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import https from "https";
 import http from "http";
 import puppeteer, { Browser } from "puppeteer";
 
 let browserPromise: Promise<Browser> | null = null;
+function getExecutablePath() {
+  const paths = [
+    '/usr/bin/chromium-browser', 
+    '/usr/bin/chromium', 
+    '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome-stable'
+  ];
+  for (const p of paths) {
+    if (fs.existsSync(p)) return p;
+  }
+  return undefined;
+}
+
 function getBrowser() {
   if (!browserPromise) {
     browserPromise = puppeteer.launch({
       headless: true,
+      executablePath: getExecutablePath(),
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
     });
   }
