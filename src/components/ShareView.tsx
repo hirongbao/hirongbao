@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Post, ProfileData } from '../types';
+import QRCode from 'qrcode';
+import { QrCode } from 'lucide-react';
 
 interface ShareViewProps {
   postId: string;
@@ -8,6 +10,7 @@ interface ShareViewProps {
 export function ShareView({ postId }: ShareViewProps) {
   const [post, setPost] = useState<Post | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +42,21 @@ export function ShareView({ postId }: ShareViewProps) {
         if (profileRes.code === 0 && profileRes.data) {
           setProfile(profileRes.data);
         }
+
+        // Generate QR Code
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hirongbao.com';
+        const shareUrl = `${origin}/?postId=${postId}`;
+        try {
+          const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+            width: 180,
+            margin: 1,
+            color: { dark: '#18181b', light: '#ffffff' }
+          });
+          setQrCodeUrl(qrDataUrl);
+        } catch (qrErr) {
+          console.error('QR Generate Error', qrErr);
+        }
+
       } catch (err) {
         console.error(err);
       } finally {
@@ -60,6 +78,7 @@ export function ShareView({ postId }: ShareViewProps) {
       <div 
         id="share-poster-root" 
         className="w-[800px] bg-white p-16 flex flex-col border border-[#e4e4e7] text-[#18181b] shadow-2xl relative"
+        style={{ fontFamily: "'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif" }}
       >
         {/* Header */}
         <div className="flex justify-between items-start mb-16">
@@ -113,12 +132,26 @@ export function ShareView({ postId }: ShareViewProps) {
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-[#a1a1aa] mb-2">Platform</div>
             <div className="font-serif italic text-2xl text-[#18181b]">ServiceHub</div>
-          </div>
-          
-          <div className="text-right">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-[#a1a1aa] mb-2">Date</div>
+            
+            <div className="text-[10px] font-bold uppercase tracking-widest text-[#a1a1aa] mt-6 mb-2">Date</div>
             <div className="font-mono text-sm text-[#18181b]">{new Date().toISOString().split('T')[0].replace(/-/g, '.')}</div>
           </div>
+          
+          {/* QR Code */}
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#18181b]">Scan to View</div>
+              <div className="text-[9px] text-[#a1a1aa] mt-1 uppercase tracking-widest">扫码查看原动态</div>
+            </div>
+            <div className="w-[68px] h-[68px] bg-white border border-[#e4e4e7] p-1 rounded-xl flex items-center justify-center overflow-hidden shadow-sm">
+              {qrCodeUrl ? (
+                <img src={qrCodeUrl} alt="QR Code" className="w-full h-full object-contain" />
+              ) : (
+                <QrCode size={36} strokeWidth={1.5} className="text-[#a1a1aa]" />
+              )}
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
