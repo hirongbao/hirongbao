@@ -261,3 +261,4 @@ async function startServer() {
 
 startServer();
 // Trigger CI restart for Puppeteer font loading
+// Trigger CI to recover from 502
