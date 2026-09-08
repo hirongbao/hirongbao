@@ -151,16 +151,20 @@ async function startServer() {
       const element = await page.waitForSelector('#share-poster-root', { timeout: 10000 });
       if (!element) throw new Error('Poster element not found');
 
-      // Wait for all images inside the poster to fully load
+      // Wait for all images inside the poster to fully load (max 2 seconds)
       await page.evaluate(async () => {
         const images = Array.from(document.querySelectorAll('#share-poster-root img')) as HTMLImageElement[];
-        await Promise.all(images.map(img => {
+        const loadPromises = images.map(img => {
           if (img.complete) return Promise.resolve();
           return new Promise(resolve => {
             img.onload = resolve;
-            img.onerror = resolve; // Ignore errors to avoid hanging
+            img.onerror = resolve; // Ignore errors
           });
-        }));
+        });
+        
+        // Add a 2s timeout fallback
+        const timeoutPromise = new Promise(resolve => setTimeout(resolve, 2000));
+        await Promise.race([Promise.all(loadPromises), timeoutPromise]);
       });
       
       const imageBuffer = await element.screenshot({ type: 'png', omitBackground: true });
