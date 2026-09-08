@@ -260,3 +260,4 @@ async function startServer() {
 }
 
 startServer();
+// Trigger CI restart for Puppeteer font loading
