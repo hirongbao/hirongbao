@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, MessageCircle, Send, Share, Loader2, X, Download, QrCode, AlertCircle, Check } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import * as htmlToImage from 'html-to-image';
 import QRCode from 'qrcode';
 import { Post, Comment } from '../types';
 import { PostMedia } from './PostMedia';
@@ -131,15 +131,11 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
           });
         }));
 
-        const canvas = await html2canvas(posterRef.current, {
-          useCORS: true,
-          allowTaint: false,
-          scale: 2,
+        const dataUrl = await htmlToImage.toPng(posterRef.current, {
+          pixelRatio: 2,
           backgroundColor: '#ffffff',
-          logging: false
+          style: { transform: 'scale(1)', transformOrigin: 'top left' }
         });
-        
-        const dataUrl = canvas.toDataURL('image/png');
         setShareImageUrl(dataUrl);
       } catch (err: any) {
         console.error('Failed to generate image', err);

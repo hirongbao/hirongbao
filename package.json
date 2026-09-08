@@ -16,6 +16,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "express": "^4.21.2",
     "framer-motion": "^13.1.1",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.546.0",
     "marked": "^18.0.11",
