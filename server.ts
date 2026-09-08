@@ -3,6 +3,19 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import https from "https";
 import http from "http";
+import puppeteer from "puppeteer";
+
+let browserPromise: Promise<puppeteer.Browser> | null = null;
+function getBrowser() {
+  if (!browserPromise) {
+    browserPromise = puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+    });
+  }
+  return browserPromise;
+}
+
 
 // ServiceHub 后端地址配置
 // 1. 本地联调默认: http://localhost:8080 (或者 http://127.0.0.1:8080)
@@ -96,9 +109,43 @@ async function startServer() {
   app.post("/api/subscribe/verify", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/verify"));
   app.post("/api/subscribe/unsubscribe", (req, res) => backendProxy(req, res, "/api/hirongbaohub/subscribe/unsubscribe"));
 
+
   // 7. Health & IP Check
   app.get("/api/health", (req, res) => backendProxy(req, res, "/api/health"));
   app.get("/api/health/ip", (req, res) => backendProxy(req, res, "/api/health/ip"));
+
+  // 8. Generate Share Poster via Puppeteer
+  app.get("/api/share-image/:id", async (req, res) => {
+    try {
+      const browser = await getBrowser();
+      const page = await browser.newPage();
+      
+      // Set viewport
+      await page.setViewport({ width: 1000, height: 1200, deviceScaleFactor: 2 });
+      
+      // Navigate to the special share poster route
+      await page.goto(`http://127.0.0.1:${PORT}/?sharePostId=${req.params.id}`, { 
+        waitUntil: 'networkidle0',
+        timeout: 15000 
+      });
+      
+      const element = await page.$('#share-poster-root');
+      if (!element) {
+        throw new Error('Poster element not found');
+      }
+      
+      const imageBuffer = await element.screenshot({ type: 'png', omitBackground: true });
+      await page.close();
+      
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.send(imageBuffer);
+    } catch (err) {
+      console.error('Puppeteer generation error:', err);
+      res.status(500).json({ error: 'Failed to generate image' });
+    }
+  });
+
 
   // API Route for proxying images to bypass CORS
   app.get("/api/proxy-image", (req, res) => {
