@@ -71,9 +71,32 @@ function SlideImage({ src, mode, onViewFull }: SlideImageProps) {
   );
 }
 
-// 全屏大图查看：长图可上下滚动看原图，点击背景关闭
-function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
+// 全屏大图查看：支持多图左右切换，长图可上下滚动看原图，点击背景关闭
+function Lightbox({ images, initialIdx, onClose }: { images: {mediaUrl: string}[]; initialIdx: number; onClose: () => void }) {
+  const [idx, setIdx] = useState(initialIdx);
   const [tall, setTall] = useState(false);
+  const src = images[idx]?.mediaUrl;
+
+  const next = useCallback(() => setIdx(i => (i + 1) % images.length), [images.length]);
+  const prev = useCallback(() => setIdx(i => (i - 1 + images.length) % images.length), [images.length]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopImmediatePropagation();
+        onClose();
+      } else if (e.key === 'ArrowRight' && images.length > 1) {
+        e.stopImmediatePropagation();
+        next();
+      } else if (e.key === 'ArrowLeft' && images.length > 1) {
+        e.stopImmediatePropagation();
+        prev();
+      }
+    };
+    // Use capture phase so Lightbox catches ESC before PostDetailModal
+    window.addEventListener('keydown', handleKey, true);
+    return () => window.removeEventListener('keydown', handleKey, true);
+  }, [onClose, next, prev, images.length]);
 
   return (
     <motion.div 
@@ -89,7 +112,7 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
           ESC / 点击背景退出
         </span>
         <button
-          onClick={onClose}
+          onClick={e => { e.stopPropagation(); onClose(); }}
           className="w-10 h-10 rounded-full bg-white/15 text-white hover:bg-white/30 flex items-center justify-center transition-colors shadow-lg cursor-pointer"
           title="关闭"
         >
@@ -97,7 +120,28 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
         </button>
       </div>
 
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={e => { e.stopPropagation(); prev(); }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white shadow-lg flex items-center justify-center transition-colors z-30"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button
+            onClick={e => { e.stopPropagation(); next(); }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white shadow-lg flex items-center justify-center transition-colors z-30"
+          >
+            <ChevronRight size={24} />
+          </button>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-sm font-mono bg-black/50 px-4 py-1.5 rounded-full z-30">
+            {idx + 1} / {images.length}
+          </div>
+        </>
+      )}
+
       <motion.div 
+        key={src}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
@@ -156,7 +200,7 @@ export function PostMedia({ media, mode }: PostMediaProps) {
           </span>
         )}
         <AnimatePresence>
-          {lightbox && <Lightbox src={images[0].mediaUrl} onClose={() => setLightbox(false)} />}
+          {lightbox && <Lightbox images={images} initialIdx={0} onClose={() => setLightbox(false)} />}
         </AnimatePresence>
       </div>
     );
@@ -204,7 +248,7 @@ export function PostMedia({ media, mode }: PostMediaProps) {
         )}
       </div>
       <AnimatePresence>
-        {lightbox && <Lightbox src={current.mediaUrl} onClose={() => setLightbox(false)} />}
+        {lightbox && <Lightbox images={images} initialIdx={idx} onClose={() => setLightbox(false)} />}
       </AnimatePresence>
     </div>
   );
