@@ -116,34 +116,21 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
       console.error('Failed to generate QR code:', qrErr);
     }
 
-    // 3. 给 React 渲染留足缓冲后生成海报
-    setTimeout(async () => {
-      try {
-        if (!posterRef.current) return;
-        
-        // Wait for all images inside the poster to finish loading
-        const images = Array.from(posterRef.current.querySelectorAll('img')) as HTMLImageElement[];
-        await Promise.all(images.map(img => {
-          if (img.complete) return Promise.resolve();
-          return new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = resolve; // Continue even if one fails
-          });
-        }));
-
-        const dataUrl = await htmlToImage.toPng(posterRef.current, {
-          pixelRatio: 2,
-          backgroundColor: '#ffffff',
-          style: { transform: 'scale(1)', transformOrigin: 'top left' }
-        });
-        setShareImageUrl(dataUrl);
-      } catch (err: any) {
-        console.error('Failed to generate image', err);
-        showToast('生成失败: ' + (err.message || String(err)), 'error');
-      } finally {
-        setIsSharing(false);
+    // 3. 请求后端生成真实海报
+    try {
+      const res = await fetch(`/api/share-image/${post.id}`);
+      if (!res.ok) {
+        throw new Error(`服务端返回异常: ${res.status}`);
       }
-    }, 120);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setShareImageUrl(url);
+    } catch (err: any) {
+      console.error('Failed to generate image from backend', err);
+      showToast('海报生成失败: ' + (err.message || String(err)), 'error');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const handleDownloadImage = () => {
