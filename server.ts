@@ -26,6 +26,9 @@ function getBrowser() {
       headless: true,
       executablePath: getExecutablePath(),
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+    }).catch(err => {
+      browserPromise = null;
+      throw err;
     });
   }
   return browserPromise;
@@ -140,14 +143,25 @@ async function startServer() {
       
       // Navigate to the special share poster route
       await page.goto(`http://127.0.0.1:${PORT}/?sharePostId=${req.params.id}`, { 
-        waitUntil: 'networkidle0',
+        waitUntil: 'domcontentloaded',
         timeout: 15000 
       });
       
-      const element = await page.$('#share-poster-root');
-      if (!element) {
-        throw new Error('Poster element not found');
-      }
+      // Wait for React to render the poster
+      const element = await page.waitForSelector('#share-poster-root', { timeout: 10000 });
+      if (!element) throw new Error('Poster element not found');
+
+      // Wait for all images inside the poster to fully load
+      await page.evaluate(async () => {
+        const images = Array.from(document.querySelectorAll('#share-poster-root img')) as HTMLImageElement[];
+        await Promise.all(images.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve; // Ignore errors to avoid hanging
+          });
+        }));
+      });
       
       const imageBuffer = await element.screenshot({ type: 'png', omitBackground: true });
       await page.close();
