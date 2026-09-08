@@ -3,9 +3,9 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import https from "https";
 import http from "http";
-import puppeteer from "puppeteer";
+import puppeteer, { Browser } from "puppeteer";
 
-let browserPromise: Promise<puppeteer.Browser> | null = null;
+let browserPromise: Promise<Browser> | null = null;
 function getBrowser() {
   if (!browserPromise) {
     browserPromise = puppeteer.launch({
