@@ -104,6 +104,26 @@ async function startServer() {
   app.get("/api/health/ip", (req, res) => backendProxy(req, res, "/api/health/ip"));
 
 
+  // 8. Proxy for Java Poster API
+  app.get("/api/hirongbaohub/post/:id/poster", (req, res) => {
+    const backendPath = `/api/hirongbaohub/post/${req.params.id}/poster`;
+    const client = BACKEND_URL.startsWith("https") ? https : http;
+    client.get(`${BACKEND_URL}${backendPath}`, {
+      headers: {
+        "X-Real-IP": resolveClientIp(req),
+        "X-Forwarded-For": resolveClientIp(req),
+      }
+    }, (backendRes) => {
+      if (backendRes.statusCode) res.status(backendRes.statusCode);
+      if (backendRes.headers["content-type"]) res.setHeader("Content-Type", backendRes.headers["content-type"]);
+      if (backendRes.headers["cache-control"]) res.setHeader("Cache-Control", backendRes.headers["cache-control"]);
+      backendRes.pipe(res);
+    }).on("error", (err) => {
+      console.error(`Poster proxy error:`, err);
+      res.status(502).end();
+    });
+  });
+
   // API Route for proxying images to bypass CORS
   app.get("/api/proxy-image", (req, res) => {
     const imageUrl = req.query.url as string;
