@@ -118,7 +118,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
 
     // 3. 请求后端生成真实海报
     try {
-      const res = await fetch(`/api/share-image/${post.id}`);
+      const res = await fetch(`/api/hirongbaohub/post/${post.id}/poster`);
       if (!res.ok) {
         throw new Error(`服务端返回异常: ${res.status}`);
       }
