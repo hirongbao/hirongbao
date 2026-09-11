@@ -117,6 +117,7 @@ async function startServer() {
       if (backendRes.statusCode) res.status(backendRes.statusCode);
       if (backendRes.headers["content-type"]) res.setHeader("Content-Type", backendRes.headers["content-type"]);
       if (backendRes.headers["cache-control"]) res.setHeader("Cache-Control", backendRes.headers["cache-control"]);
+      backendRes.on("error", (err) => { console.error("Backend stream error:", err); res.end(); });
       backendRes.pipe(res);
     }).on("error", (err) => {
       console.error(`Poster proxy error:`, err);
