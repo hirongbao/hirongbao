@@ -120,6 +120,20 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
     setTimeout(async () => {
       try {
         if (!posterRef.current) return;
+        
+        // 等待所有代理图片加载完毕
+        const imgs = Array.from(posterRef.current.querySelectorAll('img')) as HTMLImageElement[];
+        await Promise.all(imgs.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }));
+
+        // 额外多等 50ms 让浏览器完成渲染
+        await new Promise(r => setTimeout(r, 50));
+
         const dataUrl = await htmlToImage.toPng(posterRef.current, {
           pixelRatio: 2,
           backgroundColor: '#ffffff'
@@ -131,7 +145,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
       } finally {
         setIsSharing(false);
       }
-    }, 100);
+    }, 50);
   };
 
   const handleDownloadImage = () => {
@@ -256,7 +270,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             <div className="flex justify-between items-start mb-16">
               <div className="flex items-center space-x-6">
                 {authorAvatar ? (
-                  <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar, true)} alt="author" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
+                  <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar)} alt="author" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-[#e4e4e7] border border-[#f4f4f5]" />
                 )}
@@ -271,7 +285,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             {/* Media Content */}
             {coverImage && coverImage.mediaUrl && (
                <div className="mb-12 rounded-[2rem] overflow-hidden bg-[#f4f4f5] border border-[#f4f4f5] flex items-center justify-center">
-                <img crossOrigin="anonymous" src={getProxiedImageUrl(coverImage.mediaUrl, true)} alt="Post content" className="w-full h-auto max-h-[600px] object-cover" />
+                <img crossOrigin="anonymous" src={getProxiedImageUrl(coverImage.mediaUrl)} alt="Post content" className="w-full h-auto max-h-[600px] object-cover" />
               </div>
             )}
             
