@@ -116,21 +116,22 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
       console.error('Failed to generate QR code:', qrErr);
     }
 
-    // 3. 请求后端生成真实海报
-    try {
-      const res = await fetch(`/api/hirongbaohub/post/${post.id}/poster`);
-      if (!res.ok) {
-        throw new Error(`服务端返回异常: ${res.status}`);
+    // 3. 使用 html-to-image 生成前端海报
+    setTimeout(async () => {
+      try {
+        if (!posterRef.current) return;
+        const dataUrl = await htmlToImage.toPng(posterRef.current, {
+          pixelRatio: 2,
+          backgroundColor: '#ffffff'
+        });
+        setShareImageUrl(dataUrl);
+      } catch (err) {
+        console.error('Failed to generate image', err);
+        showToast('生成分享图片失败，请稍后重试。可能由于图片跨域限制。', 'error');
+      } finally {
+        setIsSharing(false);
       }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setShareImageUrl(url);
-    } catch (err: any) {
-      console.error('Failed to generate image from backend', err);
-      showToast('海报生成失败: ' + (err.message || String(err)), 'error');
-    } finally {
-      setIsSharing(false);
-    }
+    }, 100);
   };
 
   const handleDownloadImage = () => {
