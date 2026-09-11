@@ -370,11 +370,11 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
                 <X size={20} />
               </button>
               
-              <div className="relative w-full h-full rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-2xl group">
+              <div className="relative flex items-center justify-center group max-h-[85vh]">
                 <img 
                   src={shareImageUrl} 
                   alt="Generated Poster" 
-                  className="w-full h-auto max-h-[85vh] object-contain" 
+                  className="w-full h-auto max-h-[85vh] object-contain rounded-2xl sm:rounded-[2rem] shadow-2xl" 
                 />
                 
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
