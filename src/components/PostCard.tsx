@@ -7,7 +7,7 @@ import { Post, Comment } from '../types';
 import { PostMedia } from './PostMedia';
 import { formatRelativeTime } from '../utils/time';
 
-import { getProxiedImageUrl } from '../utils/image';
+import { getProxiedImageUrl, urlToBase64 } from '../utils/image';
 
 interface PostCardProps {
   post: Post;
@@ -23,6 +23,8 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
   const posterRef = useRef<HTMLDivElement>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [shareImageUrl, setShareImageUrl] = useState<string | null>(null);
+  const [base64Avatar, setBase64Avatar] = useState<string>('');
+  const [base64Cover, setBase64Cover] = useState<string>('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -116,36 +118,35 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
       console.error('Failed to generate QR code:', qrErr);
     }
 
-    // 3. 使用 html-to-image 生成前端海报
-    setTimeout(async () => {
-      try {
-        if (!posterRef.current) return;
-        
-        // 等待所有代理图片加载完毕
-        const imgs = Array.from(posterRef.current.querySelectorAll('img')) as HTMLImageElement[];
-        await Promise.all(imgs.map(img => {
-          if (img.complete) return Promise.resolve();
-          return new Promise(resolve => {
-            img.onload = resolve;
-            img.onerror = resolve;
+    // 3. 将图片转换为 Base64，避免 html-to-image 并发拉取时的图片错乱和圆角丢失问题
+    try {
+      const avatarB64 = authorAvatar ? await urlToBase64(authorAvatar) : '';
+      const coverB64 = coverImage?.mediaUrl ? await urlToBase64(coverImage.mediaUrl) : '';
+      setBase64Avatar(avatarB64);
+      setBase64Cover(coverB64);
+
+      // 等待 React 渲染隐藏的海报 DOM
+      setTimeout(async () => {
+        try {
+          if (!posterRef.current) return;
+          
+          const dataUrl = await htmlToImage.toPng(posterRef.current, {
+            pixelRatio: 2,
+            backgroundColor: '#ffffff',
+            cacheBust: true, // we use base64 now so this is safe and prevents previous cache cross-talk
           });
-        }));
-
-        // 额外多等 50ms 让浏览器完成渲染
-        await new Promise(r => setTimeout(r, 50));
-
-        const dataUrl = await htmlToImage.toPng(posterRef.current, {
-          pixelRatio: 2,
-          backgroundColor: '#ffffff'
-        });
-        setShareImageUrl(dataUrl);
-      } catch (err) {
-        console.error('Failed to generate image', err);
-        showToast('生成分享图片失败，请稍后重试。可能由于图片跨域限制。', 'error');
-      } finally {
-        setIsSharing(false);
-      }
-    }, 50);
+          setShareImageUrl(dataUrl);
+        } catch (err) {
+          console.error('Failed to generate image', err);
+          showToast('生成分享图片失败，请稍后重试。', 'error');
+        } finally {
+          setIsSharing(false);
+        }
+      }, 150);
+    } catch (e) {
+      console.error('Failed to load base64 images', e);
+      setIsSharing(false);
+    }
   };
 
   const handleDownloadImage = () => {
@@ -269,8 +270,8 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             {/* Header */}
             <div className="flex justify-between items-start mb-16">
               <div className="flex items-center space-x-6">
-                {authorAvatar ? (
-                  <img crossOrigin="anonymous" src={getProxiedImageUrl(authorAvatar)} alt="author" className="w-16 h-16 rounded-full object-cover border border-[#f4f4f5]" />
+                {base64Avatar ? (
+                  <img src={base64Avatar} alt="author" className="w-16 h-16 object-cover border border-[#f4f4f5]" style={{ borderRadius: '50%' }} />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-[#e4e4e7] border border-[#f4f4f5]" />
                 )}
@@ -283,9 +284,9 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             </div>
 
             {/* Media Content */}
-            {coverImage && coverImage.mediaUrl && (
-               <div className="mb-12 rounded-[2rem] overflow-hidden bg-[#f4f4f5] border border-[#f4f4f5] flex items-center justify-center">
-                <img crossOrigin="anonymous" src={getProxiedImageUrl(coverImage.mediaUrl)} alt="Post content" className="w-full h-auto max-h-[600px] object-cover" />
+            {base64Cover && (
+               <div className="mb-12 flex items-center justify-center">
+                <img src={base64Cover} alt="Post content" className="w-full h-auto max-h-[600px] object-cover bg-[#f4f4f5] border border-[#f4f4f5]" style={{ borderRadius: '2rem' }} />
               </div>
             )}
             
