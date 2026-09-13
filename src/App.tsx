@@ -45,6 +45,17 @@ const mapPost = (p: RawPost): Post => {
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isSidebarOpen]);
+
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [unsubscribeData, setUnsubscribeData] = useState<{email: string, token: string} | null>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -297,14 +308,14 @@ export default function App() {
 
       {/* Left Profile Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 h-screen w-full lg:w-[320px] bg-white border-r border-zinc-200 p-8 lg:p-12 shrink-0 overflow-y-auto z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 shadow-2xl lg:shadow-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}
+        className={`fixed top-0 left-0 h-[100dvh] w-full lg:w-[320px] bg-white border-r border-zinc-200 p-8 lg:p-12 shrink-0 overflow-y-auto z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 shadow-2xl lg:shadow-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}
       >
         <div className="lg:hidden absolute top-6 right-6">
           <button onClick={() => setIsSidebarOpen(false)} className="text-zinc-400 hover:text-zinc-900 transition-colors bg-zinc-100 p-2 rounded-full">
             <X size={20} />
           </button>
         </div>
-        <Profile profile={profile} onSubscribe={() => setIsSubscribeOpen(true)} activeSection={activeSection} onSectionChange={setActiveSection} />
+        <Profile profile={profile} onSubscribe={() => { setIsSidebarOpen(false); setIsSubscribeOpen(true); }} activeSection={activeSection} onSectionChange={(s) => { setActiveSection(s); setIsSidebarOpen(false); }} />
       </aside>
 
       {/* Feed Area */}

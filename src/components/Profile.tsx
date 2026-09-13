@@ -136,7 +136,7 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
           </div>
         )}
 
-        <nav className="space-y-4 pt-2 hidden [@media(min-width:1024px)_and_(min-height:780px)]:block">
+        <nav className="space-y-4 pt-2 my-8 block lg:hidden [@media(min-width:1024px)_and_(min-height:780px)]:block">
           <button type="button" onClick={() => onSectionChange('feed')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'feed' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
             <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>01 / 信息流</span>
             <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
