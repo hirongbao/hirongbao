@@ -66,7 +66,7 @@ function SlideImage({ src, mode, onViewFull }: SlideImageProps) {
       src={src}
       onLoad={classify}
       alt=""
-      className="w-full h-auto"
+      className={mode === 'card' ? "w-full h-[240px] sm:h-auto sm:max-h-[500px] object-cover" : "w-full h-auto"}
     />
   );
 }
@@ -180,9 +180,9 @@ export function PostMedia({ media, mode }: PostMediaProps) {
   if (video) {
     return (
       <div className={mode === 'card'
-        ? 'mb-8 rounded-[2rem] overflow-hidden bg-zinc-100 border border-zinc-100'
+        ? 'mb-4 sm:mb-8 rounded-[1.2rem] sm:rounded-[2rem] overflow-hidden bg-zinc-100 border border-zinc-100'
         : 'relative w-full h-full bg-zinc-950 flex items-center justify-center overflow-hidden'}>
-        <video referrerPolicy="no-referrer" src={video.mediaUrl} controls className={mode === 'card' ? "w-full h-auto object-cover" : "relative z-10 w-full h-full object-contain drop-shadow-2xl"} />
+        <video referrerPolicy="no-referrer" src={video.mediaUrl} controls className={mode === 'card' ? "w-full h-[240px] sm:h-auto sm:max-h-[500px] object-cover" : "relative z-10 w-full h-full object-contain drop-shadow-2xl"} />
       </div>
     );
   }
@@ -192,7 +192,7 @@ export function PostMedia({ media, mode }: PostMediaProps) {
   // 卡片模式：只展示封面
   if (mode === 'card') {
     return (
-      <div className="mb-8 rounded-[2rem] overflow-hidden bg-zinc-100 border border-zinc-100 relative">
+      <div className="mb-4 sm:mb-8 rounded-[1.2rem] sm:rounded-[2rem] overflow-hidden bg-zinc-100 border border-zinc-100 relative">
         <SlideImage src={images[0].mediaUrl} mode="card" onViewFull={() => setLightbox(true)} />
         {images.length > 1 && (
           <span className="absolute top-3 right-3 bg-black/60 text-white text-[10px] font-mono px-2.5 py-1 rounded-full tracking-widest">

@@ -94,7 +94,8 @@ export default function App() {
       if (w >= 1536) setNumCols(3); // 2xl
       else if (w >= 1280) setNumCols(3); // xl
       else if (w >= 1024) setNumCols(2); // lg
-      else setNumCols(2); // sm and mobile default to 2 cols for denser feed
+      else if (w >= 640) setNumCols(2); // sm
+      else setNumCols(1); // mobile
     };
     updateCols();
     window.addEventListener('resize', updateCols);
@@ -257,7 +258,7 @@ export default function App() {
               <div className="flex gap-4 mb-8 overflow-x-auto hide-scrollbar">
                 {[1, 2, 3, 4].map(i => <div key={i} className="h-10 w-24 bg-zinc-200 rounded-full animate-pulse shrink-0"></div>)}
               </div>
-              <div className="flex gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
+              <div className="flex gap-4 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
                 {Array.from({ length: numCols }).map((_, colIndex) => (
                   <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
                     <SkeletonCard height="h-[250px]" />
@@ -364,7 +365,7 @@ export default function App() {
                 <p className="mt-1 text-xs text-zinc-400">换个分类看看，或稍后再来。</p>
               </motion.div>
             ) : (
-            <div className="flex gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
+            <div className="flex gap-4 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
               {isFetchingPosts ? (
                 Array.from({ length: numCols }).map((_, colIndex) => (
                   <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
