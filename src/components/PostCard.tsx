@@ -235,7 +235,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
                 onClick={onClick}
                 className="group flex items-center space-x-3 cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-full border border-zinc-100 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white text-zinc-900 transition-all shadow-xs">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-zinc-100 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white text-zinc-900 transition-all shadow-xs">
                   <MessageCircle size={16} />
                 </div>
                 <span className="text-xs font-bold font-mono text-zinc-700">{post.comments.length}</span>
@@ -245,7 +245,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
                 onClick={handleShare}
                 className="group flex items-center space-x-3 cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-full border border-zinc-100 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white text-zinc-900 transition-all">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-zinc-100 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white text-zinc-900 transition-all">
                   {isSharing ? <Loader2 size={16} className="animate-spin" /> : <Share size={16} />}
                 </div>
                 <span className="text-xs font-bold font-mono text-zinc-700 hidden sm:inline-block">Share</span>

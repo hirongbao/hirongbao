@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Heart, MessageCircle, Share, Send, Loader2, CheckCircle } from 'lucide-react';
 import { Post, Comment } from '../types';
@@ -18,6 +18,16 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
   const [comments, setComments] = useState<Comment[]>(post?.comments || []);
   const [likes, setLikes] = useState(post?.likeCount || 0);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  useEffect(() => {
+    if (post) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [post]);
   const likeBusy = React.useRef(false);
 
   // Update local state when post changes (e.g. when opening a new post)
@@ -119,7 +129,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
               className="relative w-full max-w-[1200px] lg:h-[85vh] flex flex-col lg:flex-row gap-6 mt-16 lg:mt-0"
             >
               {/* Box 1: Media Player */}
-              <div className="w-full lg:flex-1 bg-black rounded-[2rem] sm:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative pointer-events-auto">
+              <div className="w-full lg:flex-1 bg-black rounded-[1.5rem] lg:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative pointer-events-auto aspect-square sm:aspect-auto sm:min-h-[50vh] lg:h-full">
                 {post.media.length > 0 ? (
                   <div className="w-full h-full relative flex flex-col overflow-hidden">
                     <PostMedia media={post.media} mode="detail" />
@@ -134,13 +144,13 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
               </div>
 
               {/* Box 2: Info & Comments */}
-              <div className="w-full lg:w-[400px] xl:w-[480px] h-[75vh] lg:h-auto bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden shrink-0 pointer-events-auto">
+              <div className="w-full lg:w-[400px] xl:w-[480px] h-auto lg:h-full bg-white rounded-[1.5rem] lg:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden shrink-0 pointer-events-auto">
                 
                 {/* Scrollable Content (Header + Comments) */}
-                <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="flex-1 overflow-y-visible lg:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   
                   {/* Header Info (Author + Content) */}
-                  <div className="p-8 pb-6 border-b border-zinc-100">
+                  <div className="p-4 sm:p-8 pb-4 sm:pb-6 border-b border-zinc-100">
                     <div className="flex items-center space-x-4 mb-6">
                       <img referrerPolicy="no-referrer" src={authorAvatar} alt={authorName} className="w-12 h-12 rounded-full object-cover" />
                       <div>
@@ -159,7 +169,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                   </div>
 
                   {/* Comments Section */}
-                  <div className="p-8">
+                  <div className="p-4 sm:p-8">
                     <h5 className="text-xs font-bold uppercase tracking-widest text-zinc-900 mb-6">访客留言 ({comments.length})</h5>
                     <div className="space-y-6">
                       {comments.length > 0 ? (

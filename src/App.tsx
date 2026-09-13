@@ -94,8 +94,7 @@ export default function App() {
       if (w >= 1536) setNumCols(3); // 2xl
       else if (w >= 1280) setNumCols(3); // xl
       else if (w >= 1024) setNumCols(2); // lg
-      else if (w >= 640) setNumCols(2); // sm
-      else setNumCols(1);
+      else setNumCols(2); // sm and mobile default to 2 cols for denser feed
     };
     updateCols();
     window.addEventListener('resize', updateCols);
@@ -250,7 +249,7 @@ export default function App() {
           <ProfileSkeleton />
         </aside>
         <div className="flex-1 min-w-0 lg:ml-[320px] min-h-screen flex justify-center">
-          <main className="p-6 md:p-8 lg:p-12 xl:p-16 2xl:p-20 w-full max-w-[1920px]">
+          <main className="p-3 sm:p-6 md:p-8 lg:p-12 xl:p-16 2xl:p-20 w-full max-w-[1920px]">
             <div className="space-y-8">
               <div className="flex items-center justify-between border-b border-zinc-200 pb-4 mb-8 animate-pulse">
                 <div className="h-4 w-32 bg-zinc-200 rounded"></div>
@@ -258,9 +257,9 @@ export default function App() {
               <div className="flex gap-4 mb-8 overflow-x-auto hide-scrollbar">
                 {[1, 2, 3, 4].map(i => <div key={i} className="h-10 w-24 bg-zinc-200 rounded-full animate-pulse shrink-0"></div>)}
               </div>
-              <div className="flex gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
+              <div className="flex gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
                 {Array.from({ length: numCols }).map((_, colIndex) => (
-                  <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
+                  <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
                     <SkeletonCard height="h-[250px]" />
                     <SkeletonCard height="h-[400px]" />
                   </div>
@@ -320,7 +319,7 @@ export default function App() {
 
       {/* Feed Area */}
       <div className="flex-1 min-w-0 lg:ml-[320px] min-h-screen flex justify-center">
-        <main className="p-6 md:p-8 lg:p-12 xl:p-16 2xl:p-20 w-full max-w-[1920px]">
+        <main className="p-3 sm:p-6 md:p-8 lg:p-12 xl:p-16 2xl:p-20 w-full max-w-[1920px]">
           <div className="space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -365,10 +364,10 @@ export default function App() {
                 <p className="mt-1 text-xs text-zinc-400">换个分类看看，或稍后再来。</p>
               </motion.div>
             ) : (
-            <div className="flex gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
+            <div className="flex gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
               {isFetchingPosts ? (
                 Array.from({ length: numCols }).map((_, colIndex) => (
-                  <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
+                  <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
                     <SkeletonCard height="h-[250px]" />
                     <SkeletonCard height="h-[400px]" />
                   </div>
@@ -377,7 +376,7 @@ export default function App() {
                 Array.from({ length: numCols }).map((_, colIndex) => {
                   const colPosts = currentPosts.filter((_, i) => i % numCols === colIndex);
                   return (
-                    <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
+                    <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
                       {colPosts.map((post, index) => {
                         const globalIndex = currentPosts.findIndex(p => p.id === post.id);
                         return (
