@@ -292,7 +292,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] selection:bg-zinc-200 selection:text-zinc-900 flex">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#F8F9FA] selection:bg-zinc-200 selection:text-zinc-900 flex">
       {/* Mobile Backdrop */}
       <AnimatePresence>
         {isSidebarOpen && (

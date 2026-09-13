@@ -54,10 +54,10 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           Changelog & Updates
         </span>
-        <h3 className="text-4xl md:text-5xl font-serif tracking-tighter text-zinc-900 leading-[1.2] mb-4 whitespace-nowrap">
+        <h3 className="text-4xl md:text-5xl font-serif tracking-tighter text-zinc-900 leading-[1.2] mb-4">
           持续进化，<span className="italic font-light text-zinc-500">见证每一次生长</span>
         </h3>
-        <p className="text-base text-zinc-500 font-light mx-auto leading-relaxed whitespace-nowrap">
+        <p className="text-base text-zinc-500 font-light mx-auto leading-relaxed">
           这里记录了产品架构、设计语言与核心体验的演进史。当前已完成 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.total}</span> 次重要迭代，最新版本停留在 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.latestVersion}</span>
         </p>
       </motion.div>
