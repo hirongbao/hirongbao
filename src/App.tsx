@@ -249,7 +249,7 @@ export default function App() {
         <aside className="hidden lg:block w-[320px] fixed h-screen bg-white/80 backdrop-blur-xl border-r border-zinc-200/50 z-30">
           <ProfileSkeleton />
         </aside>
-        <div className="flex-1 lg:ml-[320px] min-h-screen flex justify-center">
+        <div className="flex-1 min-w-0 lg:ml-[320px] min-h-screen flex justify-center">
           <main className="p-6 md:p-8 lg:p-12 xl:p-16 2xl:p-20 w-full max-w-[1920px]">
             <div className="space-y-8">
               <div className="flex items-center justify-between border-b border-zinc-200 pb-4 mb-8 animate-pulse">
@@ -258,9 +258,9 @@ export default function App() {
               <div className="flex gap-4 mb-8 overflow-x-auto hide-scrollbar">
                 {[1, 2, 3, 4].map(i => <div key={i} className="h-10 w-24 bg-zinc-200 rounded-full animate-pulse shrink-0"></div>)}
               </div>
-              <div className="flex gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full">
+              <div className="flex gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
                 {Array.from({ length: numCols }).map((_, colIndex) => (
-                  <div key={colIndex} className="flex-1 flex flex-col gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
+                  <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
                     <SkeletonCard height="h-[250px]" />
                     <SkeletonCard height="h-[400px]" />
                   </div>
@@ -308,7 +308,7 @@ export default function App() {
 
       {/* Left Profile Sidebar */}
       <aside 
-        className={`fixed top-0 bottom-0 left-0 w-full lg:w-[320px] bg-white border-r border-zinc-200 p-6 lg:p-12 shrink-0 overflow-y-auto z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 shadow-2xl lg:shadow-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}
+        className={`fixed top-0 bottom-0 left-0 w-[85vw] max-w-[320px] bg-white border-r border-zinc-200 p-6 lg:p-12 shrink-0 overflow-y-auto z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 shadow-2xl lg:shadow-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}
       >
         <div className="lg:hidden absolute top-6 right-6">
           <button onClick={() => setIsSidebarOpen(false)} className="text-zinc-400 hover:text-zinc-900 transition-colors bg-zinc-100 p-2 rounded-full">
@@ -319,7 +319,7 @@ export default function App() {
       </aside>
 
       {/* Feed Area */}
-      <div className="flex-1 lg:ml-[320px] min-h-screen flex justify-center">
+      <div className="flex-1 min-w-0 lg:ml-[320px] min-h-screen flex justify-center">
         <main className="p-6 md:p-8 lg:p-12 xl:p-16 2xl:p-20 w-full max-w-[1920px]">
           <div className="space-y-8">
             <motion.div
@@ -365,10 +365,10 @@ export default function App() {
                 <p className="mt-1 text-xs text-zinc-400">换个分类看看，或稍后再来。</p>
               </motion.div>
             ) : (
-            <div className="flex gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full">
+            <div className="flex gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
               {isFetchingPosts ? (
                 Array.from({ length: numCols }).map((_, colIndex) => (
-                  <div key={colIndex} className="flex-1 flex flex-col gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
+                  <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
                     <SkeletonCard height="h-[250px]" />
                     <SkeletonCard height="h-[400px]" />
                   </div>
@@ -377,7 +377,7 @@ export default function App() {
                 Array.from({ length: numCols }).map((_, colIndex) => {
                   const colPosts = currentPosts.filter((_, i) => i % numCols === colIndex);
                   return (
-                    <div key={colIndex} className="flex-1 flex flex-col gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
+                    <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
                       {colPosts.map((post, index) => {
                         const globalIndex = currentPosts.findIndex(p => p.id === post.id);
                         return (
