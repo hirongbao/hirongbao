@@ -40,7 +40,7 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
   }, [releaseLogs]);
 
   return (
-    <section className="mx-auto w-full max-w-4xl pb-24">
+    <section className="mx-auto w-full max-w-4xl pb-24 px-2 sm:px-6 md:px-0">
       
       {/* 顶部 Header：极致排版 */}
       <motion.div 
@@ -54,10 +54,10 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           Changelog & Updates
         </span>
-        <h3 className="text-4xl md:text-5xl font-serif tracking-tighter text-zinc-900 leading-[1.2] mb-4">
+        <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif tracking-tighter text-zinc-900 leading-[1.3] mb-3 sm:mb-4">
           持续进化，<span className="italic font-light text-zinc-500">见证每一次生长</span>
         </h3>
-        <p className="text-base text-zinc-500 font-light mx-auto leading-relaxed">
+        <p className="text-sm md:text-base text-zinc-500 font-light mx-auto leading-relaxed">
           这里记录了产品架构、设计语言与核心体验的演进史。当前已完成 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.total}</span> 次重要迭代，最新版本停留在 <span className="font-mono font-bold text-zinc-900 mx-1">{stats.latestVersion}</span>
         </p>
       </motion.div>
@@ -74,7 +74,7 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="relative flex flex-col md:flex-row gap-6 md:gap-8 py-6 md:py-8 border-b border-zinc-200/60 last:border-0 group"
+                className="relative flex flex-col md:flex-row gap-4 md:gap-8 py-6 md:py-8 border-b border-zinc-200/60 last:border-0 group"
               >
                 {/* 左侧：日期与版本 */}
                 <div className="w-full md:w-[180px] shrink-0 flex flex-col gap-3">
@@ -102,7 +102,7 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
 
                 {/* 右侧：标题与内容 */}
                 <div className="flex-1">
-                  <h4 className="text-2xl md:text-3xl font-serif tracking-tight text-zinc-900 mb-4 group-hover:text-zinc-700 transition-colors leading-snug">
+                  <h4 className="text-xl sm:text-2xl md:text-3xl font-serif tracking-tight text-zinc-900 mb-3 md:mb-4 group-hover:text-zinc-700 transition-colors leading-snug">
                     {log.title}
                   </h4>
 
@@ -110,7 +110,7 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
 
                   {log.content && (
                     <div 
-                      className="release-markdown mt-2 text-zinc-800 text-base leading-relaxed tracking-wide font-light"
+                      className="release-markdown mt-2 text-zinc-800 text-sm md:text-base leading-relaxed tracking-wide font-light"
                       dangerouslySetInnerHTML={{ __html: renderMarkdown(log.content) }}
                     />
                   )}
