@@ -21,6 +21,7 @@ interface ProfileProps {
 }
 
 export function Profile({ profile, onSubscribe, activeSection, onSectionChange }: ProfileProps) {
+  const [isBioExpanded, setIsBioExpanded] = useState(false);
   const [activeQr, setActiveQr] = useState<string | null>(null);
 
   const toggleQr = (platform: string) => {
@@ -29,23 +30,30 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
 
   return (
     <div className="flex h-full flex-col justify-between">
-      <div className="space-y-7">
+      <div className="space-y-5 lg:space-y-7">
         <div className="relative inline-block">
           <img
             src={profile.avatarUrl}
             alt={profile.name}
-            className="w-16 h-16 rounded-[1.5rem] object-cover shadow-2xl shadow-zinc-400/50"
+            className="w-14 h-14 lg:w-16 lg:h-16 rounded-[1.2rem] lg:rounded-[1.5rem] object-cover shadow-2xl shadow-zinc-400/50"
           />
           <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-emerald-400 rounded-full border-[3px] border-white"></div>
         </div>
 
         <div className="space-y-4">
-          <h1 className="text-4xl font-serif italic tracking-tight leading-none text-zinc-900">
+          <h1 className="text-3xl lg:text-4xl font-serif italic tracking-tight leading-none text-zinc-900">
             {profile.name}
           </h1>
-          <p className="text-zinc-500 text-sm leading-relaxed font-light">
-            {profile.bio}
-          </p>
+          <div>
+            <p className={`text-zinc-500 text-sm leading-relaxed font-light ${!isBioExpanded ? 'line-clamp-2' : ''}`}>
+              {profile.bio}
+            </p>
+            {profile.bio && profile.bio.length > 35 && (
+              <button onClick={() => setIsBioExpanded(!isBioExpanded)} className="text-[11px] text-zinc-400 hover:text-zinc-900 font-medium mt-1 transition-colors">
+                {isBioExpanded ? '收起介绍' : '展开阅读'}
+              </button>
+            )}
+          </div>
         </div>
 
         {profile.socials && profile.socials.length > 0 && (
@@ -136,7 +144,7 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
           </div>
         )}
 
-        <nav className="space-y-4 pt-2 my-8 block lg:hidden [@media(min-width:1024px)_and_(min-height:780px)]:block">
+        <nav className="space-y-4 pt-2 my-6 block lg:hidden [@media(min-width:1024px)_and_(min-height:780px)]:block">
           <button type="button" onClick={() => onSectionChange('feed')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'feed' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
             <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>01 / 信息流</span>
             <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
@@ -152,7 +160,7 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
         </nav>
       </div>
 
-      <div className="space-y-5 pt-4 lg:mt-auto">
+      <div className="space-y-4 pt-2 lg:mt-auto">
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-zinc-50 p-3 rounded-2xl">
             <p className="text-[9px] text-zinc-400 uppercase font-bold tracking-widest mb-1">动态内容</p>
