@@ -66,7 +66,7 @@ function SlideImage({ src, mode, onViewFull }: SlideImageProps) {
       src={src}
       onLoad={classify}
       alt=""
-      className={mode === 'card' ? "w-full h-[240px] sm:h-auto sm:max-h-[500px] object-cover" : "w-full h-auto"}
+      className="w-full h-auto block"
     />
   );
 }
@@ -182,7 +182,7 @@ export function PostMedia({ media, mode }: PostMediaProps) {
       <div className={mode === 'card'
         ? 'mb-4 sm:mb-8 rounded-[1.2rem] sm:rounded-[2rem] overflow-hidden bg-zinc-100 border border-zinc-100'
         : 'relative w-full h-full bg-zinc-950 flex items-center justify-center overflow-hidden'}>
-        <video referrerPolicy="no-referrer" src={video.mediaUrl} controls className={mode === 'card' ? "w-full h-[240px] sm:h-auto sm:max-h-[500px] object-cover" : "relative z-10 w-full h-full object-contain drop-shadow-2xl"} />
+        <video referrerPolicy="no-referrer" src={video.mediaUrl} controls className={mode === 'card' ? "w-full h-auto block" : "relative z-10 w-full h-full object-contain drop-shadow-2xl"} />
       </div>
     );
   }
