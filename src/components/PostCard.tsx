@@ -286,7 +286,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
             {/* Media Content */}
             {base64Cover && (
                <div className="mb-12 flex items-center justify-center">
-                <img src={base64Cover} alt="Post content" className="w-full h-auto max-h-[600px] object-cover bg-[#f4f4f5] border border-[#f4f4f5]" style={{ borderRadius: '2rem' }} />
+                <img src={base64Cover} alt="Post content" className="w-full h-auto block bg-[#f4f4f5] border border-[#f4f4f5]" style={{ borderRadius: '2rem' }} />
               </div>
             )}
             

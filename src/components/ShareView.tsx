@@ -99,7 +99,7 @@ export function ShareView({ postId }: ShareViewProps) {
         {/* Media Content */}
         {coverImage && coverImage.mediaUrl && (
           <div className="mb-12 rounded-[2rem] overflow-hidden bg-[#f4f4f5] border border-[#f4f4f5] flex items-center justify-center">
-            <img src={coverImage.mediaUrl} alt="Post content" className="w-full h-auto max-h-[600px] object-cover" />
+            <img src={coverImage.mediaUrl} alt="Post content" className="w-full h-auto block" />
           </div>
         )}
         
