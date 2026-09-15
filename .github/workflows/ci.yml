@@ -57,4 +57,4 @@ jobs:
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
           ssh -i ~/.ssh/servicehub_deploy "$SERVER_USER@$SERVER_HOST" \
-            'set -e; release=/opt/apps/hirongbao-web/releases/$(date +%Y%m%d%H%M%S); mkdir -p "$release"; tar -xzf /tmp/hirongbao-web.tar.gz -C "$release"; cd "$release"; export PUPPETEER_SKIP_DOWNLOAD=true; npm ci --omit=dev; ln -sfn "$release" /opt/apps/hirongbao-web/current; systemctl --user restart hirongbao-web.service; systemctl --user is-active --quiet hirongbao-web.service; rm -f /tmp/hirongbao-web.tar.gz'
+            'set -e; release=/opt/apps/hirongbao-web/releases/$(date +%Y%m%d%H%M%S); mkdir -p "$release"; tar -xzf /tmp/hirongbao-web.tar.gz -C "$release"; cd "$release"; export PUPPETEER_SKIP_DOWNLOAD=true; npm ci --omit=dev; ln -sfn "$release" /opt/apps/hirongbao-web/current; systemctl --user restart hirongbao-web.service; systemctl --user is-active --quiet hirongbao-web.service; rm -f /tmp/hirongbao-web.tar.gz; ls -dt /opt/apps/hirongbao-web/releases/* | tail -n +6 | xargs -r rm -rf; npm cache clean --force'
