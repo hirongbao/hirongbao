@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Heart, MessageCircle, Share, Send, Loader2, CheckCircle, Reply, CornerDownRight } from 'lucide-react';
+import { X, Heart, MessageCircle, Share, Send, Loader2, CheckCircle, Reply, CornerDownRight, User } from 'lucide-react';
 import { Post, Comment } from '../types';
 import { PostMedia } from './PostMedia';
 import { formatRelativeTime } from '../utils/time';
@@ -11,6 +11,29 @@ interface PostDetailModalProps {
   authorAvatar: string;
   onClose: () => void;
 }
+
+const MinimalAvatar = ({ name, size = 'normal' }: { name: string, size?: 'normal' | 'small' }) => {
+  const isVisitor = name === '访客' || !name;
+  const dimensionClass = size === 'small' ? 'w-7 h-7' : 'w-9 h-9';
+  const iconSize = size === 'small' ? 12 : 14;
+  const textSize = size === 'small' ? 'text-[10px]' : 'text-xs';
+  
+  if (isVisitor) {
+    return (
+      <div className={`${dimensionClass} rounded-full bg-zinc-100/80 border border-zinc-200/80 flex items-center justify-center shrink-0`}>
+        <User size={iconSize} className="text-zinc-400" />
+      </div>
+    );
+  }
+  
+  return (
+    <div className={`${dimensionClass} rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 shadow-sm`}>
+      <span className={`text-white font-serif italic ${textSize}`}>
+        {name.charAt(0).toUpperCase()}
+      </span>
+    </div>
+  );
+};
 
 export function PostDetailModal({ post, authorName, authorAvatar, onClose }: PostDetailModalProps) {
   const [newComment, setNewComment] = useState('');
@@ -194,54 +217,60 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                     <div className="space-y-6">
                       {comments.length > 0 ? (
                         comments.map(comment => (
-                          <div key={comment.id}>
+                          <div key={comment.id} className="relative">
+                            {comment.children && comment.children.length > 0 && (
+                              <div className="absolute top-10 left-[17px] bottom-0 w-[2px] bg-zinc-100 rounded-full" />
+                            )}
                             {/* Top-level comment */}
-                            <div className="flex space-x-4 text-sm">
-                              <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
-                                <span className="text-zinc-900 font-serif italic text-sm">
-                                  {comment.author.charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-baseline space-x-3 mb-1">
-                                  <span className="font-bold text-zinc-900 tracking-tight">{comment.author}</span>
-                                  <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">{comment.createdAt}</span>
+                            <div className="flex gap-3 relative z-10">
+                              <MinimalAvatar name={comment.author} />
+                              <div className="flex-1 pb-2">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span className="font-semibold text-zinc-900 text-[13px]">
+                                    {comment.author === '访客' ? 'Anonymous' : comment.author}
+                                  </span>
+                                  {comment.author === '访客' && (
+                                    <span className="px-1.5 py-0.5 bg-zinc-100 text-zinc-500 rounded text-[9px] font-bold tracking-widest uppercase">Guest</span>
+                                  )}
+                                  <span className="text-[10px] text-zinc-400 font-medium ml-auto">{comment.createdAt}</span>
                                 </div>
-                                <p className="text-zinc-600 leading-relaxed">{comment.content}</p>
+                                <p className="text-[13px] text-zinc-700 leading-relaxed mb-2">{comment.content}</p>
                                 <button 
                                   onClick={() => handleReply(comment)}
-                                  className="mt-2 flex items-center space-x-1 text-[11px] text-zinc-400 hover:text-zinc-900 transition-colors font-medium"
+                                  className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 hover:text-zinc-900 transition-colors"
                                 >
                                   <Reply size={12} />
                                   <span>回复</span>
                                 </button>
                               </div>
                             </div>
+                            
                             {/* Child replies */}
                             {comment.children && comment.children.length > 0 && (
-                              <div className="ml-14 mt-4 space-y-4 border-l-2 border-zinc-100 pl-4">
+                              <div className="pl-10 space-y-4 pt-2 relative z-10">
                                 {comment.children.map(reply => (
-                                  <div key={reply.id} className="flex space-x-3 text-sm">
-                                    <div className="w-8 h-8 rounded-full bg-zinc-50 border border-zinc-200 flex items-center justify-center shrink-0">
-                                      <span className="text-zinc-700 font-serif italic text-xs">
-                                        {reply.author.charAt(0).toUpperCase()}
-                                      </span>
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5 mb-1">
-                                        <span className="font-bold text-zinc-900 tracking-tight text-[13px]">{reply.author}</span>
+                                  <div key={reply.id} className="relative flex gap-3">
+                                    <MinimalAvatar name={reply.author} size="small" />
+                                    <div className="flex-1 pb-1">
+                                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                                        <span className="font-semibold text-zinc-900 text-[13px]">
+                                          {reply.author === '访客' ? 'Anonymous' : reply.author}
+                                        </span>
+                                        {reply.author === '访客' && (
+                                          <span className="px-1.5 py-0.5 bg-zinc-100 text-zinc-500 rounded text-[9px] font-bold tracking-widest uppercase">Guest</span>
+                                        )}
                                         {reply.replyToAuthor && (
                                           <span className="text-[11px] text-zinc-400 flex items-center gap-1">
                                             <CornerDownRight size={10} className="text-zinc-300" />
-                                            <span className="text-zinc-500">@{reply.replyToAuthor}</span>
+                                            <span className="text-zinc-500 font-medium">@{reply.replyToAuthor === '访客' ? 'Anonymous' : reply.replyToAuthor}</span>
                                           </span>
                                         )}
-                                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">{reply.createdAt}</span>
+                                        <span className="text-[10px] text-zinc-400 font-medium ml-auto">{reply.createdAt}</span>
                                       </div>
-                                      <p className="text-zinc-600 leading-relaxed text-[13px]">{reply.content}</p>
+                                      <p className="text-[13px] text-zinc-700 leading-relaxed mb-2">{reply.content}</p>
                                       <button 
                                         onClick={() => handleReply(reply)}
-                                        className="mt-1.5 flex items-center space-x-1 text-[11px] text-zinc-400 hover:text-zinc-900 transition-colors font-medium"
+                                        className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 hover:text-zinc-900 transition-colors"
                                       >
                                         <Reply size={11} />
                                         <span>回复</span>
