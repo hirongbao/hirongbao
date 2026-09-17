@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Eye, Clock, Share2, Check, BookOpen, Home, RefreshCw } from 'lucide-react';
 import { marked } from 'marked';
+import { markedHighlight } from 'marked-highlight';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github.css';
 import '../assets/latex.css';
+
+marked.use(
+  markedHighlight({
+    emptyLangClass: 'hljs',
+    langPrefix: 'hljs language-',
+    highlight(code, lang) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    }
+  })
+);
 
 interface Article {
   id: number;
