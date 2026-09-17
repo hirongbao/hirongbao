@@ -90,6 +90,13 @@ async function startServer() {
   // 4. Add a Comment to a Post
   app.post("/api/posts/:id/comments", (req, res) => backendProxy(req, res, `/api/hirongbaohub/posts/${req.params.id}/comments`));
 
+  // 8. Articles (长文代理)
+  app.get("/api/articles", (req, res) => {
+    const qs = new URLSearchParams(req.query as Record<string, string>).toString();
+    backendProxy(req, res, `/api/hirongbaohub/articles${qs ? `?${qs}` : ''}`);
+  });
+  app.get("/api/articles/:id(\\d+)", (req, res) => backendProxy(req, res, `/api/hirongbaohub/articles/${req.params.id}`));
+
   // 5. Heartbeat (Online Count)
   app.post("/api/heartbeat", (req, res) => backendProxy(req, res, "/api/hirongbaohub/heartbeat"));
 
