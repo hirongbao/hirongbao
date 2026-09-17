@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Heart, MessageCircle, Share, Send, Loader2, CheckCircle } from 'lucide-react';
+import { X, Heart, MessageCircle, Share, Send, Loader2, CheckCircle, Reply, CornerDownRight } from 'lucide-react';
 import { Post, Comment } from '../types';
 import { PostMedia } from './PostMedia';
 import { formatRelativeTime } from '../utils/time';
@@ -18,6 +18,8 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
   const [comments, setComments] = useState<Comment[]>(post?.comments || []);
   const [likes, setLikes] = useState(post?.likeCount || 0);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ id: string; author: string } | null>(null);
+  const commentInputRef = React.useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (post) {
       document.body.style.overflow = 'hidden';
@@ -38,6 +40,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
       setIsLiked(false);
       setNewComment('');
       setSubmitSuccess(false);
+      setReplyTo(null);
     }
   }, [post]);
 
@@ -51,20 +54,25 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
     return () => document.removeEventListener('keydown', handleEsc);
   }, [post, onClose]);
 
-  // 提交评论到后端并展示审核提示
+  // 提交评论或回复到后端并展示审核提示
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     const content = newComment.trim();
     if (!content || !post) return;
     try {
+      const body: Record<string, any> = { content };
+      if (replyTo) {
+        body.parentId = Number(replyTo.id);
+      }
       const res = await fetch(`/api/posts/${post.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
+        body: JSON.stringify(body)
       });
       const payload = await res.json();
       if (res.ok && payload.code === 0) {
         setNewComment('');
+        setReplyTo(null);
         setSubmitSuccess(true);
         setTimeout(() => setSubmitSuccess(false), 4000);
       } else {
@@ -74,6 +82,18 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
       alert('评论失败，请稍后重试');
     }
   };
+
+  // 点击回复按钮
+  const handleReply = (comment: Comment) => {
+    setReplyTo({ id: comment.id, author: comment.author });
+    setTimeout(() => commentInputRef.current?.focus(), 100);
+  };
+
+  // 计算评论总数（含子回复）
+  const countComments = (list: Comment[]): number => {
+    return list.reduce((sum, c) => sum + 1 + countComments(c.children || []), 0);
+  };
+  const totalComments = countComments(comments);
 
   // 点赞/取消点赞，以后端返回的计数为准
   const handleLike = async () => {
@@ -170,23 +190,67 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
 
                   {/* Comments Section */}
                   <div className="p-4 sm:p-8">
-                    <h5 className="text-xs font-bold uppercase tracking-widest text-zinc-900 mb-6">访客留言 ({comments.length})</h5>
+                    <h5 className="text-xs font-bold uppercase tracking-widest text-zinc-900 mb-6">访客留言 ({totalComments})</h5>
                     <div className="space-y-6">
                       {comments.length > 0 ? (
                         comments.map(comment => (
-                          <div key={comment.id} className="flex space-x-4 text-sm">
-                            <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
-                              <span className="text-zinc-900 font-serif italic text-sm">
-                                {comment.author.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-baseline space-x-3 mb-1">
-                                <span className="font-bold text-zinc-900 tracking-tight">{comment.author}</span>
-                                <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">{comment.createdAt}</span>
+                          <div key={comment.id}>
+                            {/* Top-level comment */}
+                            <div className="flex space-x-4 text-sm">
+                              <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+                                <span className="text-zinc-900 font-serif italic text-sm">
+                                  {comment.author.charAt(0).toUpperCase()}
+                                </span>
                               </div>
-                              <p className="text-zinc-600 leading-relaxed">{comment.content}</p>
+                              <div className="flex-1">
+                                <div className="flex items-baseline space-x-3 mb-1">
+                                  <span className="font-bold text-zinc-900 tracking-tight">{comment.author}</span>
+                                  <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">{comment.createdAt}</span>
+                                </div>
+                                <p className="text-zinc-600 leading-relaxed">{comment.content}</p>
+                                <button 
+                                  onClick={() => handleReply(comment)}
+                                  className="mt-2 flex items-center space-x-1 text-[11px] text-zinc-400 hover:text-zinc-900 transition-colors font-medium"
+                                >
+                                  <Reply size={12} />
+                                  <span>回复</span>
+                                </button>
+                              </div>
                             </div>
+                            {/* Child replies */}
+                            {comment.children && comment.children.length > 0 && (
+                              <div className="ml-14 mt-4 space-y-4 border-l-2 border-zinc-100 pl-4">
+                                {comment.children.map(reply => (
+                                  <div key={reply.id} className="flex space-x-3 text-sm">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-50 border border-zinc-200 flex items-center justify-center shrink-0">
+                                      <span className="text-zinc-700 font-serif italic text-xs">
+                                        {reply.author.charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5 mb-1">
+                                        <span className="font-bold text-zinc-900 tracking-tight text-[13px]">{reply.author}</span>
+                                        {reply.replyToAuthor && (
+                                          <span className="text-[11px] text-zinc-400 flex items-center gap-1">
+                                            <CornerDownRight size={10} className="text-zinc-300" />
+                                            <span className="text-zinc-500">@{reply.replyToAuthor}</span>
+                                          </span>
+                                        )}
+                                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">{reply.createdAt}</span>
+                                      </div>
+                                      <p className="text-zinc-600 leading-relaxed text-[13px]">{reply.content}</p>
+                                      <button 
+                                        onClick={() => handleReply(reply)}
+                                        className="mt-1.5 flex items-center space-x-1 text-[11px] text-zinc-400 hover:text-zinc-900 transition-colors font-medium"
+                                      >
+                                        <Reply size={11} />
+                                        <span>回复</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         ))
                       ) : (
@@ -208,7 +272,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                     </button>
                     <div className="flex items-center space-x-2 text-zinc-600">
                       <MessageCircle size={20} />
-                      <span className="text-sm font-bold">{comments.length}</span>
+                      <span className="text-sm font-bold">{totalComments}</span>
                     </div>
                   </div>
                   <div className="p-4 relative">
@@ -227,10 +291,20 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                         </motion.div>
                       )}
                     </AnimatePresence>
+                    {replyTo && (
+                      <div className="flex items-center justify-between mb-2 px-2">
+                        <span className="text-xs text-zinc-500 flex items-center gap-1.5">
+                          <CornerDownRight size={12} className="text-zinc-400" />
+                          回复 <span className="font-bold text-zinc-900">@{replyTo.author}</span>
+                        </span>
+                        <button onClick={() => setReplyTo(null)} className="text-xs text-zinc-400 hover:text-zinc-900 transition-colors">取消</button>
+                      </div>
+                    )}
                     <form onSubmit={handleAddComment} className="relative">
                       <input
+                        ref={commentInputRef}
                         type="text"
-                        placeholder="写下评论..."
+                        placeholder={replyTo ? `回复 @${replyTo.author}...` : "写下评论..."}
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         className="w-full bg-zinc-50 border border-zinc-200/80 rounded-full pl-6 pr-14 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 transition-all placeholder:text-zinc-400 font-light"

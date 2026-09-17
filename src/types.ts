@@ -8,6 +8,9 @@ export interface Comment {
   author: string;
   content: string;
   createdAt: string;
+  parentId?: string | null;
+  replyToAuthor?: string | null;
+  children?: Comment[];
 }
 
 export interface MediaItem {
@@ -77,7 +80,7 @@ export interface RawPost {
   likeCount: number;
   createdAt: string;
   media: Array<{ mediaType: 'image' | 'video'; mediaUrl: string; sortOrder: number }>;
-  comments: Array<{ id: number; author: string; content: string; createdAt: string }>;
+  comments: Array<{ id: number; author: string; content: string; createdAt: string; parentId?: number | null; replyToAuthor?: string | null; children?: any[] }>;
   categoryId?: string | null;
   categoryName?: string | null;
   category?: { id: number | string; name: string } | null;
