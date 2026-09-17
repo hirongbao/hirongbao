@@ -1,0 +1,712 @@
+@charset "UTF-8";
+:root {
+  /* == 引用块设置 == */
+  /* 1 表示启用边框，0 表示禁用 */
+  --blockquote-border-enabled: 1; /* 1 表示启用边框，0 表示禁用 */
+  --blockquote-border-color: hsl(0, 0%, 70%); /* 边框颜色 */
+  /* == 字体设置 == */
+  /* 基准字体 */
+  /* 备选：Times, "Times New Roman" */
+  --base-latin-font: "Latin Modern Roman", "Latin Modern Roman 10", Times;
+  --base-chinese-font: "Noto Serif CJK SC";
+  --base-font-size: 9.5pt;
+  /* 引言字体 */
+  --quote-latin-font: "Latin Modern Roman", "Latin Modern Roman 10", Times, "Times New Roman";
+  --quote-chinese-font: "华文仿宋", "STFangsong";
+  /* em单位为一个正文字符（--base-font-size）大小，
+  例如，如果您设置 --base-font-size 为 9.5pt，那么 1.05em = 1.05*9.5pt ≈ 10pt。下面的标题字体等设置也遵循该规则。
+  这样，您就可以仅通过调整基准字体大小，而动态对其他元素大小做出调整。
+  当然，您也可以直接设置以pt或px为单位的数值，将元素的大小固定下来，如 --quote-font-size: 10pt; */
+  --quote-font-size: 1.05em;
+  /* 代码字体（代码中的中文会调用 ui-font） */
+  /* "Courier New" 从 Windows 3.1 起成为 Windows 官方提供的字体 */
+  /* "Consolas" 从 Windows Vista 起成为 Windows 官方提供的字体 */
+  --code-font: "Latin Modern Mono", "Latin Modern Mono 10", "Consolas", "Courier New";
+  /* 侧边栏字体 */
+  --ui-font: "Noto Sans CJK SC";
+  /* source mode 字体 */
+  /* 默认调用 code-font 和 ui-font */
+  --sourceMode-font: "SF Mono", "Noto Sans CJK SC";
+  /* 目录字体 */
+  /* 默认调用 base-font */
+  --toc-font: "";
+  /* 默认调用 base-font-size */
+  --toc-font-size: "";
+  /* 公式字体 */
+  --math-font-size: 1em;
+  /* 表格字体 */
+  /* 默认调用 heading-font */
+  --table-title-font: "";
+  /* 默认调用 base-font */
+  --table-font: "";
+  /* 标题字体（总设置） */
+  --heading-chinese-sans-serif-font: "Noto Sans CJK SC"; /* 黑体 */
+  --heading-chinese-kai-font: "Noto Serif CJK SC"; /* 楷体 */
+  --heading-chinese-fangsong-font: "Noto Serif CJK SC"; /* 仿宋 */
+  --heading-latin-font: var(--base-latin-font);
+  --heading-chinese-font: var(--heading-chinese-sans-serif-font);
+  /* 标题字体分别设置 */
+  /* 大标题（h1）字体 */
+  --title-chinese-font: var(--heading-chinese-sans-serif-font);
+  --title-font-size: 1.9em;
+  /* h2字体 */
+  --h2-chinese-font: var(--heading-chinese-sans-serif-font);
+  --h2-font-size: 1.5em;
+  /* h3字体 */
+  --h3-chinese-font: var(--heading-chinese-sans-serif-font);
+  --h3-font-size: 1.25em;
+  /* h4字体 */
+  --h4-chinese-font: var(--heading-chinese-kai-font);
+  --h4-font-size: 1.15em;
+  /* h5字体 */
+  --h5-chinese-font: var(--heading-chinese-fangsong-font);
+  --h5-font-size: 1.10em;
+  /* h6字体 */
+  --h6-chinese-font: var(--heading-chinese-fangsong-font);
+  --h6-font-size: 1.05em;
+  /* 粗体样式设置 */
+  /* 加粗风格时使用的字重；400等同于 normal，700等同于 bold，900等同于 heavy */
+  --strong-weight: 900;
+  /* 基础行距 */
+  --base-line-height: 1.618em;
+  /* == 页面设置 == */
+  /* 打印页边距 */
+  --set-margin: 1.8cm 2cm 1.2cm 2cm !important;
+  /* == 控制设置 == */
+  /* 目录中是否显示一级标题 */
+  --toc-show-title: none;
+  /* == 颜色设置 == */
+  /* 超链接颜色 */
+  --link-color-light: #2E67D3;
+  --link-color-dark: #8bb1f9;
+  /* == 二级标题强制分页 == */
+  /* 默认值为 auto */
+  /* 更改为 page 启用强制分页 */
+  --page-break-before-h2: auto;
+}
+
+body {
+  padding: 0 !important;
+  margin: 0 !important;
+  /* counter-reset: tableHead 0 imgHead 0; */
+}
+
+@media print {
+  #write {
+    padding: 0 !important;
+  }
+  h2 {
+    break-before: var(--page-break-before-h2);
+  }
+  h2:first-of-type {
+    break-before: avoid-page;
+  }
+  @page {
+    margin: 1.8cm 2cm 1.2cm 2cm !important; /* 页边距 */
+  }
+}
+#write {
+  font-family: var(--base-latin-font), var(--base-chinese-font), serif;
+  font-size: var(--base-font-size);
+  /* A4标准宽度 */
+  max-width: 21cm;
+  background-color: white;
+  /* column-count: 2;
+    column-gap: 25px;
+    column-width: 8cm; 
+    display: inline-block; */
+  /* 这里可以试分栏的，但确实不适合实现 */
+}
+#write .md-math-block,
+#write .md-rawblock,
+#write p {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+#write p {
+  text-align: left;
+  line-height: var(--base-line-height);
+}
+#write a {
+  color: var(--link-color-light);
+}
+
+hr {
+  border-top: solid 1px #ddd;
+  margin-top: 1.8em;
+  margin-bottom: 1.8em;
+}
+
+img {
+  /* 避免图片在导出时被断开 */
+  break-inside: avoid-page;
+}
+
+strong {
+  font-weight: var(--strong-weight);
+}
+
+@media screen {
+  #write {
+    padding: var(--set-margin);
+    /* 添加一个淡蓝色的边框 */
+    /* border: 0.8px solid #AAC ; */
+    /* 页边阴影 */
+    box-shadow: 0 0 24px 12px #cccccc;
+  }
+}
+.MathJax {
+  font-size: var(--math-font-size);
+}
+
+/* typora 编写模式 */
+#typora-source {
+  font-family: var(--sourceMode-font), var(--code-font), var(--ui-font), monospace;
+  line-height: 2em;
+}
+
+/* 侧边大纲标题 */
+.sidebar-content {
+  counter-reset: outline-h1 outline-h2 outline-h3 outline-h4 outline-h5 outline-h6;
+}
+.sidebar-content .outline-h1 {
+  counter-reset: outline-h2 outline-h3 outline-h4 outline-h5 outline-h6;
+}
+.sidebar-content .outline-h2 {
+  counter-reset: outline-h3 outline-h4 outline-h5 outline-h6;
+}
+.sidebar-content .outline-h2 .outline-label:before {
+  counter-increment: outline-h2;
+  content: counter(outline-h2) " ";
+}
+.sidebar-content .outline-h3 {
+  counter-reset: outline-h4 outline-h5 outline-h6;
+}
+.sidebar-content .outline-h3 .outline-label:before {
+  counter-increment: outline-h3;
+  content: counter(outline-h2) "." counter(outline-h3) "  ";
+}
+.sidebar-content .outline-h4 {
+  counter-reset: outline-h5 outline-h6;
+}
+.sidebar-content .outline-h4 .outline-label:before {
+  counter-increment: outline-h4;
+  content: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "  ";
+}
+.sidebar-content .outline-h5 {
+  counter-reset: outline-h6;
+}
+.sidebar-content .outline-h5 .outline-label:before {
+  counter-increment: outline-h5;
+  content: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) "  ";
+}
+
+.sidebar-content {
+  /* 侧边栏的字体修改 */
+  font-family: var(--ui-font);
+  list-style: none;
+}
+
+/* 元数据（如 YAML front matter）的背景框 */
+pre.md-meta-block {
+  background: #cccccc;
+  padding: 1.4em;
+  font-family: var(--code-font), var(--ui-font), monospace;
+  font-size: 0.8em;
+}
+
+#write > h3.md-focus:before,
+#write > h4.md-focus:before,
+#write > h5.md-focus:before,
+#write > h6.md-focus:before,
+h3.md-focus:before,
+h4.md-focus:before,
+h5.md-focus:before,
+h6.md-focus:before {
+  color: inherit;
+  border: inherit;
+  border-radius: inherit;
+  position: inherit;
+  left: initial;
+  float: none;
+  top: initial;
+  font-size: inherit;
+  padding-left: inherit;
+  padding-right: inherit;
+  vertical-align: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+#write {
+  counter-reset: heading-h2 heading-h3 heading-h4 heading-h5 heading-h6;
+}
+#write h1,
+#write h2,
+#write h3,
+#write h4,
+#write h5,
+#write h6 {
+  break-after: avoid-page !important;
+}
+#write h1 {
+  font-family: var(--heading-latin-font), var(--title-chinese-font), serif;
+  text-align: center;
+  column-span: all;
+  font-size: var(--title-font-size);
+}
+#write h2 {
+  font-family: var(--heading-latin-font), var(--h2-chinese-font), serif;
+  font-size: var(--h2-font-size);
+}
+#write h3 {
+  font-family: var(--heading-latin-font), var(--h3-chinese-font), serif;
+  font-size: var(--h3-font-size);
+  line-height: var(--h3-font-size);
+}
+#write h4 {
+  font-family: var(--heading-latin-font), var(--h4-chinese-font), serif;
+  font-size: var(--h4-font-size);
+  line-height: var(--h4-font-size);
+}
+#write h5 {
+  font-family: var(--heading-latin-font), var(--h5-chinese-font), serif;
+  font-size: var(--h5-font-size);
+  line-height: var(--h5-font-size);
+}
+#write h6 {
+  font-family: var(--heading-latin-font), var(--h6-chinese-font), serif;
+  font-size: var(--h6-font-size);
+  /* 没有写错，为了避免行距太小才这么写 */
+  line-height: var(--h5-font-size);
+}
+#write h1 {
+  counter-reset: heading-h2 heading-h3 heading-h4 heading-h5 heading-h6;
+}
+#write h2 {
+  counter-reset: heading-h3 heading-h4 heading-h5 heading-h6;
+}
+#write h3 {
+  counter-reset: heading-h4 heading-h5 heading-h6;
+}
+#write h4 {
+  counter-reset: heading-h5 heading-h6;
+}
+#write h5 {
+  counter-reset: heading-h6;
+}
+@supports (counter-set: none) {
+  #write h1 {
+    counter-set: heading-h2 0 heading-h3 0 heading-h4 0 heading-h5 0 heading-h6 0;
+    counter-reset: none;
+  }
+  #write h2 {
+    counter-set: heading-h3 0 heading-h4 0 heading-h5 0 heading-h6 0;
+    counter-reset: none;
+  }
+  #write h3 {
+    counter-set: heading-h4 0 heading-h5 0 heading-h6 0;
+    counter-reset: none;
+  }
+  #write h4 {
+    counter-set: heading-h5 0 heading-h6 0;
+    counter-reset: none;
+  }
+  #write h5 {
+    counter-set: heading-h6 0;
+    counter-reset: none;
+  }
+}
+#write h2:before, h2.md-focus.md-heading:before {
+  content: counter(heading-h2);
+  counter-increment: heading-h2;
+  margin-right: 1.2em;
+}
+
+#write h3:before, h3.md-focus.md-heading:before {
+  content: counter(heading-h2) "." counter(heading-h3);
+  counter-increment: heading-h3;
+  margin-right: 1.2em;
+}
+
+#write h4:before, h4.md-focus.md-heading:before {
+  content: counter(heading-h2) "." counter(heading-h3) "." counter(heading-h4);
+  counter-increment: heading-h4;
+  margin-right: 1.2em;
+}
+
+#write h5:before, h5.md-focus.md-heading:before {
+  content: counter(heading-h2) "." counter(heading-h3) "." counter(heading-h4) "." counter(heading-h5);
+  counter-increment: heading-h5;
+  margin-right: 1.2em;
+}
+
+#write h6:before, h6.md-focus.md-heading:before {
+  content: counter(heading-h2) "." counter(heading-h3) "." counter(heading-h4) "." counter(heading-h5) "." counter(heading-h6);
+  counter-increment: heading-h6;
+  margin-right: 1.2em;
+}
+
+/* 参考文献（脚注）块，在 Typora 中的样式 */
+.md-def-footnote {
+  display: flex;
+  position: relative;
+  font-size: 0.95em;
+  opacity: 1;
+  margin: 0;
+}
+.md-def-footnote:not(:first-child), .md-def-footnote + *:not(.md-def-footnote) {
+  margin-top: 1em;
+}
+.md-def-footnote + .md-def-footnote {
+  margin-top: 0.5em;
+}
+.md-def-footnote .md-def-name {
+  font-weight: inherit;
+  padding: 0;
+  flex-shrink: 0;
+  width: 3em;
+  margin-inline-start: -1ch;
+  white-space: nowrap;
+  text-align: left;
+}
+.md-def-footnote .md-def-name:before {
+  content: "［";
+  position: static;
+  color: inherit;
+}
+.md-def-footnote .md-def-name:after {
+  content: "］";
+  position: static;
+  color: inherit;
+}
+.md-def-footnote .md-reverse-footnote-area {
+  display: none;
+}
+.md-def-footnote:hover .md-reverse-footnote-area {
+  position: absolute;
+  right: -6px;
+  display: inline;
+}
+
+/* 参考文献（脚注）块，在导出 HTML 或 PDF 时的样式（导出后的 HTML tag 和 Typora 中的 HTML tag 不一致） */
+.footnotes-area {
+  padding-inline-start: 2.5em;
+}
+.footnotes-area hr {
+  display: none;
+}
+.footnotes-area .footnote-line {
+  color: var(--text-color);
+  font-size: 0.95em;
+  margin-top: 0.5em;
+}
+.footnotes-area .footnote-line *:not(.md-fn-count) {
+  display: inline-block;
+  vertical-align: top;
+}
+.footnotes-area .footnote-line span.md-fn-count {
+  font-weight: inherit;
+  padding: 0;
+  margin-inline-start: -3em;
+  white-space: nowrap;
+  display: inline-block;
+  width: 2.5em;
+}
+.footnotes-area .footnote-line span.md-fn-count:before {
+  content: "［";
+  position: static;
+  color: inherit;
+}
+.footnotes-area .footnote-line span.md-fn-count:after {
+  content: "］";
+  position: static;
+  color: inherit;
+}
+.footnotes-area .footnote-line a.reversefootnote {
+  display: none;
+}
+
+/* 参考文献（脚注）上标 */
+sup.md-footnote {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: inherit;
+}
+sup.md-footnote a {
+  color: inherit !important;
+}
+sup.md-footnote:not(.md-expand) {
+  margin-inline: -0.44em;
+}
+sup.md-footnote:not(.md-expand):before {
+  content: "［";
+}
+sup.md-footnote:not(.md-expand):after {
+  content: "］";
+}
+
+/* 无序列表 */
+#write ul {
+  list-style: disc;
+}
+#write ul ul {
+  /*list-style: circle;*/
+  /* 请勿删除“–”后的空格, 他们对缩进有一定影响, 下同 */
+  list-style: "–   ";
+}
+#write ul ul ul {
+  list-style: "◦  ";
+}
+
+/* 有序列表 */
+#write ol {
+  list-style: decimal;
+}
+#write ol ol {
+  counter-reset: liist;
+  list-style: none;
+}
+#write ol ol > li {
+  counter-increment: liist;
+  position: relative;
+}
+#write ol ol > li::before {
+  content: "(" counter(liist, lower-alpha) ")";
+  position: absolute;
+  left: -1.8em;
+}
+#write ol ol ol {
+  counter-reset: liiist;
+  list-style: none;
+}
+#write ol ol ol > li {
+  counter-increment: liiist;
+  position: relative;
+}
+#write ol ol ol > li::before {
+  content: counter(liiist, lower-roman) ".";
+  align-self: flex-end;
+  position: absolute;
+  left: -4.5em;
+  /* -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;*/
+  /* 为了让项目编号是重新用句点对齐而不是左对齐 */
+  width: 4em;
+  text-align: right;
+}
+
+#write ol,
+#write ul {
+  padding-inline-start: 2em;
+  margin-block: 0;
+}
+
+#write li {
+  position: relative;
+  margin-block: 0.2em;
+}
+#write li > p {
+  margin-block: 0;
+}
+
+/* task列表 */
+.md-task-list-item > input {
+  margin-top: 0.42em;
+  margin-left: -1.5em;
+  width: 1em !important;
+  height: 1em !important;
+}
+
+#write table {
+  /* 三线表第一条线宽度 */
+  border-top: 1.2pt solid;
+  /* 三线表第二条线宽度 */
+  border-bottom: 1.2pt solid;
+  font-family: var(--table-font), var(--base-latin-font), var(--base-chinese-font), serif;
+  /* font-size: var(--base-font-size); */
+  text-align: center;
+  break-inside: avoid-page;
+  border-spacing: 6px;
+  /* 自动布局表格宽度，如果有时内容太紧建议直接加空格吧，我自己看不惯和页面等宽的大表格 */
+  width: auto;
+  /* 使表格默认居中；虽然这个代码不好，但好像没别的实现办法 */
+  margin: 0 auto;
+}
+#write table td {
+  padding: 2px;
+}
+#write table tr {
+  padding: 2px;
+}
+#write th {
+  padding: 0px 6px;
+}
+#write thead {
+  /* 表格标题（首行）样式 */
+  /* 三线表表头的线 */
+  border-bottom: 0.5pt solid;
+  font-family: var(--table-title-font), var(--heading-latin-font), var(--heading-chinese-font), serif !important;
+  /* font-size: var(--base-font-size); */
+  font-weight: var(--strong-weight);
+}
+
+blockquote {
+  font-style: normal;
+  font-family: var(--quote-latin-font), var(--quote-chinese-font), var(--base-latin-font), var(--base-chinese-font), -apple-system, serif;
+  font-size: var(--quote-font-size);
+  /* 左侧边框  */
+  border-left: calc(var(--blockquote-border-enabled) * 4px) solid var(--blockquote-border-color);
+  /* 文字离左边框的距离 */
+  padding-left: calc(2em - var(--blockquote-border-enabled) * 4px);
+  padding-right: 2em;
+  /* 左边框离页面边的距离 */
+  margin-left: 0;
+}
+
+blockquote blockquote {
+  font-size: inherit;
+  padding-right: 0;
+}
+
+/* 行内代码 */
+code {
+  font-family: var(--code-font), var(--ui-font), monospace;
+}
+
+h1 code, h2 code, h3 code, h4 code, h5 code, h6 code,
+p code,
+li code {
+  color: rgb(60, 112, 198);
+  background-color: #fefefe;
+  /* 阴影 */
+  box-shadow: 0 0 1px 1px #c8d3df;
+  font-family: var(--code-font), var(--ui-font), monospace;
+  box-sizing: border-box;
+  border-right: 0px;
+  margin: 0 2px 0 2px;
+  padding: 0 2px 0 2px;
+  /* 圆角 */
+  border-radius: 2px 2px 2px 2px;
+}
+
+/* 代码块样式 */
+.md-fences,
+.CodeMirror pre,
+.CodeMirror-wrap {
+  /* padding: 10px; */
+  font-size: 1em;
+}
+
+.CodeMirror-code pre,
+.CodeMirror-sizer {
+  font-family: var(--code-font), var(--ui-font), monospace;
+}
+
+/* 目录 */
+.md-toc {
+  font-size: var(--toc-font-size);
+}
+
+.md-toc-content {
+  margin-left: 2em;
+  /* 修复缺失上级标题时无法递增 */
+  counter-reset: toc-h2 toc-h3 toc-h4 toc-h5 toc-h6;
+  break-after: page;
+}
+
+.md-toc-inner {
+  margin-left: 0 !important;
+  color: var(--text-color) !important;
+}
+
+.md-toc-item {
+  color: var(--text-color) !important;
+}
+
+/* 目录标题内容属性 */
+.md-toc-h2,
+.md-toc-h3,
+.md-toc-h4,
+.md-toc-h5,
+.md-toc-h6 {
+  font-size: var(--toc-font-size);
+  font-family: var(--toc-font), var(--base-latin-font), var(--base-chinese-font), serif;
+}
+
+.md-toc-h2 {
+  font-weight: var(--strong-weight);
+}
+
+/* 目录标题前 */
+.md-toc-content .md-toc-h1 {
+  display: var(--toc-show-title);
+  counter-reset: toc-h2 toc-h3 toc-h4 toc-h5 toc-h6;
+}
+.md-toc-content .md-toc-h2 {
+  counter-reset: toc-h3 toc-h4 toc-h5 toc-h6;
+}
+.md-toc-content .md-toc-h3 {
+  counter-reset: toc-h4 toc-h5 toc-h6;
+}
+.md-toc-content .md-toc-h4 {
+  counter-reset: toc-h5 toc-h6;
+}
+.md-toc-content .md-toc-h5 {
+  counter-reset: toc-h6;
+}
+@supports (counter-set: none) {
+  .md-toc-content .md-toc-h1 {
+    counter-set: toc-h2 0 toc-h3 0 toc-h4 0 toc-h5 0 toc-h6 0;
+    counter-reset: none;
+  }
+  .md-toc-content .md-toc-h2 {
+    counter-set: toc-h3 0 toc-h4 0 toc-h5 0 toc-h6 0;
+    counter-reset: none;
+  }
+  .md-toc-content .md-toc-h3 {
+    counter-set: toc-h4 0 toc-h5 0 toc-h6 0;
+    counter-reset: none;
+  }
+  .md-toc-content .md-toc-h4 {
+    counter-set: toc-h5 0 toc-h6 0;
+    counter-reset: none;
+  }
+  .md-toc-content .md-toc-h5 {
+    counter-set: toc-h6 0;
+    counter-reset: none-h6;
+  }
+}
+.md-toc-content .md-toc-h2:before {
+  counter-increment: toc-h2;
+  content: counter(toc-h2);
+  margin-right: 1em;
+  font-weight: var(--strong-weight);
+}
+.md-toc-content .md-toc-h3:before {
+  counter-increment: toc-h3;
+  content: counter(toc-h2) "." counter(toc-h3);
+  margin-left: 1.5em;
+  margin-right: 0.5em;
+}
+.md-toc-content .md-toc-h4:before {
+  counter-increment: toc-h4;
+  content: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4);
+  margin-left: 3.5em;
+  margin-right: 0.5em;
+}
+.md-toc-content .md-toc-h5:before {
+  counter-increment: toc-h5;
+  content: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5);
+  margin-left: 5.5em;
+  margin-right: 0.5em;
+}
+.md-toc-content .md-toc-h6:before {
+  counter-increment: toc-h6;
+  content: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) "." counter(toc-h6);
+  margin-left: 7.5em;
+  margin-right: 0.5em;
+}

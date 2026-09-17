@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Eye, Clock, Share2, Check, BookOpen, Home, RefreshCw } from 'lucide-react';
 import { marked } from 'marked';
-import '../latex.css';
+import '../assets/latex.css';
 
 interface Article {
   id: number;
