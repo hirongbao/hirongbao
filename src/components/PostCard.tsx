@@ -216,15 +216,15 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
 
           {/* Actions */}
           <div className="mt-auto pt-6 border-t border-zinc-100 mb-6 w-full"></div>
-          <div className="flex justify-between items-center flex-wrap gap-4">
-            <div className="flex space-x-6">
+          <div className="flex justify-between items-center flex-wrap gap-y-4 gap-x-2">
+            <div className="flex items-center gap-3 sm:gap-4">
               <div 
                 onClick={handleLike}
-                className="group flex items-center space-x-3 cursor-pointer"
+                className="group flex items-center space-x-2 cursor-pointer"
               >
                 <motion.div 
                   whileTap={{ scale: 0.9 }}
-                  className={`w-10 h-10 rounded-full border border-zinc-100 flex items-center justify-center transition-all ${isLiked ? 'bg-zinc-900 text-white' : 'group-hover:bg-zinc-900 group-hover:text-white text-zinc-900'}`}
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-zinc-100 flex items-center justify-center transition-all ${isLiked ? 'bg-zinc-900 text-white' : 'group-hover:bg-zinc-900 group-hover:text-white text-zinc-900'}`}
                 >
                   <Heart size={16} className={isLiked ? "fill-current" : ""} />
                 </motion.div>
@@ -233,7 +233,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
               
               <div 
                 onClick={onClick}
-                className="group flex items-center space-x-3 cursor-pointer"
+                className="group flex items-center space-x-2 cursor-pointer"
               >
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-zinc-100 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white text-zinc-900 transition-all shadow-xs">
                   <MessageCircle size={16} />
@@ -243,12 +243,11 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
 
               <div 
                 onClick={handleShare}
-                className="group flex items-center space-x-3 cursor-pointer"
+                className="group flex items-center space-x-2 cursor-pointer"
               >
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-zinc-100 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white text-zinc-900 transition-all">
                   {isSharing ? <Loader2 size={16} className="animate-spin" /> : <Share size={16} />}
                 </div>
-                <span className="text-xs font-bold font-mono text-zinc-700 hidden sm:inline-block">Share</span>
               </div>
             </div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
