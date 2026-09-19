@@ -1,6 +1,7 @@
 export interface Category {
   id: string | number;
   name: string;
+  children?: Category[];
 }
 
 export interface Comment {

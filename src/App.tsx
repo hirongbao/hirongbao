@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Menu, X, AlertTriangle, RefreshCw, ChevronDown } from 'lucide-react';
 import { Profile } from './components/Profile';
 import { PostCard } from './components/PostCard';
 import { SubscribeModal } from './components/SubscribeModal';
@@ -18,6 +18,14 @@ const MOCK_CATEGORIES: Category[] = [
   { id: 'food', name: '美食' },
   { id: 'scenery', name: '风景' },
   { id: 'notes', name: '随笔' },
+  {
+    id: 'sports',
+    name: '运动',
+    children: [
+      { id: 'football', name: '足球' },
+      { id: 'running', name: '跑步' }
+    ]
+  },
 ];
 
 // 后端动态原始数据映射为展示模型（时间转相对时间、id 转字符串）
@@ -200,7 +208,9 @@ export default function App() {
     const fetchCategoryPosts = async () => {
       setIsFetchingPosts(true);
       try {
-        const query = selectedCategoryId === 'all' ? '' : `&category=${selectedCategoryId}`;
+        const parentCat = categories.find(c => c.id === selectedCategoryId);
+        const catParam = parentCat?.children ? parentCat.children.map(c => c.id).join(',') : selectedCategoryId;
+        const query = selectedCategoryId === 'all' ? '' : `&category=${catParam}`;
         const res = await fetch(`/api/posts/page?page=1&size=12${query}`);
         if (res.ok) {
           const contentType = res.headers.get("content-type");
@@ -234,7 +244,9 @@ export default function App() {
       if (!entries[0].isIntersecting) return;
       const nextPage = (pageByCategory[selectedCategoryId] || 1) + 1;
       setIsFetchingPosts(true);
-      const query = selectedCategoryId === 'all' ? '' : `&category=${selectedCategoryId}`;
+      const parentCat = categories.find(c => c.id === selectedCategoryId);
+      const catParam = parentCat?.children ? parentCat.children.map(c => c.id).join(',') : selectedCategoryId;
+      const query = selectedCategoryId === 'all' ? '' : `&category=${catParam}`;
       fetch(`/api/posts/page?page=${nextPage}&size=12${query}`)
         .then(res => res.json() as Promise<ApiResponse<PostPageData>>)
         .then(env => {
@@ -349,20 +361,60 @@ export default function App() {
               <ReleaseLogSection releaseLogs={releaseLogs} />
             ) : <>
             {/* 分类筛选器 */}
-            <div className="flex gap-4 overflow-x-auto pb-4 mb-4 px-2 -mx-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              {categories.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategoryId(cat.id)}
-                  className={`px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 border ${
-                    selectedCategoryId === cat.id 
-                      ? 'bg-zinc-900 text-white border-zinc-900 shadow-md scale-105' 
-                      : 'bg-white text-zinc-600 hover:bg-zinc-100 border-zinc-200/60'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
+            <div className="flex flex-col gap-3 pb-4 mb-4 px-2 -mx-2">
+              <div className="flex gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                {categories.map(cat => {
+                  const isActive = selectedCategoryId === cat.id || cat.children?.some(c => c.id === selectedCategoryId);
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategoryId(cat.id)}
+                      className={`px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 border ${
+                        isActive
+                          ? 'bg-zinc-900 text-white border-zinc-900 shadow-md scale-105'
+                          : 'bg-white text-zinc-600 hover:bg-zinc-100 border-zinc-200/60'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {/* 子分类列表（仅当当前大类有子分类且处于激活状态时显示） */}
+              {(() => {
+                const activeParent = categories.find(c => c.id === selectedCategoryId || c.children?.some(child => child.id === selectedCategoryId));
+                if (activeParent?.children) {
+                  return (
+                    <div className="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pl-2 py-1">
+                      <button
+                        onClick={() => setSelectedCategoryId(activeParent.id)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                          selectedCategoryId === activeParent.id
+                            ? 'bg-zinc-200 text-zinc-900'
+                            : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100'
+                        }`}
+                      >
+                        全部
+                      </button>
+                      {activeParent.children.map(child => (
+                        <button
+                          key={child.id}
+                          onClick={() => setSelectedCategoryId(child.id)}
+                          className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                            selectedCategoryId === child.id
+                              ? 'bg-zinc-200 text-zinc-900'
+                              : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100'
+                          }`}
+                        >
+                          {child.name}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
 
             {currentPosts.length === 0 && !isFetchingPosts ? (
