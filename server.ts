@@ -39,6 +39,10 @@ async function startServer() {
         "X-Real-IP": resolveClientIp(req),
         "X-Forwarded-For": resolveClientIp(req),
       };
+      const sitePwd = req.header("X-Site-Password");
+      if (sitePwd) {
+        headers["X-Site-Password"] = sitePwd;
+      }
       if (req.method !== "GET") headers["Content-Type"] = "application/json";
       const backendRes = await fetch(`${BACKEND_URL}${backendPath}`, {
         method: req.method,
