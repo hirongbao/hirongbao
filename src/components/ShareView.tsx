@@ -120,8 +120,8 @@ export function ShareView({ postId }: ShareViewProps) {
             </p>
           )}
           {!post.media.length && post.content && (
-            <p className="whitespace-pre-wrap text-4xl font-serif leading-[1.3] italic text-[#27272a] mb-12">
-              "{post.content}"
+            <p className={`whitespace-pre-wrap font-serif leading-[1.5] italic text-[#27272a] mb-12 ${post.content.length > 200 ? 'text-2xl' : post.content.length > 80 ? 'text-3xl' : 'text-4xl'}`}>
+              {post.content}
             </p>
           )}
         </div>

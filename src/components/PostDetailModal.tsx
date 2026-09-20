@@ -178,10 +178,12 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                     <PostMedia media={post.media} mode="detail" />
                   </div>
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-950 p-12 text-center">
-                    <p className="whitespace-pre-wrap text-3xl lg:text-5xl font-serif leading-[1.3] italic text-zinc-100">
-                      "{post.content}"
+                  <div className="w-full h-full overflow-y-auto bg-zinc-950 px-8 py-12 lg:px-16 flex flex-col hide-scrollbar">
+                    <div className="flex-1 min-h-0 shrink-0"></div>
+                    <p className={`whitespace-pre-wrap font-serif leading-[1.6] italic text-zinc-100 text-center w-full py-4 shrink-0 ${post.content.length > 200 ? 'text-lg lg:text-xl' : post.content.length > 80 ? 'text-xl lg:text-2xl' : 'text-3xl lg:text-4xl'}`}>
+                      {post.content}
                     </p>
+                    <div className="flex-1 min-h-0 shrink-0"></div>
                   </div>
                 )}
               </div>

@@ -203,8 +203,8 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
               </p>
             )}
             {post.content && !post.media.length && (
-              <p className="whitespace-pre-wrap text-3xl lg:text-4xl font-serif leading-[1.2] italic text-zinc-800 mb-8">
-                "{post.content}"
+              <p className={`whitespace-pre-wrap font-serif leading-[1.4] italic text-zinc-800 mb-8 ${post.content.length > 200 ? 'text-lg lg:text-xl' : post.content.length > 80 ? 'text-2xl' : 'text-3xl lg:text-4xl'}`}>
+                {post.content}
               </p>
             )}
 
@@ -306,8 +306,8 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
                 </p>
               )}
               {!post.media.length && post.content && (
-                <p className="whitespace-pre-wrap text-4xl font-serif leading-[1.3] italic text-[#27272a] mb-12">
-                  "{post.content}"
+                <p className={`whitespace-pre-wrap font-serif leading-[1.5] italic text-[#27272a] mb-12 ${post.content.length > 200 ? 'text-2xl' : post.content.length > 80 ? 'text-3xl' : 'text-4xl'}`}>
+                  {post.content}
                 </p>
               )}
             </div>
