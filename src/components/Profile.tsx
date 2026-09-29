@@ -154,7 +154,7 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
             <div className={`h-[1px] flex-1 ${activeSection === 'releases' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
           </button>
           <div className="flex items-center space-x-4 group cursor-default opacity-30">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">03 / 历史归档</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">03 / 纪念日</span>
             <div className="h-[1px] flex-1 bg-zinc-200"></div>
           </div>
         </nav>
