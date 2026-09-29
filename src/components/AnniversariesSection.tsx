@@ -131,7 +131,7 @@ export function AnniversariesSection() {
               
               {/* Milestone Items */}
               <div className="space-y-8 pl-8">
-                {items.map((m, i) => {
+                {(items as Anniversary[]).map((m, i) => {
                   const Icon = m.icon && iconMap[m.icon] ? iconMap[m.icon] : Flag;
                   const d = new Date(m.date || m.eventDate);
                   const day = String(d.getDate()).padStart(2, '0');
