@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, Flag, Heart, Briefcase, Plane, Gift } from 'lucide-react';
 
 // === Mock Data Types ===
-type AnniversaryType = 'countdown' | 'countup' | 'milestone';
+type AnniversaryType = 'countdown' | 'countup' | 'milestone' | 'next_holiday';
 
 interface Anniversary {
   id: string;
@@ -36,9 +36,33 @@ export function AnniversariesSection() {
   useEffect(() => {
     fetch('/api/anniversaries')
       .then(res => res.json())
-      .then(res => {
+      .then(async res => {
         if (res.code === 0 && res.data) {
-          setData(res.data);
+          let fetchedData = res.data as Anniversary[];
+          
+          const nextHolidayWidget = fetchedData.find(d => d.type === 'next_holiday');
+          if (nextHolidayWidget) {
+            try {
+              const holidayRes = await fetch('https://date.nager.at/api/v3/NextPublicHolidays/CN');
+              const holidays = await holidayRes.json();
+              if (holidays && holidays.length > 0) {
+                nextHolidayWidget.title = holidays[0].localName;
+                nextHolidayWidget.eventDate = holidays[0].date;
+              }
+            } catch (err) {
+              console.error('Failed to fetch holiday:', err);
+            }
+          }
+
+          fetchedData = fetchedData.filter(d => {
+            if (d.type === 'next_holiday') {
+              if (!d.coverUrl) return false;
+              d.type = 'countdown'; 
+            }
+            return true;
+          });
+
+          setData(fetchedData);
         }
       })
       .finally(() => setLoading(false));
