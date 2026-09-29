@@ -8,7 +8,8 @@ type AnniversaryType = 'countdown' | 'countup' | 'milestone';
 interface Anniversary {
   id: string;
   title: string;
-  date: string; // YYYY-MM-DD
+  date?: string; // MOCK ONLY
+  eventDate?: string; // YYYY-MM-DD from API
   type: AnniversaryType;
   icon?: string;
   coverUrl?: string;
@@ -29,19 +30,28 @@ const iconMap: Record<string, React.ElementType> = {
 
 export function AnniversariesSection() {
   const [now, setNow] = useState(new Date());
+  const [data, setData] = useState<Anniversary[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000 * 60 * 60); // Update every hour
+    fetch('/api/anniversaries')
+      .then(res => res.json())
+      .then(res => {
+        if (res.code === 0 && res.data) {
+          setData(res.data);
+        }
+      })
+      .finally(() => setLoading(false));
+
+    const timer = setInterval(() => setNow(new Date()), 1000 * 60 * 60);
     return () => clearInterval(timer);
   }, []);
 
-  // Split into widgets (countdown/countup) and timeline (milestone)
-  const widgets = MOCK_DATA.filter(d => d.type !== 'milestone');
-  const milestones = MOCK_DATA.filter(d => d.type === 'milestone').sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const widgets = data.filter(d => d.type !== 'milestone');
+  const milestones = data.filter(d => d.type === 'milestone').sort((a, b) => new Date(b.date || b.eventDate).getTime() - new Date(a.date || a.eventDate).getTime());
 
-  // Group milestones by Year/Month
   const groupedMilestones = milestones.reduce((acc, curr) => {
-    const d = new Date(curr.date);
+    const d = new Date(curr.date || curr.eventDate);
     const key = `${d.getFullYear()} / ${String(d.getMonth() + 1).padStart(2, '0')}`;
     if (!acc[key]) acc[key] = [];
     acc[key].push(curr);
@@ -55,12 +65,16 @@ export function AnniversariesSection() {
     return Math.abs(Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
+  if (loading) {
+    return <div className="text-center py-20 text-zinc-400 text-sm">加载中...</div>;
+  }
+
   return (
     <div className="space-y-16 animate-in fade-in duration-700">
       {/* 1. Bento Box Widgets */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {widgets.map((w, index) => {
-          const days = calculateDays(w.date);
+          const days = calculateDays(w.date || w.eventDate);
           const isCountdown = w.type === 'countdown';
           const Icon = w.icon && iconMap[w.icon] ? iconMap[w.icon] : Calendar;
           
@@ -119,7 +133,7 @@ export function AnniversariesSection() {
               <div className="space-y-8 pl-8">
                 {items.map((m, i) => {
                   const Icon = m.icon && iconMap[m.icon] ? iconMap[m.icon] : Flag;
-                  const d = new Date(m.date);
+                  const d = new Date(m.date || m.eventDate);
                   const day = String(d.getDate()).padStart(2, '0');
                   
                   return (

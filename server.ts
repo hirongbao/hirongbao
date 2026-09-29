@@ -115,6 +115,9 @@ async function startServer() {
   app.get("/api/health/ip", (req, res) => backendProxy(req, res, "/api/health/ip"));
 
 
+  // 9. Anniversaries
+  app.get("/api/anniversaries", (req, res) => backendProxy(req, res, "/api/hirongbaohub/anniversaries"));
+
   // API Route for proxying images to bypass CORS
   app.get("/api/proxy-image", (req, res) => {
     const imageUrl = req.query.url as string;
