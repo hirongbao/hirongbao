@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, Flag, Heart, Briefcase, Plane, Gift } from 'lucide-react';
 
 // === Mock Data Types ===
-type AnniversaryType = 'countdown' | 'countup' | 'milestone' | 'next_holiday';
+type AnniversaryType = 'countdown' | 'countup' | 'milestone' | 'next_holiday' | 'annual';
 
 interface Anniversary {
   id: string;
@@ -82,10 +82,19 @@ export function AnniversariesSection() {
     return acc;
   }, {} as Record<string, Anniversary[]>);
 
-  const calculateDays = (targetDate: string) => {
-    const target = new Date(targetDate).getTime();
-    const current = now.getTime();
-    const diff = target - current;
+  const calculateDays = (targetDate: string, type?: AnniversaryType) => {
+    const target = new Date(targetDate);
+    const current = now;
+    
+    if (type === 'annual') {
+      target.setFullYear(current.getFullYear());
+      // If the date has passed this year, look at next year
+      if (target.getTime() < current.getTime() - 1000 * 60 * 60 * 24) {
+        target.setFullYear(current.getFullYear() + 1);
+      }
+    }
+    
+    const diff = target.getTime() - current.getTime();
     return Math.abs(Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
@@ -98,8 +107,8 @@ export function AnniversariesSection() {
       {/* 1. Bento Box Widgets */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {widgets.map((w, index) => {
-          const days = calculateDays(w.date || w.eventDate);
-          const isCountdown = w.type === 'countdown';
+          const days = calculateDays((w.date || w.eventDate) as string, w.type);
+          const isCountdown = w.type === 'countdown' || w.type === 'annual';
           const Icon = w.icon && iconMap[w.icon] ? iconMap[w.icon] : Calendar;
           
           return (
@@ -123,7 +132,7 @@ export function AnniversariesSection() {
                     <Icon size={18} />
                   </div>
                   <span className={`text-xs font-bold uppercase tracking-widest ${w.coverUrl ? 'text-white/80' : 'text-zinc-400'}`}>
-                    {isCountdown ? '倒数 / COUNTDOWN' : '正数 / COUNTUP'}
+                    {w.type === 'annual' ? '每年重复 / ANNUAL' : isCountdown ? '倒数 / COUNTDOWN' : '正数 / COUNTUP'}
                   </span>
                 </div>
                 
