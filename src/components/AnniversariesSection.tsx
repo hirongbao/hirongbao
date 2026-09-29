@@ -36,32 +36,15 @@ export function AnniversariesSection() {
   useEffect(() => {
     fetch('/api/anniversaries')
       .then(res => res.json())
-      .then(async res => {
+      .then(res => {
         if (res.code === 0 && res.data) {
-          let fetchedData = res.data as Anniversary[];
-          
-          const nextHolidayWidget = fetchedData.find(d => d.type === 'next_holiday');
-          if (nextHolidayWidget) {
-            try {
-              const holidayRes = await fetch('https://date.nager.at/api/v3/NextPublicHolidays/CN');
-              const holidays = await holidayRes.json();
-              if (holidays && holidays.length > 0) {
-                nextHolidayWidget.title = holidays[0].localName;
-                nextHolidayWidget.eventDate = holidays[0].date;
-              }
-            } catch (err) {
-              console.error('Failed to fetch holiday:', err);
-            }
-          }
-
-          fetchedData = fetchedData.filter(d => {
+          const fetchedData = (res.data as Anniversary[]).filter(d => {
             if (d.type === 'next_holiday') {
               if (!d.coverUrl) return false;
               d.type = 'countdown'; 
             }
             return true;
           });
-
           setData(fetchedData);
         }
       })
