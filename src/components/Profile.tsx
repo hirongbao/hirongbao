@@ -16,8 +16,8 @@ const IconMap: Record<string, React.ElementType> = {
 interface ProfileProps {
   profile: ProfileData;
   onSubscribe: () => void;
-  activeSection: 'feed' | 'releases';
-  onSectionChange: (section: 'feed' | 'releases') => void;
+  activeSection: 'feed' | 'releases' | 'anniversaries';
+  onSectionChange: (section: 'feed' | 'releases' | 'anniversaries') => void;
 }
 
 export function Profile({ profile, onSubscribe, activeSection, onSectionChange }: ProfileProps) {
@@ -153,10 +153,10 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
             <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'releases' ? 'text-zinc-900' : 'text-zinc-400'}`}>02 / 更新日志</span>
             <div className={`h-[1px] flex-1 ${activeSection === 'releases' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
           </button>
-          <div className="flex items-center space-x-4 group cursor-default opacity-30">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">03 / 纪念日</span>
-            <div className="h-[1px] flex-1 bg-zinc-200"></div>
-          </div>
+          <button type="button" onClick={() => onSectionChange('anniversaries')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'anniversaries' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'anniversaries' ? 'text-zinc-900' : 'text-zinc-400'}`}>03 / 纪念日</span>
+            <div className={`h-[1px] flex-1 ${activeSection === 'anniversaries' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+          </button>
         </nav>
       </div>
 

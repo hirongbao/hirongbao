@@ -11,6 +11,7 @@ import { formatRelativeTime } from './utils/time';
 import { SkeletonCard } from './components/SkeletonCard';
 import { ProfileSkeleton } from './components/ProfileSkeleton';
 import { ReleaseLogSection } from './components/ReleaseLogSection';
+import { AnniversariesSection } from './components/AnniversariesSection';
 
 // 模拟分类数据（后端接入时可以从接口读取）
 const MOCK_CATEGORIES: Category[] = [
@@ -74,7 +75,7 @@ export default function App() {
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [unsubscribeData, setUnsubscribeData] = useState<{email: string, token: string} | null>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [activeSection, setActiveSection] = useState<'feed' | 'releases'>('feed');
+  const [activeSection, setActiveSection] = useState<'feed' | 'releases' | 'anniversaries'>('feed');
   const [releaseLogs, setReleaseLogs] = useState<ReleaseLog[]>([]);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -100,7 +101,7 @@ export default function App() {
     const categoryName = categories.find(category => category.id === selectedCategoryId)?.name;
     document.title = categoryName && categoryName !== '全部'
       ? `${categoryName} · ${siteName}`
-      : activeSection === 'releases' ? `更新日志 · ${siteName}` : `动态 · ${siteName}`;
+      : activeSection === 'releases' ? `更新日志 · ${siteName}` : activeSection === 'anniversaries' ? `纪念日 · ${siteName}` : `动态 · ${siteName}`;
   }, [profile?.name, categories, selectedCategoryId, activeSection]);
 
   useEffect(() => {
@@ -354,11 +355,13 @@ export default function App() {
                 >
                   <Menu size={20} />
                 </button>
-                <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">{activeSection === 'releases' ? '更新日志 / CHANGELOG' : '信息流 / 动态'}</h2>
+                <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">{activeSection === 'releases' ? '更新日志 / CHANGELOG' : activeSection === 'anniversaries' ? '纪念日 / ANNIVERSARIES' : '信息流 / 动态'}</h2>
               </div>
             </motion.div>
             {activeSection === 'releases' ? (
               <ReleaseLogSection releaseLogs={releaseLogs} />
+            ) : activeSection === 'anniversaries' ? (
+              <AnniversariesSection />
             ) : <>
             {/* 分类筛选器 */}
             <div className="flex flex-col gap-3 pb-4 mb-4 px-2 -mx-2">
