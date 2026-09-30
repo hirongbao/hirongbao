@@ -125,7 +125,27 @@ export function ReleaseLogSection({ releaseLogs }: ReleaseLogSectionProps) {
           animate={{ opacity: 1, y: 0 }}
           className="rounded-[3rem] bg-white border border-zinc-100 shadow-xl shadow-zinc-200/40 p-16 text-center max-w-2xl mx-auto mt-12"
         >
-          <img src="/hirongbao.svg" alt="暂无更新" className="mx-auto mb-8 h-40 object-contain opacity-80" />
+          <div className="w-40 h-40 mx-auto mb-8 relative flex items-center justify-center">
+            <svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full overflow-visible">
+              <defs>
+                <filter id="glow-heavy-rl" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="16" result="blur" />
+                </filter>
+                <filter id="glow-light-rl" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="8" result="blur" />
+                </filter>
+              </defs>
+              <circle cx="80" cy="70" r="36" fill="#e0e7ff" filter="url(#glow-heavy-rl)" className="animate-float" />
+              <circle cx="100" cy="100" r="24" fill="#fce7f3" filter="url(#glow-light-rl)" className="animate-float-delayed" />
+              <circle cx="50" cy="90" r="20" fill="#ccfbf1" filter="url(#glow-light-rl)" style={{ animationDelay: '1.5s' }} className="animate-float" />
+              <rect x="35" y="45" width="70" height="50" rx="12" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4 4" fill="none" opacity="0.6" />
+              <rect x="55" y="65" width="70" height="50" rx="12" fill="white" fillOpacity="0.5" stroke="#cbd5e1" strokeWidth="1.5" className="animate-float" style={{ animationDuration: '8s' }} />
+              <line x1="70" y1="85" x2="95" y2="85" stroke="#64748b" strokeWidth="2" strokeLinecap="round" className="animate-float" style={{ animationDuration: '8s' }} />
+              <line x1="70" y1="95" x2="110" y2="95" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" className="animate-float" style={{ animationDuration: '8s' }} />
+              <circle cx="130" cy="50" r="3" fill="#cbd5e1" className="animate-float-delayed" />
+              <path d="M30 110 L35 115 L30 120 L25 115 Z" fill="#e2e8f0" className="animate-float" style={{ animationDelay: '2s' }} />
+            </svg>
+          </div>
           <h4 className="text-2xl font-serif text-zinc-900 mb-3">暂无更新记录</h4>
           <p className="text-zinc-500 leading-relaxed font-light">
             每一次功能的进化与体验的重塑，都将在这里被刻录。
