@@ -28,6 +28,9 @@ export interface Post {
   likeCount: number;
   comments: Comment[];
   category?: Category | null;
+  accountName?: string;
+  nickname?: string;
+  avatarUrl?: string;
 }
 
 export interface SocialLink {
@@ -103,4 +106,7 @@ export interface RawPost {
   categoryId?: string | null;
   categoryName?: string | null;
   category?: { id: number | string; name: string } | null;
+  accountName?: string;
+  nickname?: string;
+  avatarUrl?: string;
 }

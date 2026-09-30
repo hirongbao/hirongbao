@@ -25,6 +25,7 @@ export default function ProfileEditModal({ isOpen, onClose, onSuccess, initialPr
   // Basic info state
   const [avatarUrl, setAvatarUrl] = useState(initialProfile?.avatarUrl || '');
   const [bio, setBio] = useState(initialProfile?.bio === '这个人很懒，什么都没写~' ? '' : initialProfile?.bio || '');
+  const [nickname, setNickname] = useState(initialProfile?.name || '');
   const [socials, setSocials] = useState<any[]>(initialProfile?.socials || []);
   
   // Anniversaries state
@@ -73,7 +74,7 @@ export default function ProfileEditModal({ isOpen, onClose, onSuccess, initialPr
       await authRequest('/api/profile/user/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ avatarUrl, bio, socials })
+        body: JSON.stringify({ avatarUrl, bio, nickname, socials })
       });
       
       const user = getUserInfo();
@@ -240,6 +241,17 @@ export default function ProfileEditModal({ isOpen, onClose, onSuccess, initialPr
                         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleFileUpload} />
                       </div>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">显示昵称</label>
+                    <input
+                      value={nickname}
+                      onChange={e => setNickname(e.target.value)}
+                      placeholder="你的昵称（选填）"
+                      className="w-full bg-zinc-50/80 border border-zinc-200/80 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 focus:border-zinc-900 text-sm transition-all mb-6"
+                      maxLength={20}
+                    />
                   </div>
 
                   <div>

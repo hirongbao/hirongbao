@@ -44,7 +44,10 @@ const mapPost = (p: RawPost): Post => {
     createdAt: formatRelativeTime(p.createdAt),
     likeCount: p.likeCount || 0,
     category: cat,
-    comments: mapComments(p.comments || [])
+    comments: mapComments(p.comments || []),
+    accountName: p.accountName,
+    nickname: p.nickname,
+    avatarUrl: p.avatarUrl
   };
 };
 
@@ -84,6 +87,10 @@ export default function App() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  
+  const [squarePosts, setSquarePosts] = useState<Post[]>([]);
+  const [squarePage, setSquarePage] = useState<number>(1);
+  const [hasMoreSquare, setHasMoreSquare] = useState<boolean>(true);
       
   const [isFetchingPosts, setIsFetchingPosts] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -94,11 +101,11 @@ export default function App() {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // 获取当前选中的帖子列表
-  const currentPosts = posts;
+  const currentPosts = activeSection === 'square' ? squarePosts : posts;
 
   useEffect(() => {
     const siteName = profile?.name || 'hirongbao';
-    document.title = activeSection === 'releases' ? `更新日志 · ${siteName}` : activeSection === 'anniversaries' ? `纪念日 · ${siteName}` : `动态 · ${siteName}`;
+    document.title = activeSection === 'releases' ? `更新日志 · ${siteName}` : activeSection === 'anniversaries' ? `纪念日 · ${siteName}` : activeSection === 'square' ? `动态广场 · ${siteName}` : `动态 · ${siteName}`;
   }, [profile?.name, activeSection]);
 
   useEffect(() => {
@@ -211,39 +218,71 @@ export default function App() {
     fetchData();
   }, [retryCount]);
 
+  useEffect(() => {
+    if (activeSection === 'square' && squarePosts.length === 0 && hasMoreSquare && !isFetchingPosts) {
+      setIsFetchingPosts(true);
+      fetch('/api/posts/square?page=1&size=12')
+        .then(res => res.json())
+        .then(env => {
+          if (env.code === 0 && env.data) {
+            setSquarePosts(env.data.posts.map(mapPost));
+            setHasMoreSquare(env.data.hasMore !== false);
+          }
+        })
+        .finally(() => setIsFetchingPosts(false));
+    }
+  }, [activeSection, squarePosts.length, hasMoreSquare, isFetchingPosts]);
+
   // 滚动到列表底部时自动加载下一页
   useEffect(() => {
     const target = loadMoreRef.current;
-    if (!target || loading || isFetchingPosts || !hasMore) return;
+    const isSquare = activeSection === 'square';
+    const currentHasMore = isSquare ? hasMoreSquare : hasMore;
+    const currentPage = isSquare ? squarePage : page;
+
+    if (!target || loading || isFetchingPosts || !currentHasMore) return;
     const observer = new IntersectionObserver(entries => {
       if (!entries[0].isIntersecting) return;
-      const nextPage = page + 1;
+      const nextPage = currentPage + 1;
       setIsFetchingPosts(true);
-      const endpoint = targetAccount ? `/api/posts/ugc/user/${targetAccount}?page=${nextPage}&size=12` : `/api/posts/page?page=${nextPage}&size=12`;
+      const endpoint = isSquare
+        ? `/api/posts/square?page=${nextPage}&size=12`
+        : targetAccount 
+          ? `/api/posts/ugc/user/${targetAccount}?page=${nextPage}&size=12` 
+          : `/api/posts/page?page=${nextPage}&size=12`;
       fetch(endpoint)
         .then(res => res.json())
         .then(env => {
           if (env.code !== 0 || !env.data) {
-            setHasMore(false);
+            if (isSquare) setHasMoreSquare(false);
+            else setHasMore(false);
             return;
           }
           const data = env.data;
           const items = data.items || data.records || [];
           const newPage = data.page || data.current || 1;
           const newHasMore = data.hasMore !== undefined ? data.hasMore : (newPage * (data.size || 12) < (data.total || 0));
-          setPosts(prev => [...prev, ...items.map((p: any) => mapPost(p))]);
-          setPage(newPage);
-          setHasMore(newHasMore);
+          
+          if (isSquare) {
+            setSquarePosts(prev => [...prev, ...items.map((p: any) => mapPost(p))]);
+            setSquarePage(newPage);
+            setHasMoreSquare(newHasMore);
+          } else {
+            setPosts(prev => [...prev, ...items.map((p: any) => mapPost(p))]);
+            setPage(newPage);
+            setHasMore(newHasMore);
+          }
         })
         .catch(error => {
           console.error('Failed to load more posts:', error);
-          setHasMore(false);
+          if (isSquare) setHasMoreSquare(false);
+          else setHasMore(false);
         })
         .finally(() => setIsFetchingPosts(false));
     }, { rootMargin: '600px 0px' });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [loading, isFetchingPosts, hasMore, page]);
+  }, [loading, isFetchingPosts, hasMore, hasMoreSquare, page, squarePage, targetAccount, activeSection]);
 
   if (loading) {
     return (
@@ -338,7 +377,7 @@ export default function App() {
                   <Menu size={20} />
                 </button>
                 <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">
-                  {activeSection === 'releases' ? '更新日志 / CHANGELOG' : activeSection === 'anniversaries' ? '纪念日 / ANNIVERSARIES' : activeSection === 'guestbook' ? '留言板 / GUESTBOOK' : '信息流 / 动态'}
+                  {activeSection === 'releases' ? '更新日志 / CHANGELOG' : activeSection === 'anniversaries' ? '纪念日 / ANNIVERSARIES' : activeSection === 'guestbook' ? '留言板 / GUESTBOOK' : activeSection === 'square' ? '动态广场 / SQUARE' : '信息流 / 动态'}
                 </h2>
               </div>
               <div>
@@ -445,8 +484,8 @@ export default function App() {
                           >
                             <PostCard 
                               post={post} 
-                              authorName={profile.name} 
-                              authorAvatar={profile.avatarUrl} 
+                              authorName={post.nickname || post.accountName || profile.name} 
+                              authorAvatar={post.avatarUrl || profile.avatarUrl} 
                               onClick={() => setSelectedPost(post)}
                             />
                           </motion.div>

@@ -168,10 +168,16 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange, 
             <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
           </button>
           {isMainSite && (
-            <button type="button" onClick={() => onSectionChange('releases')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'releases' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'releases' ? 'text-zinc-900' : 'text-zinc-400'}`}>02 / 更新日志</span>
-              <div className={`h-[1px] flex-1 ${activeSection === 'releases' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
-            </button>
+            <>
+              <button type="button" onClick={() => onSectionChange('releases')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'releases' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'releases' ? 'text-zinc-900' : 'text-zinc-400'}`}>02 / 更新日志</span>
+                <div className={`h-[1px] flex-1 ${activeSection === 'releases' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+              </button>
+              <button type="button" onClick={() => onSectionChange('square')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'square' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'square' ? 'text-zinc-900' : 'text-zinc-400'}`}>05 / 动态广场</span>
+                <div className={`h-[1px] flex-1 ${activeSection === 'square' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+              </button>
+            </>
           )}
           <button type="button" onClick={() => onSectionChange('anniversaries')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'anniversaries' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
             <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'anniversaries' ? 'text-zinc-900' : 'text-zinc-400'}`}>03 / 纪念日</span>
