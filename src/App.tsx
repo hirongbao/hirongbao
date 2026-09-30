@@ -190,12 +190,19 @@ export default function App() {
               setPosts(items.map((p: any) => mapPost(p)));
               setPage(page);
               setHasMore(hasMore);
+            } else {
+              setHasMore(false);
             }
+          } else {
+            setHasMore(false);
           }
+        } else {
+          setHasMore(false);
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
         setErrorMsg('暂时无法连接服务，请稍后重试');
+        setHasMore(false);
       } finally {
         setLoading(false);
       }
@@ -216,7 +223,10 @@ export default function App() {
       fetch(endpoint)
         .then(res => res.json())
         .then(env => {
-          if (env.code !== 0 || !env.data) return;
+          if (env.code !== 0 || !env.data) {
+            setHasMore(false);
+            return;
+          }
           const data = env.data;
           const items = data.items || data.records || [];
           const newPage = data.page || data.current || 1;
@@ -225,7 +235,10 @@ export default function App() {
           setPage(newPage);
           setHasMore(newHasMore);
         })
-        .catch(error => console.error('Failed to load more posts:', error))
+        .catch(error => {
+          console.error('Failed to load more posts:', error);
+          setHasMore(false);
+        })
         .finally(() => setIsFetchingPosts(false));
     }, { rootMargin: '600px 0px' });
     observer.observe(target);
