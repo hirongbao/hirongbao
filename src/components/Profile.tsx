@@ -157,6 +157,10 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
             <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'anniversaries' ? 'text-zinc-900' : 'text-zinc-400'}`}>03 / 纪念日</span>
             <div className={`h-[1px] flex-1 ${activeSection === 'anniversaries' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
           </button>
+          <button type="button" onClick={() => onSectionChange('guestbook')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'guestbook' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'guestbook' ? 'text-zinc-900' : 'text-zinc-400'}`}>04 / 留言板</span>
+            <div className={`h-[1px] flex-1 ${activeSection === 'guestbook' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+          </button>
         </nav>
       </div>
 

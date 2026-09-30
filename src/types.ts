@@ -74,12 +74,30 @@ export interface ReleaseLog {
   publishedAt: string;
 }
 
+export interface SiteUser {
+  id: number;
+  accountName: string;
+  role: string;
+  avatarUrl?: string;
+}
+
+export interface GuestbookMessage {
+  id: number;
+  userId: number;
+  accountName: string;
+  avatarUrl: string;
+  content: string;
+  createdAt: string;
+}
+
 // 后端动态原始结构（映射为展示用 Post 前的中间类型）
 export interface RawPost {
   id: number;
   content: string | null;
   likeCount: number;
   createdAt: string;
+  userId?: number | null;
+  auditStatus?: number;
   media: Array<{ mediaType: 'image' | 'video'; mediaUrl: string; sortOrder: number }>;
   comments: Array<{ id: number; author: string; content: string; createdAt: string; parentId?: number | null; replyToAuthor?: string | null; children?: any[] }>;
   categoryId?: string | null;

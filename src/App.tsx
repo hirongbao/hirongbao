@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, AlertTriangle, RefreshCw, ChevronDown } from 'lucide-react';
+import { Menu, X, AlertTriangle, RefreshCw, ChevronDown, User } from 'lucide-react';
 import { Profile } from './components/Profile';
 import { PostCard } from './components/PostCard';
 import { SubscribeModal } from './components/SubscribeModal';
@@ -12,6 +12,11 @@ import { SkeletonCard } from './components/SkeletonCard';
 import { ProfileSkeleton } from './components/ProfileSkeleton';
 import { ReleaseLogSection } from './components/ReleaseLogSection';
 import { AnniversariesSection } from './components/AnniversariesSection';
+import AuthModal from './components/AuthModal';
+import UserCenterModal from './components/UserCenterModal';
+import GuestbookSection from './components/GuestbookSection';
+import UgcPostModal from './components/UgcPostModal';
+import { getUserInfo } from './utils/auth';
 
 // 模拟分类数据（后端接入时可以从接口读取）
 const MOCK_CATEGORIES: Category[] = [
@@ -75,7 +80,20 @@ export default function App() {
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [unsubscribeData, setUnsubscribeData] = useState<{email: string, token: string} | null>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [activeSection, setActiveSection] = useState<'feed' | 'releases' | 'anniversaries'>('feed');
+  const [activeSection, setActiveSection] = useState<'feed' | 'releases' | 'anniversaries' | 'guestbook'>('feed');
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isUserCenterOpen, setIsUserCenterOpen] = useState(false);
+  const [isUgcOpen, setIsUgcOpen] = useState(false);
+  const [user, setUser] = useState(getUserInfo());
+
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setUser(null);
+      setIsAuthOpen(true);
+    };
+    window.addEventListener('auth_expired', handleAuthExpired);
+    return () => window.removeEventListener('auth_expired', handleAuthExpired);
+  }, []);
   const [releaseLogs, setReleaseLogs] = useState<ReleaseLog[]>([]);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -144,12 +162,17 @@ export default function App() {
     }
   }, []);
 
+  const targetAccount = useMemo(() => {
+    const match = window.location.pathname.match(/^\/([a-zA-Z0-9_]+)\/post\/?$/);
+    return match ? match[1] : null;
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [profileRes, postsRes, releasesRes] = await Promise.all([
-          fetch('/api/profile'),
-          fetch('/api/posts/page?page=1&size=12'),
+          fetch(targetAccount ? `/api/profile/user/${targetAccount}` : '/api/profile'),
+          fetch(targetAccount ? `/api/posts/ugc/user/${targetAccount}?page=1&size=12` : '/api/posts/page?page=1&size=12'),
           fetch('/api/releases')
         ]);
 
@@ -179,11 +202,15 @@ export default function App() {
         if (postsRes.ok) {
           const contentType = postsRes.headers.get("content-type");
           if (contentType && contentType.includes("application/json")) {
-            const postsEnvelope: ApiResponse<PostPageData> = await postsRes.json();
+            const postsEnvelope = await postsRes.json();
             if (postsEnvelope.code === 0 && postsEnvelope.data) {
-              setPostsCache({ 'all': postsEnvelope.data.items.map(mapPost) });
-              setPageByCategory({ all: postsEnvelope.data.page });
-              setHasMoreByCategory({ all: postsEnvelope.data.hasMore });
+              const data = postsEnvelope.data;
+              const items = data.items || data.records || [];
+              const page = data.page || data.current || 1;
+              const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
+              setPostsCache({ 'all': items.map((p: any) => mapPost(p, categories)) });
+              setPageByCategory({ all: page });
+              setHasMoreByCategory({ all: hasMore });
             }
           }
         }
@@ -211,19 +238,28 @@ export default function App() {
       try {
         const parentCat = categories.find(c => c.id === selectedCategoryId);
         const catParam = parentCat?.children ? parentCat.children.map(c => c.id).join(',') : selectedCategoryId;
-        const query = selectedCategoryId === 'all' ? '' : `&category=${catParam}`;
-        const res = await fetch(`/api/posts/page?page=1&size=12${query}`);
+        let query = selectedCategoryId === 'all' ? '' : `&category=${catParam}`;
+        if (selectedCategoryId !== 'all' && targetAccount) {
+          // UGC api doesn't currently support category filtering but if it did we could pass it.
+          // For now, we will still append the query.
+        }
+        const endpoint = targetAccount ? `/api/posts/ugc/user/${targetAccount}?page=1&size=12${query}` : `/api/posts/page?page=1&size=12${query}`;
+        const res = await fetch(endpoint);
         if (res.ok) {
           const contentType = res.headers.get("content-type");
           if (contentType && contentType.includes("application/json")) {
-            const env: ApiResponse<PostPageData> = await res.json();
+            const env = await res.json();
             if (env.code === 0 && env.data) {
+              const data = env.data;
+              const items = data.items || data.records || [];
+              const page = data.page || data.current || 1;
+              const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
               setPostsCache(prev => ({
                 ...prev,
-                [selectedCategoryId]: env.data.items.map(mapPost)
+                [selectedCategoryId]: items.map((p: any) => mapPost(p, categories))
               }));
-              setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: env.data.page }));
-              setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: env.data.hasMore }));
+              setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: page }));
+              setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: hasMore }));
             }
           }
         }
@@ -248,13 +284,18 @@ export default function App() {
       const parentCat = categories.find(c => c.id === selectedCategoryId);
       const catParam = parentCat?.children ? parentCat.children.map(c => c.id).join(',') : selectedCategoryId;
       const query = selectedCategoryId === 'all' ? '' : `&category=${catParam}`;
-      fetch(`/api/posts/page?page=${nextPage}&size=12${query}`)
-        .then(res => res.json() as Promise<ApiResponse<PostPageData>>)
+      const endpoint = targetAccount ? `/api/posts/ugc/user/${targetAccount}?page=${nextPage}&size=12${query}` : `/api/posts/page?page=${nextPage}&size=12${query}`;
+      fetch(endpoint)
+        .then(res => res.json())
         .then(env => {
           if (env.code !== 0 || !env.data) return;
-          setPostsCache(prev => ({ ...prev, [selectedCategoryId]: [...(prev[selectedCategoryId] || []), ...env.data.items.map(mapPost)] }));
-          setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: env.data.page }));
-          setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: env.data.hasMore }));
+          const data = env.data;
+          const items = data.items || data.records || [];
+          const page = data.page || data.current || 1;
+          const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
+          setPostsCache(prev => ({ ...prev, [selectedCategoryId]: [...(prev[selectedCategoryId] || []), ...items.map((p: any) => mapPost(p, categories))] }));
+          setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: page }));
+          setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: hasMore }));
         })
         .catch(error => console.error('Failed to load more posts:', error))
         .finally(() => setIsFetchingPosts(false));
@@ -355,13 +396,42 @@ export default function App() {
                 >
                   <Menu size={20} />
                 </button>
-                <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">{activeSection === 'releases' ? '更新日志 / CHANGELOG' : activeSection === 'anniversaries' ? '纪念日 / ANNIVERSARIES' : '信息流 / 动态'}</h2>
+                <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">
+                  {activeSection === 'releases' ? '更新日志 / CHANGELOG' : activeSection === 'anniversaries' ? '纪念日 / ANNIVERSARIES' : activeSection === 'guestbook' ? '留言板 / GUESTBOOK' : '信息流 / 动态'}
+                </h2>
+              </div>
+              <div>
+                {!user ? (
+                  <button 
+                    onClick={() => setIsAuthOpen(true)}
+                    className="p-2 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-full transition-colors flex items-center space-x-2"
+                  >
+                    <User size={20} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">登录</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setIsUserCenterOpen(true)}
+                    className="flex items-center space-x-2 p-1 pr-3 bg-zinc-100 hover:bg-zinc-200 rounded-full transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-zinc-300 flex items-center justify-center overflow-hidden shrink-0">
+                      {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-bold text-zinc-500">{user.accountName.charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <span className="text-[11px] font-bold text-zinc-700 hidden sm:inline truncate max-w-[100px]">{user.accountName}</span>
+                  </button>
+                )}
               </div>
             </motion.div>
             {activeSection === 'releases' ? (
               <ReleaseLogSection releaseLogs={releaseLogs} />
             ) : activeSection === 'anniversaries' ? (
               <AnniversariesSection />
+            ) : activeSection === 'guestbook' ? (
+              <GuestbookSection onRequestLogin={() => setIsAuthOpen(true)} />
             ) : <>
             {/* 分类筛选器 */}
             <div className="flex flex-col gap-3 pb-4 mb-4 px-2 -mx-2">
@@ -489,9 +559,28 @@ export default function App() {
 
       <PostDetailModal
         post={selectedPost}
-        authorName={profile.name}
-        authorAvatar={profile.avatarUrl}
+        authorName={profile?.name || ''}
+        authorAvatar={profile?.avatarUrl || ''}
         onClose={() => setSelectedPost(null)}
+      />
+      
+      <AuthModal 
+        isOpen={isAuthOpen} 
+        onClose={() => setIsAuthOpen(false)} 
+        onSuccess={() => setUser(getUserInfo())} 
+      />
+      
+      <UserCenterModal 
+        isOpen={isUserCenterOpen} 
+        onClose={() => setIsUserCenterOpen(false)} 
+        onLogout={() => setUser(null)}
+        onPublish={() => setIsUgcOpen(true)}
+      />
+      
+      <UgcPostModal
+        isOpen={isUgcOpen}
+        onClose={() => setIsUgcOpen(false)}
+        onSuccess={() => {}}
       />
     </div>
   );

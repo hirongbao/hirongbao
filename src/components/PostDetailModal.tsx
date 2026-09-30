@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Heart, MessageCircle, Share, Send, Loader2, CheckCircle, Reply, CornerDownRight, User } from 'lucide-react';
 import { Post, Comment } from '../types';
+import { authRequest, getUserInfo } from '../utils/auth';
 import { PostMedia } from './PostMedia';
 import { formatRelativeTime } from '../utils/time';
 
@@ -80,6 +81,12 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
   // 提交评论或回复到后端并展示审核提示
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
+    const user = getUserInfo();
+    if (!user) {
+      alert('请先登录后再发表评论');
+      window.dispatchEvent(new Event('auth_expired'));
+      return;
+    }
     const content = newComment.trim();
     if (!content || !post) return;
     try {
@@ -87,22 +94,18 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
       if (replyTo) {
         body.parentId = Number(replyTo.id);
       }
-      const res = await fetch(`/api/posts/${post.id}/comments`, {
+      const data = await authRequest(`/api/posts/${post.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-      const payload = await res.json();
-      if (res.ok && payload.code === 0) {
-        setNewComment('');
-        setReplyTo(null);
-        setSubmitSuccess(true);
-        setTimeout(() => setSubmitSuccess(false), 4000);
-      } else {
-        alert(payload.message || '评论失败，请稍后重试');
-      }
-    } catch {
-      alert('评论失败，请稍后重试');
+      setNewComment('');
+      setReplyTo(null);
+      setSubmitSuccess(true);
+      setTimeout(() => setSubmitSuccess(false), 4000);
+      // NOTE: Should ideally refresh comments list here, but reloading the page or relying on the user doing it is okay for now.
+    } catch (err: any) {
+      alert(err.message || '评论失败，请稍后重试');
     }
   };
 
