@@ -491,18 +491,16 @@ export default function App() {
             </div>
 
             {currentPosts.length === 0 && !isFetchingPosts ? (
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex w-full flex-col items-center justify-center p-8 mt-10">
-                <div className="w-full max-w-[500px] bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] py-16 px-8 text-center flex flex-col items-center">
-                  <div className="relative mb-6">
-                    <img src="/hirongbao.svg" alt="暂无动态" className="h-[120px] object-contain opacity-90" />
-                  </div>
-                  <h3 className="text-[17px] font-bold text-zinc-800 mb-3 tracking-wide">这里暂时没有动态</h3>
-                  <p className="text-[13px] text-zinc-400 mb-1">已经到底啦，没有更多内容了。</p>
-                  <p className="text-[13px] text-zinc-400 mb-8">换个时间再来看看吧。</p>
-                  <a href="https://hirongbao.com" className="inline-flex items-center justify-center px-8 py-2.5 bg-white text-zinc-700 text-[13px] font-medium rounded-full shadow-sm border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 transition-colors">
-                    返回主站
-                  </a>
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex w-full flex-col items-center justify-center py-24 px-4 text-center">
+                <div className="relative mb-8">
+                  <img src="/hirongbao.svg" alt="暂无动态" className="h-[140px] object-contain opacity-90 hover:scale-105 transition-transform duration-500" />
                 </div>
+                <h3 className="text-lg font-bold text-zinc-800 mb-3 tracking-wide">这里暂时没有动态</h3>
+                <p className="text-[13px] text-zinc-500 mb-1">已经到底啦，没有更多内容了。</p>
+                <p className="text-[13px] text-zinc-500 mb-10">换个时间再来看看吧。</p>
+                <a href="https://hirongbao.com" className="inline-flex items-center justify-center px-8 py-3 bg-white text-zinc-700 text-[13px] font-bold tracking-widest rounded-full shadow-sm border border-zinc-200 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 hover:scale-105 transition-all duration-300">
+                  返回主站
+                </a>
               </motion.div>
             ) : (
             <div className="flex gap-4 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
