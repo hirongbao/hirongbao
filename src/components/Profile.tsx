@@ -16,8 +16,8 @@ const IconMap: Record<string, React.ElementType> = {
 interface ProfileProps {
   profile: ProfileData;
   onSubscribe: () => void;
-  activeSection: 'feed' | 'releases' | 'anniversaries';
-  onSectionChange: (section: 'feed' | 'releases' | 'anniversaries') => void;
+  activeSection: 'feed' | 'releases' | 'anniversaries' | 'guestbook';
+  onSectionChange: (section: 'feed' | 'releases' | 'anniversaries' | 'guestbook') => void;
 }
 
 export function Profile({ profile, onSubscribe, activeSection, onSectionChange }: ProfileProps) {

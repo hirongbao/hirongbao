@@ -208,7 +208,7 @@ export default function App() {
               const items = data.items || data.records || [];
               const page = data.page || data.current || 1;
               const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
-              setPostsCache({ 'all': items.map((p: any) => mapPost(p, categories)) });
+              setPostsCache({ 'all': items.map((p: any) => mapPost(p)) });
               setPageByCategory({ all: page });
               setHasMoreByCategory({ all: hasMore });
             }
@@ -256,7 +256,7 @@ export default function App() {
               const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
               setPostsCache(prev => ({
                 ...prev,
-                [selectedCategoryId]: items.map((p: any) => mapPost(p, categories))
+                [selectedCategoryId]: items.map((p: any) => mapPost(p))
               }));
               setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: page }));
               setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: hasMore }));
@@ -293,7 +293,7 @@ export default function App() {
           const items = data.items || data.records || [];
           const page = data.page || data.current || 1;
           const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
-          setPostsCache(prev => ({ ...prev, [selectedCategoryId]: [...(prev[selectedCategoryId] || []), ...items.map((p: any) => mapPost(p, categories))] }));
+          setPostsCache(prev => ({ ...prev, [selectedCategoryId]: [...(prev[selectedCategoryId] || []), ...items.map((p: any) => mapPost(p))] }));
           setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: page }));
           setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: hasMore }));
         })
