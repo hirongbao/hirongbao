@@ -63,7 +63,7 @@ export default function UgcPostModal({ isOpen, onClose, onSuccess }: UgcPostModa
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files: File[] = Array.from(e.target.files || []);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (!files.length) return;
     
@@ -76,11 +76,9 @@ export default function UgcPostModal({ isOpen, onClose, onSuccess }: UgcPostModa
         const formData = new FormData();
         formData.append('file', file);
         
-        // C端用户直接调用 UGC 上传接口
         const fileRecord = await authRequest('/api/posts/ugc/upload', {
           method: 'POST',
           body: formData
-          // 注: 不要手动设置 Content-Type，fetch 会自动带上 boundary
         });
         
         if (fileRecord && fileRecord.fileUrl) {
