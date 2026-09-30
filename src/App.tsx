@@ -18,22 +18,6 @@ import GuestbookSection from './components/GuestbookSection';
 import UgcPostModal from './components/UgcPostModal';
 import { getUserInfo } from './utils/auth';
 
-// 模拟分类数据（后端接入时可以从接口读取）
-const MOCK_CATEGORIES: Category[] = [
-  { id: 'all', name: '全部' },
-  { id: 'food', name: '美食' },
-  { id: 'scenery', name: '风景' },
-  { id: 'notes', name: '随笔' },
-  {
-    id: 'sports',
-    name: '运动',
-    children: [
-      { id: 'football', name: '足球' },
-      { id: 'running', name: '跑步' }
-    ]
-  },
-];
-
 // 后端动态原始数据映射为展示模型（时间转相对时间、id 转字符串）
 const mapComment = (c: any): import('./types').Comment => ({
   id: String(c.id),
@@ -97,12 +81,10 @@ export default function App() {
   const [releaseLogs, setReleaseLogs] = useState<ReleaseLog[]>([]);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [postsCache, setPostsCache] = useState<Record<string, Post[]>>({});
-  const [pageByCategory, setPageByCategory] = useState<Record<string, number>>({});
-  const [hasMoreByCategory, setHasMoreByCategory] = useState<Record<string, boolean>>({});
-  const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | number>('all');
-  
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+      
   const [isFetchingPosts, setIsFetchingPosts] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -112,15 +94,12 @@ export default function App() {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // 获取当前选中的帖子列表
-  const currentPosts = postsCache[selectedCategoryId] || [];
+  const currentPosts = posts;
 
   useEffect(() => {
     const siteName = profile?.name || 'hirongbao';
-    const categoryName = categories.find(category => category.id === selectedCategoryId)?.name;
-    document.title = categoryName && categoryName !== '全部'
-      ? `${categoryName} · ${siteName}`
-      : activeSection === 'releases' ? `更新日志 · ${siteName}` : activeSection === 'anniversaries' ? `纪念日 · ${siteName}` : `动态 · ${siteName}`;
-  }, [profile?.name, categories, selectedCategoryId, activeSection]);
+    document.title = activeSection === 'releases' ? `更新日志 · ${siteName}` : activeSection === 'anniversaries' ? `纪念日 · ${siteName}` : `动态 · ${siteName}`;
+  }, [profile?.name, activeSection]);
 
   useEffect(() => {
     const updateCols = () => {
@@ -208,9 +187,9 @@ export default function App() {
               const items = data.items || data.records || [];
               const page = data.page || data.current || 1;
               const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
-              setPostsCache({ 'all': items.map((p: any) => mapPost(p)) });
-              setPageByCategory({ all: page });
-              setHasMoreByCategory({ all: hasMore });
+              setPosts(items.map((p: any) => mapPost(p)));
+              setPage(page);
+              setHasMore(hasMore);
             }
           }
         }
@@ -225,84 +204,33 @@ export default function App() {
     fetchData();
   }, [retryCount]);
 
-  // 监听分类切换，如果没有缓存数据则发起新的请求
-  useEffect(() => {
-    // 等待首次全量加载完成
-    if (loading) return;
-    
-    // 如果已有缓存，则直接使用，不再请求
-    if (postsCache[selectedCategoryId]) return;
-
-    const fetchCategoryPosts = async () => {
-      setIsFetchingPosts(true);
-      try {
-        const parentCat = categories.find(c => c.id === selectedCategoryId);
-        const catParam = parentCat?.children ? parentCat.children.map(c => c.id).join(',') : selectedCategoryId;
-        let query = selectedCategoryId === 'all' ? '' : `&category=${catParam}`;
-        if (selectedCategoryId !== 'all' && targetAccount) {
-          // UGC api doesn't currently support category filtering but if it did we could pass it.
-          // For now, we will still append the query.
-        }
-        const endpoint = targetAccount ? `/api/posts/ugc/user/${targetAccount}?page=1&size=12${query}` : `/api/posts/page?page=1&size=12${query}`;
-        const res = await fetch(endpoint);
-        if (res.ok) {
-          const contentType = res.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            const env = await res.json();
-            if (env.code === 0 && env.data) {
-              const data = env.data;
-              const items = data.items || data.records || [];
-              const page = data.page || data.current || 1;
-              const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
-              setPostsCache(prev => ({
-                ...prev,
-                [selectedCategoryId]: items.map((p: any) => mapPost(p))
-              }));
-              setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: page }));
-              setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: hasMore }));
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch category posts:', err);
-      } finally {
-        setIsFetchingPosts(false);
-      }
-    };
-
-    fetchCategoryPosts();
-  }, [selectedCategoryId, loading, postsCache]);
-
   // 滚动到列表底部时自动加载下一页
   useEffect(() => {
     const target = loadMoreRef.current;
-    if (!target || loading || isFetchingPosts || !hasMoreByCategory[selectedCategoryId]) return;
+    if (!target || loading || isFetchingPosts || !hasMore) return;
     const observer = new IntersectionObserver(entries => {
       if (!entries[0].isIntersecting) return;
-      const nextPage = (pageByCategory[selectedCategoryId] || 1) + 1;
+      const nextPage = page + 1;
       setIsFetchingPosts(true);
-      const parentCat = categories.find(c => c.id === selectedCategoryId);
-      const catParam = parentCat?.children ? parentCat.children.map(c => c.id).join(',') : selectedCategoryId;
-      const query = selectedCategoryId === 'all' ? '' : `&category=${catParam}`;
-      const endpoint = targetAccount ? `/api/posts/ugc/user/${targetAccount}?page=${nextPage}&size=12${query}` : `/api/posts/page?page=${nextPage}&size=12${query}`;
+      const endpoint = targetAccount ? `/api/posts/ugc/user/${targetAccount}?page=${nextPage}&size=12` : `/api/posts/page?page=${nextPage}&size=12`;
       fetch(endpoint)
         .then(res => res.json())
         .then(env => {
           if (env.code !== 0 || !env.data) return;
           const data = env.data;
           const items = data.items || data.records || [];
-          const page = data.page || data.current || 1;
-          const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
-          setPostsCache(prev => ({ ...prev, [selectedCategoryId]: [...(prev[selectedCategoryId] || []), ...items.map((p: any) => mapPost(p))] }));
-          setPageByCategory(prev => ({ ...prev, [selectedCategoryId]: page }));
-          setHasMoreByCategory(prev => ({ ...prev, [selectedCategoryId]: hasMore }));
+          const newPage = data.page || data.current || 1;
+          const newHasMore = data.hasMore !== undefined ? data.hasMore : (newPage * (data.size || 12) < (data.total || 0));
+          setPosts(prev => [...prev, ...items.map((p: any) => mapPost(p))]);
+          setPage(newPage);
+          setHasMore(newHasMore);
         })
         .catch(error => console.error('Failed to load more posts:', error))
         .finally(() => setIsFetchingPosts(false));
     }, { rootMargin: '600px 0px' });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [selectedCategoryId, loading, isFetchingPosts, hasMoreByCategory, pageByCategory]);
+  }, [loading, isFetchingPosts, hasMore, page]);
 
   if (loading) {
     return (
@@ -343,7 +271,7 @@ export default function App() {
           </div>
           <p className="mb-2 text-base font-semibold text-zinc-900">页面暂时无法加载</p>
           <p className="mb-6 text-sm leading-6 text-zinc-500">{errorMsg || '服务暂时不可用，请稍后再试。'}</p>
-          <button type="button" onClick={() => { setErrorMsg(null); setProfile(null); setPostsCache({}); setLoading(true); setRetryCount(count => count + 1); }} className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700">
+          <button type="button" onClick={() => { setErrorMsg(null); setProfile(null); setPosts([]); setLoading(true); setRetryCount(count => count + 1); }} className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700">
             <RefreshCw size={15} />
             重试
           </button>
@@ -433,64 +361,7 @@ export default function App() {
             ) : activeSection === 'guestbook' ? (
               <GuestbookSection onRequestLogin={() => setIsAuthOpen(true)} />
             ) : <>
-            {/* 分类筛选器 */}
-            <div className="flex flex-col gap-3 pb-4 mb-4 px-2 -mx-2">
-              <div className="flex gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {categories.map(cat => {
-                  const isActive = selectedCategoryId === cat.id || cat.children?.some(c => c.id === selectedCategoryId);
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategoryId(cat.id)}
-                      className={`px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 border ${
-                        isActive
-                          ? 'bg-zinc-900 text-white border-zinc-900 shadow-md scale-105'
-                          : 'bg-white text-zinc-600 hover:bg-zinc-100 border-zinc-200/60'
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  );
-                })}
-              </div>
-              
-              {/* 子分类列表（仅当当前大类有子分类且处于激活状态时显示） */}
-              {(() => {
-                const activeParent = categories.find(c => c.id === selectedCategoryId || c.children?.some(child => child.id === selectedCategoryId));
-                if (activeParent?.children) {
-                  return (
-                    <div className="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pl-2 py-1">
-                      <button
-                        onClick={() => setSelectedCategoryId(activeParent.id)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                          selectedCategoryId === activeParent.id
-                            ? 'bg-zinc-200 text-zinc-900'
-                            : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100'
-                        }`}
-                      >
-                        全部
-                      </button>
-                      {activeParent.children.map(child => (
-                        <button
-                          key={child.id}
-                          onClick={() => setSelectedCategoryId(child.id)}
-                          className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                            selectedCategoryId === child.id
-                              ? 'bg-zinc-200 text-zinc-900'
-                              : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100'
-                          }`}
-                        >
-                          {child.name}
-                        </button>
-                      ))}
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-            </div>
-
-            {currentPosts.length === 0 && !isFetchingPosts ? (
+                        {currentPosts.length === 0 && !isFetchingPosts ? (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex w-full flex-col items-center justify-center py-24 px-4 text-center">
                 
                 {/* Illustration: Delicate Wireframe & Pastel Orbs */}
@@ -577,7 +448,7 @@ export default function App() {
             
             <div className="py-12 text-center text-sm text-zinc-400">
               <div ref={loadMoreRef} className="h-8" aria-hidden="true" />
-              <p>{isFetchingPosts ? '正在加载更多动态…' : hasMoreByCategory[selectedCategoryId] ? '继续下滑加载更多' : '已经到底啦，没有更多内容了。'}</p>
+              <p>{isFetchingPosts ? '正在加载更多动态…' : hasMore ? '继续下滑加载更多' : '已经到底啦，没有更多内容了。'}</p>
             </div>
             </>}
           </div>

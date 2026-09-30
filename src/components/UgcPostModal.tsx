@@ -37,9 +37,7 @@ export default function UgcPostModal({ isOpen, onClose, onSuccess }: UgcPostModa
         body: JSON.stringify({
           content,
           mediaType: mediaUrls.length > 0 ? 'image' : null,
-          mediaUrls,
-          categoryId: 'notes',
-          categoryName: '随笔'
+          mediaUrls
         })
       });
       setContent('');
