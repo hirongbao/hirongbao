@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, RefreshCw, Send } from 'lucide-react';
+import { RefreshCw, Send, Sparkles } from 'lucide-react';
 import { authRequest, getUserInfo } from '../utils/auth';
 import type { GuestbookMessage } from '../types';
 
@@ -58,91 +58,82 @@ export default function GuestbookSection({ onRequestLogin }: { onRequestLogin: (
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto pb-12">
-      <div className="bg-white rounded-3xl shadow-xl shadow-zinc-200/40 border border-zinc-100 overflow-hidden mb-12">
-        <div className="p-8 sm:p-12">
-          <div className="flex items-center space-x-3 mb-6">
-            <MessageSquare className="text-zinc-900" size={24} />
-            <h3 className="text-2xl font-serif italic font-bold">留个言吧</h3>
-          </div>
-          
-          <div className="bg-zinc-50 rounded-2xl p-6">
-            <p className="text-sm text-zinc-500 mb-4 font-medium flex items-center">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span>
-              每个用户每天可以留言一句话。
-            </p>
+    <div className="w-full max-w-2xl mx-auto pb-12 pt-4">
+      <div className="mb-10">
+        <form onSubmit={handleSubmit} className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-zinc-200 to-zinc-100 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
+          <div className="relative bg-white rounded-[2rem] shadow-sm border border-zinc-100/80 p-4 transition-all duration-300 focus-within:border-zinc-300 focus-within:shadow-md">
+            <textarea
+              value={inputContent}
+              onChange={e => setInputContent(e.target.value)}
+              placeholder={user ? "写下你想说的话 (每天一条)..." : "请先登录后再留言..."}
+              className="w-full bg-transparent border-none rounded-xl p-2 pr-16 min-h-[80px] resize-none focus:outline-none text-zinc-800 placeholder-zinc-300 text-[15px] leading-relaxed"
+              maxLength={500}
+              disabled={isSubmitting || !user}
+            />
+            {error && <p className="text-xs text-red-500 mt-2 px-2 font-medium">{error}</p>}
             
-            <form onSubmit={handleSubmit} className="relative">
-              <textarea
-                value={inputContent}
-                onChange={e => setInputContent(e.target.value)}
-                placeholder={user ? "写下你想说的话..." : "请先登录后再留言"}
-                className="w-full bg-white border border-zinc-200 rounded-xl p-4 pr-16 min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all text-sm"
-                maxLength={500}
-                disabled={isSubmitting || !user}
-              />
-              {error && (
-                <p className="text-xs text-red-500 mt-2 font-medium">{error}</p>
-              )}
-              
+            <div className="flex justify-between items-center mt-2 px-2">
+              <div className="flex items-center space-x-2 text-zinc-400">
+                <Sparkles size={14} />
+                <span className="text-[11px] font-medium tracking-wide">GUESTBOOK</span>
+              </div>
               {!user ? (
                 <button
                   type="button"
                   onClick={onRequestLogin}
-                  className="absolute right-4 bottom-4 px-4 py-2 bg-zinc-900 text-white text-xs font-bold rounded-lg shadow-md"
+                  className="px-5 py-2 bg-zinc-900 text-white text-[13px] font-bold tracking-wider rounded-full hover:bg-zinc-800 transition-colors"
                 >
-                  登录留言
+                  登录
                 </button>
               ) : (
                 <button
                   type="submit"
                   disabled={isSubmitting || !inputContent.trim()}
-                  className="absolute right-4 bottom-4 w-10 h-10 bg-zinc-900 text-white rounded-xl flex items-center justify-center shadow-md disabled:opacity-50 transition-transform active:scale-95"
+                  className="w-10 h-10 bg-zinc-900 text-white rounded-full flex items-center justify-center hover:bg-zinc-800 hover:scale-105 transition-all disabled:opacity-40 disabled:hover:scale-100"
                 >
-                  {isSubmitting ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} className="ml-1" />}
+                  {isSubmitting ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} className="ml-0.5" />}
                 </button>
               )}
-            </form>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
 
       <div className="space-y-6">
-        <h4 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400 ml-4">最新留言</h4>
-        
         {loading ? (
-          <div className="flex justify-center py-12 text-zinc-400">
-            <RefreshCw className="animate-spin" />
+          <div className="flex justify-center py-12 text-zinc-300">
+            <RefreshCw className="animate-spin w-6 h-6" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="text-center py-12 text-zinc-400 text-sm">
+          <div className="text-center py-20 text-zinc-400 text-sm italic font-serif">
             暂无留言，来做第一个留言的人吧。
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-zinc-100 before:to-transparent">
             {messages.map((msg, idx) => (
               <motion.div
                 key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="bg-white rounded-2xl p-5 sm:p-6 border border-zinc-100 shadow-sm flex space-x-4"
+                transition={{ delay: idx * 0.05, duration: 0.4 }}
+                className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active"
               >
-                <div className="flex-shrink-0 w-10 h-10 bg-zinc-200 rounded-full flex items-center justify-center overflow-hidden">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-zinc-100 text-zinc-500 font-bold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10 overflow-hidden ml-0 md:ml-0">
                   {msg.avatarUrl ? (
                     <img src={msg.avatarUrl} alt={msg.accountName} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-sm font-bold text-zinc-500">{msg.accountName.charAt(0).toUpperCase()}</span>
+                    <span className="text-sm uppercase">{msg.accountName.charAt(0)}</span>
                   )}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-baseline justify-between mb-2">
+                <div className="w-[calc(100%-3.5rem)] md:w-[calc(50%-2.5rem)] p-5 rounded-[2rem] bg-white border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-2">
                     <h5 className="font-bold text-sm text-zinc-900">{msg.accountName}</h5>
-                    <span className="text-xs text-zinc-400">
-                      {new Date(msg.createdAt).toLocaleString()}
+                    <span className="text-[10px] text-zinc-400 font-mono tracking-tighter">
+                      {new Date(msg.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
                 </div>
               </motion.div>
             ))}
