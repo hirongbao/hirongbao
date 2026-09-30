@@ -3,6 +3,14 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", sans-serif;
   --font-serif: "Playfair Display", serif;
+  
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-delayed: float 6s ease-in-out 3s infinite;
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
 }
 
 body {
