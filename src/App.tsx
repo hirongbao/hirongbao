@@ -491,10 +491,18 @@ export default function App() {
             </div>
 
             {currentPosts.length === 0 && !isFetchingPosts ? (
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex w-full flex-col items-center rounded-3xl border border-zinc-200/70 bg-white/70 px-6 py-10 text-center">
-                <img src="/hirongbao.svg" alt="暂无动态" className="mb-5 h-44 w-60 object-contain opacity-90" />
-                <p className="text-sm font-medium text-zinc-700">这里暂时还没有动态</p>
-                <p className="mt-1 text-xs text-zinc-400">换个分类看看，或稍后再来。</p>
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex w-full flex-col items-center justify-center p-8 mt-10">
+                <div className="w-full max-w-[500px] bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] py-16 px-8 text-center flex flex-col items-center">
+                  <div className="relative mb-6">
+                    <img src="/hirongbao.svg" alt="暂无动态" className="h-[120px] object-contain opacity-90" />
+                  </div>
+                  <h3 className="text-[17px] font-bold text-zinc-800 mb-3 tracking-wide">这里暂时没有动态</h3>
+                  <p className="text-[13px] text-zinc-400 mb-1">已经到底啦，没有更多内容了。</p>
+                  <p className="text-[13px] text-zinc-400 mb-8">换个时间再来看看吧。</p>
+                  <a href="https://hirongbao.com" className="inline-flex items-center justify-center px-8 py-2.5 bg-white text-zinc-700 text-[13px] font-medium rounded-full shadow-sm border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 transition-colors">
+                    返回主站
+                  </a>
+                </div>
               </motion.div>
             ) : (
             <div className="flex gap-4 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 items-start w-full min-w-0">
