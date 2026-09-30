@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { ProfileData } from '../types';
-import { MessageCircle, Github, X, Send } from 'lucide-react';
+import { MessageCircle, Github, X, Send, Edit3 } from 'lucide-react';
 import { RiQqLine, RiTiktokLine } from 'react-icons/ri';
 import { motion, AnimatePresence } from 'motion/react';
 import { formatCount } from '../utils/format';
 import { OnlineStats } from './OnlineStats';
+import ProfileEditModal from './ProfileEditModal';
+import { getUserInfo } from '../utils/auth';
 
 const IconMap: Record<string, React.ElementType> = {
   MessageCircle,
@@ -23,6 +25,10 @@ interface ProfileProps {
 export function Profile({ profile, onSubscribe, activeSection, onSectionChange }: ProfileProps) {
   const [isBioExpanded, setIsBioExpanded] = useState(false);
   const [activeQr, setActiveQr] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  
+  const currentUser = getUserInfo();
+  const isOwnProfile = currentUser && currentUser.accountName === profile.name;
 
   const toggleQr = (platform: string) => {
     setActiveQr(prev => prev === platform ? null : platform);
@@ -41,9 +47,20 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
         </div>
 
         <div className="space-y-4">
-          <h1 className="text-3xl lg:text-4xl font-serif italic tracking-tight leading-none text-zinc-900">
-            {profile.name}
-          </h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl lg:text-4xl font-serif italic tracking-tight leading-none text-zinc-900">
+              {profile.name}
+            </h1>
+            {isOwnProfile && (
+              <button 
+                onClick={() => setIsEditModalOpen(true)}
+                className="p-2 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-full transition-colors"
+                title="编辑资料"
+              >
+                <Edit3 size={18} />
+              </button>
+            )}
+          </div>
           <div>
             <p className={`text-zinc-500 text-sm leading-relaxed font-light ${!isBioExpanded ? 'line-clamp-2' : ''}`}>
               {profile.bio}
@@ -183,6 +200,13 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
           订阅更新
         </button>
       </div>
+
+      <ProfileEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        initialProfile={profile}
+        onSuccess={() => window.location.reload()}
+      />
     </div>
   );
 }

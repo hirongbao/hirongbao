@@ -58,6 +58,13 @@ export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish }
 
               <div className="space-y-3">
                 <button
+                  onClick={() => { window.location.href = `/${user?.accountName}/post`; }}
+                  className="w-full py-4 flex items-center justify-center space-x-2 bg-zinc-100 text-zinc-900 rounded-2xl font-bold tracking-widest transition-all hover:bg-zinc-200"
+                >
+                  <Settings size={18} />
+                  <span>个人主页</span>
+                </button>
+                <button
                   onClick={() => { onClose(); onPublish(); }}
                   className="w-full py-4 flex items-center justify-center space-x-2 bg-zinc-900 text-white rounded-2xl font-bold tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
