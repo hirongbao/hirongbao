@@ -20,9 +20,10 @@ interface ProfileProps {
   onSubscribe: () => void;
   activeSection: 'feed' | 'releases' | 'anniversaries' | 'guestbook';
   onSectionChange: (section: 'feed' | 'releases' | 'anniversaries' | 'guestbook') => void;
+  isMainSite?: boolean;
 }
 
-export function Profile({ profile, onSubscribe, activeSection, onSectionChange }: ProfileProps) {
+export function Profile({ profile, onSubscribe, activeSection, onSectionChange, isMainSite = true }: ProfileProps) {
   const [isBioExpanded, setIsBioExpanded] = useState(false);
   const [activeQr, setActiveQr] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -166,10 +167,12 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange }
             <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>01 / 信息流</span>
             <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
           </button>
-          <button type="button" onClick={() => onSectionChange('releases')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'releases' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'releases' ? 'text-zinc-900' : 'text-zinc-400'}`}>02 / 更新日志</span>
-            <div className={`h-[1px] flex-1 ${activeSection === 'releases' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
-          </button>
+          {isMainSite && (
+            <button type="button" onClick={() => onSectionChange('releases')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'releases' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'releases' ? 'text-zinc-900' : 'text-zinc-400'}`}>02 / 更新日志</span>
+              <div className={`h-[1px] flex-1 ${activeSection === 'releases' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+            </button>
+          )}
           <button type="button" onClick={() => onSectionChange('anniversaries')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'anniversaries' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
             <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'anniversaries' ? 'text-zinc-900' : 'text-zinc-400'}`}>03 / 纪念日</span>
             <div className={`h-[1px] flex-1 ${activeSection === 'anniversaries' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>

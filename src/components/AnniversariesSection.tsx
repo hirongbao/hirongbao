@@ -28,13 +28,13 @@ const iconMap: Record<string, React.ElementType> = {
   Heart, Briefcase, Plane, Flag, Gift, Calendar, Clock
 };
 
-export function AnniversariesSection() {
+export function AnniversariesSection({ targetAccount }: { targetAccount?: string }) {
   const [now, setNow] = useState(new Date());
   const [data, setData] = useState<Anniversary[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/anniversaries')
+    fetch(targetAccount ? `/api/hirongbaohub/anniversaries/user/${targetAccount}` : '/api/hirongbaohub/anniversaries')
       .then(res => res.json())
       .then(res => {
         if (res.code === 0 && res.data) {

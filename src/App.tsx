@@ -317,7 +317,7 @@ export default function App() {
             <X size={20} />
           </button>
         </div>
-        <Profile profile={profile} onSubscribe={() => { setIsSidebarOpen(false); setIsSubscribeOpen(true); }} activeSection={activeSection} onSectionChange={(s) => { setActiveSection(s); setIsSidebarOpen(false); }} />
+        <Profile profile={profile} onSubscribe={() => { setIsSidebarOpen(false); setIsSubscribeOpen(true); }} activeSection={activeSection} onSectionChange={(s) => { setActiveSection(s); setIsSidebarOpen(false); }} isMainSite={!targetAccount} />
       </aside>
 
       {/* Feed Area */}
@@ -370,9 +370,9 @@ export default function App() {
             {activeSection === 'releases' ? (
               <ReleaseLogSection releaseLogs={releaseLogs} />
             ) : activeSection === 'anniversaries' ? (
-              <AnniversariesSection />
+              <AnniversariesSection targetAccount={targetAccount} />
             ) : activeSection === 'guestbook' ? (
-              <GuestbookSection onRequestLogin={() => setIsAuthOpen(true)} />
+              <GuestbookSection onRequestLogin={() => setIsAuthOpen(true)} targetAccount={targetAccount} />
             ) : <>
                         {currentPosts.length === 0 && !isFetchingPosts ? (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex w-full flex-col items-center justify-center py-24 px-4 text-center">

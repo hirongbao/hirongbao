@@ -4,7 +4,7 @@ import { RefreshCw, Send, Sparkles } from 'lucide-react';
 import { authRequest, getUserInfo } from '../utils/auth';
 import type { GuestbookMessage } from '../types';
 
-export default function GuestbookSection({ onRequestLogin }: { onRequestLogin: () => void }) {
+export default function GuestbookSection({ onRequestLogin, targetAccount }: { onRequestLogin: () => void, targetAccount?: string }) {
   const [messages, setMessages] = useState<GuestbookMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [inputContent, setInputContent] = useState('');
@@ -15,7 +15,7 @@ export default function GuestbookSection({ onRequestLogin }: { onRequestLogin: (
 
   const fetchMessages = async () => {
     try {
-      const res = await fetch('/api/guestbook/list?page=1&size=50');
+      const res = await fetch(targetAccount ? `/api/guestbook/list/user/${targetAccount}?page=1&size=50` : '/api/guestbook/list?page=1&size=50');
       const json = await res.json();
       if (json.code === 0) {
         setMessages(json.data.records);
@@ -43,7 +43,7 @@ export default function GuestbookSection({ onRequestLogin }: { onRequestLogin: (
     setError('');
     
     try {
-      await authRequest('/api/guestbook/add', {
+      await authRequest(targetAccount ? `/api/guestbook/add/user/${targetAccount}` : '/api/guestbook/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: inputContent })
