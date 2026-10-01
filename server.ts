@@ -91,6 +91,12 @@ async function startServer() {
     backendProxy(req, res, `/api/hirongbaohub/posts/page${qs ? `?${qs}` : ''}`);
   });
 
+  // 动态广场代理
+  app.get("/api/posts/square", (req, res) => {
+    const qs = new URLSearchParams(req.query as Record<string, string>).toString();
+    backendProxy(req, res, `/api/hirongbaohub/posts/square${qs ? `?${qs}` : ''}`);
+  });
+
   // 单条动态查询（限制为数字ID，避免拦截其它路径）
   app.get("/api/posts/:id(\\d+)", (req, res) => backendProxy(req, res, `/api/hirongbaohub/posts/${req.params.id}`));
 
