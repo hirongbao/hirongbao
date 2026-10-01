@@ -47,7 +47,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
   const [isLiked, setIsLiked] = useState(false);
   const [comments, setComments] = useState<Comment[]>(post?.comments || []);
   const [likes, setLikes] = useState(post?.likeCount || 0);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -105,16 +105,54 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
       if (replyTo) {
         body.parentId = Number(replyTo.id);
       }
-      const data = await authRequest(`/api/posts/${post.id}/comments`, {
+      const json = await authRequest(`/api/posts/${post.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
+      // json is the SiteComment entity
+      const newComment = {
+        id: String(json.id),
+        author: json.author,
+        authorAvatar: json.authorAvatar || null,
+        content: json.content,
+        createdAt: '刚刚',
+        parentId: json.parentId ? String(json.parentId) : null,
+        replyToAuthor: json.replyToAuthor || null,
+        children: []
+      };
+
+      if (replyTo) {
+        setComments(prev => prev.map(c => {
+           if (c.id === newComment.parentId) {
+              return { ...c, children: [...(c.children || []), newComment] };
+           }
+           // If the parent is not a root comment, we might not find it here if it's deeply nested. 
+           // But since backend flattens to 2 levels (or if not, we handle it), we just try to find it.
+           // Actually, let's just do a simple recursive append to be safe.
+           return c;
+        }));
+        
+        // Safe deep append just in case:
+        const appendChild = (list: Comment[]): Comment[] => {
+            return list.map(c => {
+                if (c.id === newComment.parentId) {
+                    return { ...c, children: [...(c.children || []), newComment] };
+                }
+                if (c.children && c.children.length > 0) {
+                    return { ...c, children: appendChild(c.children) };
+                }
+                return c;
+            });
+        };
+        setComments(prev => appendChild(prev));
+      } else {
+        setComments(prev => [...prev, newComment]);
+      }
+      
       setNewComment('');
       setReplyTo(null);
-      setSubmitSuccess(true);
-      setTimeout(() => setSubmitSuccess(false), 4000);
-      // NOTE: Should ideally refresh comments list here, but reloading the page or relying on the user doing it is okay for now.
+      showToast('评论发表成功', 'success');
     } catch (err: any) {
       showToast(err.message || '评论失败，请稍后重试', 'error');
     }
@@ -335,21 +373,6 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                     </div>
                   </div>
                   <div className="p-4 relative">
-                    <AnimatePresence>
-                      {submitSuccess && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                          className="absolute -top-12 left-0 right-0 flex justify-center z-10 pointer-events-none"
-                        >
-                          <div className="bg-zinc-900 text-white text-xs px-4 py-2 rounded-full shadow-lg flex items-center space-x-2 border border-zinc-800">
-                            <CheckCircle size={14} className="text-emerald-400" />
-                            <span>评论已提交，审核通过后将公开展示</span>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                     {replyTo && (
                       <div className="flex items-center justify-between mb-2 px-2">
                         <span className="text-xs text-zinc-500 flex items-center gap-1.5">
