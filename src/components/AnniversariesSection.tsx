@@ -54,7 +54,32 @@ export function AnniversariesSection({ targetAccount }: { targetAccount?: string
     return () => clearInterval(timer);
   }, []);
 
-  const widgets = data.filter(d => d.type !== 'milestone');
+  const calculateDaysInfo = (targetDate: string, type?: AnniversaryType) => {
+    const target = new Date(targetDate);
+    target.setHours(0, 0, 0, 0);
+    const current = new Date(now);
+    current.setHours(0, 0, 0, 0);
+    
+    if (type === 'annual') {
+      target.setFullYear(current.getFullYear());
+      if (target.getTime() < current.getTime()) {
+        target.setFullYear(current.getFullYear() + 1);
+      }
+    }
+    
+    const diff = target.getTime() - current.getTime();
+    return Math.round(diff / (1000 * 60 * 60 * 24));
+  };
+
+  const widgets = data.filter(d => {
+    if (d.type === 'milestone') return false;
+    if (d.type === 'countdown') {
+      const days = calculateDaysInfo((d.date || d.eventDate) as string, d.type);
+      if (days < 0) return false; // 超过日期的倒数日不展示
+    }
+    return true;
+  });
+  
   const milestones = data.filter(d => d.type === 'milestone').sort((a, b) => new Date(b.date || b.eventDate).getTime() - new Date(a.date || a.eventDate).getTime());
 
   const groupedMilestones = milestones.reduce((acc, curr) => {
@@ -65,22 +90,6 @@ export function AnniversariesSection({ targetAccount }: { targetAccount?: string
     return acc;
   }, {} as Record<string, Anniversary[]>);
 
-  const calculateDays = (targetDate: string, type?: AnniversaryType) => {
-    const target = new Date(targetDate);
-    const current = now;
-    
-    if (type === 'annual') {
-      target.setFullYear(current.getFullYear());
-      // If the date has passed this year, look at next year
-      if (target.getTime() < current.getTime() - 1000 * 60 * 60 * 24) {
-        target.setFullYear(current.getFullYear() + 1);
-      }
-    }
-    
-    const diff = target.getTime() - current.getTime();
-    return Math.abs(Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  };
-
   if (loading) {
     return <div className="text-center py-20 text-zinc-400 text-sm">加载中...</div>;
   }
@@ -90,7 +99,10 @@ export function AnniversariesSection({ targetAccount }: { targetAccount?: string
       {/* 1. Bento Box Widgets */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {widgets.map((w, index) => {
-          const days = calculateDays((w.date || w.eventDate) as string, w.type);
+          const days = calculateDaysInfo((w.date || w.eventDate) as string, w.type);
+          const isToday = days === 0;
+          const displayValue = isToday ? '今天' : Math.abs(days);
+          
           const isCountdown = w.type === 'countdown' || w.type === 'annual';
           const Icon = w.icon && iconMap[w.icon] ? iconMap[w.icon] : Calendar;
           
@@ -122,8 +134,14 @@ export function AnniversariesSection({ targetAccount }: { targetAccount?: string
                 <div className="mt-auto pt-8">
                   <h3 className={`text-lg font-medium mb-2 ${w.coverUrl ? 'text-white/90' : 'text-zinc-500'}`}>{w.title}</h3>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-5xl lg:text-7xl font-serif italic tracking-tighter">{days}</span>
-                    <span className={`text-sm font-bold tracking-widest ${w.coverUrl ? 'text-white/70' : 'text-zinc-400'}`}>天</span>
+                    <span className={`text-5xl font-serif italic tracking-tighter ${isToday ? 'lg:text-5xl' : 'lg:text-7xl'}`}>
+                      {displayValue}
+                    </span>
+                    {!isToday && (
+                      <span className={`text-sm font-bold tracking-widest ${w.coverUrl ? 'text-white/70' : 'text-zinc-400'}`}>
+                        天
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
