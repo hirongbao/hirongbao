@@ -22,6 +22,7 @@ import { getUserInfo } from './utils/auth';
 const mapComment = (c: any): import('./types').Comment => ({
   id: String(c.id),
   author: c.author,
+  authorAvatar: c.authorAvatar || null,
   content: c.content,
   createdAt: formatRelativeTime(c.createdAt),
   parentId: c.parentId ? String(c.parentId) : null,

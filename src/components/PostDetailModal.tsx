@@ -13,12 +13,18 @@ interface PostDetailModalProps {
   onClose: () => void;
 }
 
-const MinimalAvatar = ({ name, size = 'normal' }: { name: string, size?: 'normal' | 'small' }) => {
+const MinimalAvatar = ({ name, avatarUrl, size = 'normal' }: { name: string, avatarUrl?: string | null, size?: 'normal' | 'small' }) => {
   const isVisitor = name === '访客' || !name;
   const dimensionClass = size === 'small' ? 'w-7 h-7' : 'w-9 h-9';
   const iconSize = size === 'small' ? 12 : 14;
   const textSize = size === 'small' ? 'text-[10px]' : 'text-xs';
   
+  if (avatarUrl) {
+    return (
+      <img src={avatarUrl} alt={name} className={`${dimensionClass} rounded-full object-cover shrink-0 shadow-sm border border-zinc-200/80`} />
+    );
+  }
+
   if (isVisitor) {
     return (
       <div className={`${dimensionClass} rounded-full bg-zinc-100/80 border border-zinc-200/80 flex items-center justify-center shrink-0`}>
@@ -247,7 +253,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                             )}
                             {/* Top-level comment */}
                             <div className="flex gap-3 relative z-10">
-                              <MinimalAvatar name={comment.author} />
+                              <MinimalAvatar name={comment.author} avatarUrl={comment.authorAvatar} />
                               <div className="flex-1 pb-2">
                                 <div className="flex items-center gap-2 mb-0.5">
                                   <span className="font-semibold text-zinc-900 text-[13px]">
@@ -274,7 +280,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                               <div className="pl-10 space-y-4 pt-2 relative z-10">
                                 {comment.children.map(reply => (
                                   <div key={reply.id} className="relative flex gap-3">
-                                    <MinimalAvatar name={reply.author} size="small" />
+                                    <MinimalAvatar name={reply.author} avatarUrl={reply.authorAvatar} size="small" />
                                     <div className="flex-1 pb-1">
                                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                                         <span className="font-semibold text-zinc-900 text-[13px]">

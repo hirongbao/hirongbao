@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Image as ImageIcon, Link as LinkIcon, RefreshCw, Loader2 } from 'lucide-react';
+import { X, Send, Image as ImageIcon, Link as LinkIcon, RefreshCw, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { authRequest } from '../utils/auth';
 
 interface UgcPostModalProps {
@@ -17,6 +17,12 @@ export default function UgcPostModal({ isOpen, onClose, onSuccess }: UgcPostModa
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,11 +48,14 @@ export default function UgcPostModal({ isOpen, onClose, onSuccess }: UgcPostModa
       });
       setContent('');
       setMediaUrls([]);
+      showToast('发布成功！', 'success');
       onSuccess();
-      onClose();
+      setTimeout(() => {
+        onClose();
+        setLoading(false);
+      }, 1500);
     } catch (err: any) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   };
@@ -105,6 +114,21 @@ export default function UgcPostModal({ isOpen, onClose, onSuccess }: UgcPostModa
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
           >
+            {/* Toast Notification */}
+            <AnimatePresence>
+              {toast && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="absolute top-16 left-1/2 -translate-x-1/2 px-5 py-3 rounded-full flex items-center space-x-2 text-[13px] font-medium z-[120] shadow-xl bg-zinc-900 text-white whitespace-nowrap"
+                >
+                  {toast.type === 'error' ? <AlertCircle size={15} className="text-zinc-400" /> : <CheckCircle2 size={15} className="text-zinc-400" />}
+                  <span>{toast.message}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
             <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
               <h2 className="text-base font-bold text-zinc-900 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400"></span> 发说说

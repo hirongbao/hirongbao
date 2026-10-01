@@ -7,6 +7,7 @@ export interface Category {
 export interface Comment {
   id: string;
   author: string;
+  authorAvatar?: string | null;
   content: string;
   createdAt: string;
   parentId?: string | null;
