@@ -19,6 +19,13 @@ interface Anniversary {
   coverUrl?: string;
 }
 
+const PREDEFINED_SOCIALS = [
+  { platform: '微信', iconName: 'MessageCircle', type: 'qrcode' },
+  { platform: 'QQ', iconName: 'MessageSquare', type: 'qrcode' },
+  { platform: '抖音', iconName: 'Music', type: 'qrcode' },
+  { platform: 'GitHub', iconName: 'Github', type: 'url' }
+];
+
 export default function ProfileEditModal({ isOpen, onClose, onSuccess, initialProfile }: ProfileEditModalProps) {
   const [activeTab, setActiveTab] = useState<'basic' | 'anniversary'>('basic');
   
@@ -27,6 +34,10 @@ export default function ProfileEditModal({ isOpen, onClose, onSuccess, initialPr
   const [bio, setBio] = useState(initialProfile?.bio === '这个人很懒，什么都没写~' ? '' : initialProfile?.bio || '');
   const [nickname, setNickname] = useState(initialProfile?.name || '');
   const [socials, setSocials] = useState<any[]>(initialProfile?.socials || []);
+  
+  // QR Upload State
+  const [uploadingQrIndex, setUploadingQrIndex] = useState<number | null>(null);
+  const qrFileInputRef = useRef<HTMLInputElement>(null);
   
   // Anniversaries state
   const [anniversaries, setAnniversaries] = useState<Anniversary[]>([]);
@@ -115,6 +126,34 @@ export default function ProfileEditModal({ isOpen, onClose, onSuccess, initialPr
       setError(`头像上传失败: ${err.message}`);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files: File[] = Array.from(e.target.files || []);
+    if (qrFileInputRef.current) qrFileInputRef.current.value = '';
+    if (!files.length || uploadingQrIndex === null) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', files[0]);
+      
+      const fileRecord = await authRequest('/api/posts/ugc/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (fileRecord && fileRecord.fileUrl) {
+        updateSocial(uploadingQrIndex, 'qrCodeUrl', fileRecord.fileUrl);
+      }
+    } catch (err: any) {
+      setError(`二维码上传失败: ${err.message}`);
+    } finally {
+      setLoading(false);
+      setUploadingQrIndex(null);
     }
   };
 
@@ -239,6 +278,7 @@ export default function ProfileEditModal({ isOpen, onClose, onSuccess, initialPr
                           上传新头像
                         </button>
                         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleFileUpload} />
+                        <input ref={qrFileInputRef} type="file" accept="image/*" hidden onChange={handleQrUpload} />
                       </div>
                     </div>
                   </div>
@@ -280,34 +320,68 @@ export default function ProfileEditModal({ isOpen, onClose, onSuccess, initialPr
                           <button type="button" onClick={() => removeSocial(idx)} className="absolute -top-2 -right-2 w-6 h-6 bg-red-100 text-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white shadow-sm">
                             <X size={12} />
                           </button>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 gap-3">
                             <div>
                               <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1 block font-semibold">平台名称</label>
-                              <input
-                                value={social.platform}
-                                onChange={e => updateSocial(idx, 'platform', e.target.value)}
-                                placeholder="如 GitHub, Twitter"
+                              <select
+                                value={social.platform || ''}
+                                onChange={e => {
+                                  const selected = PREDEFINED_SOCIALS.find(p => p.platform === e.target.value);
+                                  if (selected) {
+                                    updateSocial(idx, 'platform', selected.platform);
+                                    updateSocial(idx, 'iconName', selected.iconName);
+                                    if (selected.type === 'url') {
+                                      const newSocials = [...socials];
+                                      delete newSocials[idx].qrCodeUrl;
+                                      setSocials(newSocials);
+                                    } else {
+                                      const newSocials = [...socials];
+                                      delete newSocials[idx].url;
+                                      setSocials(newSocials);
+                                    }
+                                  }
+                                }}
                                 className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-zinc-900 transition-colors"
-                              />
+                              >
+                                <option value="" disabled>选择平台</option>
+                                {PREDEFINED_SOCIALS.map(p => (
+                                  <option key={p.platform} value={p.platform}>{p.platform}</option>
+                                ))}
+                              </select>
                             </div>
-                            <div>
-                              <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1 block font-semibold">图标标识</label>
-                              <input
-                                value={social.iconName}
-                                onChange={e => updateSocial(idx, 'iconName', e.target.value)}
-                                placeholder="如 Github"
-                                className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-zinc-900 transition-colors"
-                              />
-                            </div>
-                            <div className="col-span-2">
-                              <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1 block font-semibold">链接 URL</label>
-                              <input
-                                value={social.url || ''}
-                                onChange={e => updateSocial(idx, 'url', e.target.value)}
-                                placeholder="https://..."
-                                className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-zinc-900 transition-colors"
-                              />
-                            </div>
+
+                            {PREDEFINED_SOCIALS.find(p => p.platform === social.platform)?.type === 'url' ? (
+                              <div>
+                                <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1 block font-semibold">主页 URL</label>
+                                <input
+                                  value={social.url || ''}
+                                  onChange={e => updateSocial(idx, 'url', e.target.value)}
+                                  placeholder="https://..."
+                                  className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-zinc-900 transition-colors"
+                                />
+                              </div>
+                            ) : social.platform ? (
+                              <div>
+                                <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1 block font-semibold">上传二维码</label>
+                                <div className="flex items-center gap-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setUploadingQrIndex(idx);
+                                      qrFileInputRef.current?.click();
+                                    }}
+                                    className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
+                                  >
+                                    <ImageIcon size={14} /> 上传图片
+                                  </button>
+                                  {social.qrCodeUrl && (
+                                    <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                                      已上传
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       ))}
