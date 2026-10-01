@@ -164,28 +164,28 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange, 
 
         <nav className="space-y-4 pt-2 my-6 block lg:hidden [@media(min-width:1024px)_and_(min-height:780px)]:block">
           <button type="button" onClick={() => onSectionChange('feed')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'feed' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>01 / 信息流</span>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>信息流</span>
             <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
           </button>
           {isMainSite && (
             <>
               <button type="button" onClick={() => onSectionChange('releases')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'releases' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'releases' ? 'text-zinc-900' : 'text-zinc-400'}`}>02 / 更新日志</span>
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'releases' ? 'text-zinc-900' : 'text-zinc-400'}`}>更新日志</span>
                 <div className={`h-[1px] flex-1 ${activeSection === 'releases' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
-              </button>
-              <button type="button" onClick={() => onSectionChange('square')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'square' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'square' ? 'text-zinc-900' : 'text-zinc-400'}`}>05 / 动态广场</span>
-                <div className={`h-[1px] flex-1 ${activeSection === 'square' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
               </button>
             </>
           )}
           <button type="button" onClick={() => onSectionChange('anniversaries')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'anniversaries' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'anniversaries' ? 'text-zinc-900' : 'text-zinc-400'}`}>03 / 纪念日</span>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'anniversaries' ? 'text-zinc-900' : 'text-zinc-400'}`}>纪念日</span>
             <div className={`h-[1px] flex-1 ${activeSection === 'anniversaries' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
           </button>
           <button type="button" onClick={() => onSectionChange('guestbook')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'guestbook' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'guestbook' ? 'text-zinc-900' : 'text-zinc-400'}`}>04 / 留言板</span>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'guestbook' ? 'text-zinc-900' : 'text-zinc-400'}`}>留言板</span>
             <div className={`h-[1px] flex-1 ${activeSection === 'guestbook' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+          </button>
+          <button type="button" onClick={() => onSectionChange('square')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'square' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'square' ? 'text-zinc-900' : 'text-zinc-400'}`}>动态广场</span>
+            <div className={`h-[1px] flex-1 ${activeSection === 'square' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
           </button>
         </nav>
       </div>

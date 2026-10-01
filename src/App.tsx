@@ -225,7 +225,8 @@ export default function App() {
         .then(res => res.json())
         .then(env => {
           if (env.code === 0 && env.data) {
-            setSquarePosts(env.data.posts.map(mapPost));
+            const items = env.data.items || env.data.records || [];
+            setSquarePosts(items.map(mapPost));
             setHasMoreSquare(env.data.hasMore !== false);
           }
         })
