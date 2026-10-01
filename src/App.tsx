@@ -67,7 +67,7 @@ export default function App() {
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [unsubscribeData, setUnsubscribeData] = useState<{email: string, token: string} | null>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [activeSection, setActiveSection] = useState<'feed' | 'releases' | 'anniversaries' | 'guestbook'>('feed');
+  const [activeSection, setActiveSection] = useState<'feed' | 'square' | 'releases' | 'anniversaries' | 'guestbook'>('feed');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isUserCenterOpen, setIsUserCenterOpen] = useState(false);
   const [isUgcOpen, setIsUgcOpen] = useState(false);
