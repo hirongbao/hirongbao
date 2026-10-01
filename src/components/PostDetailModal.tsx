@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Heart, MessageCircle, Share, Send, Loader2, CheckCircle, Reply, CornerDownRight, User } from 'lucide-react';
+import { X, Heart, MessageCircle, Share, Send, Loader2, CheckCircle, Reply, CornerDownRight, User, AlertCircle } from 'lucide-react';
 import { Post, Comment } from '../types';
 import { authRequest, getUserInfo } from '../utils/auth';
 import { PostMedia } from './PostMedia';
@@ -42,6 +42,11 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
   const [comments, setComments] = useState<Comment[]>(post?.comments || []);
   const [likes, setLikes] = useState(post?.likeCount || 0);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
   const [replyTo, setReplyTo] = useState<{ id: string; author: string } | null>(null);
   const commentInputRef = React.useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -83,7 +88,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
     e.preventDefault();
     const user = getUserInfo();
     if (!user) {
-      alert('请先登录后再发表评论');
+      showToast('请先登录后再发表评论', 'error');
       window.dispatchEvent(new Event('auth_expired'));
       return;
     }
@@ -105,7 +110,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
       setTimeout(() => setSubmitSuccess(false), 4000);
       // NOTE: Should ideally refresh comments list here, but reloading the page or relying on the user doing it is okay for now.
     } catch (err: any) {
-      alert(err.message || '评论失败，请稍后重试');
+      showToast(err.message || '评论失败，请稍后重试', 'error');
     }
   };
 
@@ -159,6 +164,20 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
           onClick={onClose}
         >
           <div className="min-h-full flex items-center justify-center">
+            {/* Toast Notification */}
+            <AnimatePresence>
+              {toast && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="fixed top-24 left-1/2 -translate-x-1/2 px-5 py-3 rounded-full flex items-center space-x-2 text-[13px] font-medium z-[120] shadow-xl bg-zinc-900 text-white whitespace-nowrap"
+                >
+                  {toast.type === 'error' ? <AlertCircle size={15} className="text-zinc-400" /> : <CheckCircle size={15} className="text-zinc-400" />}
+                  <span>{toast.message}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
             {/* Close Button - Outside the modal on Desktop, absolute top right */}
             <button 
               onClick={onClose}

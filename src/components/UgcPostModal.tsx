@@ -44,7 +44,6 @@ export default function UgcPostModal({ isOpen, onClose, onSuccess }: UgcPostModa
       setMediaUrls([]);
       onSuccess();
       onClose();
-      alert('动态发布成功！需要等待站长审核后才会公开显示。');
     } catch (err: any) {
       setError(err.message);
     } finally {
