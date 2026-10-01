@@ -90,7 +90,7 @@ export function ShareView({ postId }: ShareViewProps) {
             )}
             <div>
               <h3 className="text-2xl font-serif italic text-[#18181b]">{profile.name}</h3>
-              <p className="text-[#a1a1aa] font-bold uppercase tracking-widest text-xs mt-1">@hirongbao</p>
+              <p className="text-[#a1a1aa] font-bold uppercase tracking-widest text-xs mt-1">@{post.accountName || 'hirongbao'}</p>
             </div>
           </div>
           <div className="w-4 h-4 bg-[#18181b] rounded-full"></div>

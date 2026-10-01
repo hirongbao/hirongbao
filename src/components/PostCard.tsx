@@ -322,7 +322,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
                 </span>
                 <div>
                   <div className="text-sm font-bold tracking-[0.2em] uppercase text-[#18181b]">Personal Feed</div>
-                  <div className="text-[10px] text-[#a1a1aa] mt-1 uppercase tracking-widest">hirongbao.com</div>
+                  <div className="text-[10px] text-[#a1a1aa] mt-1 uppercase tracking-widest">{window.location.hostname}</div>
                 </div>
               </div>
               
