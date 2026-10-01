@@ -74,7 +74,6 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
       setLikes(post.likeCount);
       setIsLiked(false);
       setNewComment('');
-      setSubmitSuccess(false);
       setReplyTo(null);
     }
   }, [post]);
