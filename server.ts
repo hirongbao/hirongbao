@@ -32,7 +32,7 @@ async function startServer() {
   // 透传新增的带有特殊请求体（如文件上传）或未在下面显式映射的路由
   const { createProxyMiddleware } = require('http-proxy-middleware');
   app.use(createProxyMiddleware({
-    pathFilter: ['/api/user/**', '/api/guestbook/**', '/api/posts/ugc/**', '/api/profile/user/**', '/api/filehub/**', '/api/hirongbaohub/**', '/api/anniversaries/ugc/**', '/api/trigger-holiday'],
+    pathFilter: ['/api/user/**', '/api/guestbook/**', '/api/posts/ugc/**', '/api/profile/user/**', '/api/filehub/**', '/api/hirongbaohub/**', '/api/anniversaries/ugc/**'],
     target: BACKEND_URL,
     changeOrigin: true
   }));
@@ -128,7 +128,7 @@ async function startServer() {
   // 7. Health & IP Check
   app.get("/api/health", (req, res) => backendProxy(req, res, "/api/health"));
   app.get("/api/health/ip", (req, res) => backendProxy(req, res, "/api/health/ip"));
-
+  app.get("/api/trigger-holiday", (req, res) => backendProxy(req, res, "/api/trigger-holiday"));
 
   // 9. Anniversaries
   app.get("/api/anniversaries", (req, res) => backendProxy(req, res, "/api/hirongbaohub/anniversaries"));
