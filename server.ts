@@ -32,7 +32,7 @@ async function startServer() {
   // 透传新增的带有特殊请求体（如文件上传）或未在下面显式映射的路由
   const { createProxyMiddleware } = require('http-proxy-middleware');
   app.use(createProxyMiddleware({
-    pathFilter: ['/api/user/**', '/api/guestbook/**', '/api/posts/ugc/**', '/api/profile/user/**', '/api/filehub/**', '/api/hirongbaohub/**', '/api/anniversaries/ugc/**'],
+    pathFilter: ['/api/user/**', '/api/guestbook/**', '/api/posts/ugc/**', '/api/profile/user/**', '/api/filehub/**', '/api/hirongbaohub/**', '/api/anniversaries/ugc/**', '/api/trigger-holiday'],
     target: BACKEND_URL,
     changeOrigin: true
   }));
