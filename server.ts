@@ -128,7 +128,7 @@ async function startServer() {
   // 7. Health & IP Check
   app.get("/api/health", (req, res) => backendProxy(req, res, "/api/health"));
   app.get("/api/health/ip", (req, res) => backendProxy(req, res, "/api/health/ip"));
-  app.get("/api/trigger-holiday", (req, res) => backendProxy(req, res, "/api/trigger-holiday"));
+  app.get("/api/hirongbaohub/trigger-holiday", (req, res) => backendProxy(req, res, "/api/hirongbaohub/trigger-holiday"));
 
   // 9. Anniversaries
   app.get("/api/anniversaries", (req, res) => backendProxy(req, res, "/api/hirongbaohub/anniversaries"));
