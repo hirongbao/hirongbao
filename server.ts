@@ -30,12 +30,7 @@ async function startServer() {
   const PORT = 3001;
 
   // 透传新增的带有特殊请求体（如文件上传）或未在下面显式映射的路由
-  const { createProxyMiddleware } = require('http-proxy-middleware');
-  app.use(createProxyMiddleware({
-    pathFilter: ['/api/user/**', '/api/guestbook/**', '/api/posts/ugc/**', '/api/profile/user/**', '/api/filehub/**', '/api/hirongbaohub/**', '/api/anniversaries/ugc/**'],
-    target: BACKEND_URL,
-    changeOrigin: true
-  }));
+  const { createProxyMiddleware } = require('http-proxy-middleware');  app.use(apiProxy);
 
   // Add JSON body parser for POST requests
   app.use(express.json());
@@ -207,8 +202,16 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://0.0.0.0:${PORT}`);
+  });
+
+  server.on('upgrade', (req, socket, head) => {
+    if (req.url && req.url.startsWith('/ws/notify')) {
+      apiProxy.upgrade(req, socket, head);
+    } else {
+      socket.destroy();
+    }
   });
 }
 

@@ -1,69 +1,54 @@
 import React, { useState, useEffect } from 'react';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
 export function OnlineStats() {
   const [onlineCount, setOnlineCount] = useState<number>(0);
   const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
-    // 为浏览器生成并持久化匿名访客 ID，避免后端只能看到代理地址时统计失效
-    const storageKey = 'hirongbao:visitor-id';
-    let clientId = window.localStorage.getItem(storageKey);
-    if (!clientId) {
-      clientId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
-      window.localStorage.setItem(storageKey, clientId);
-    }
-    
     let isMounted = true;
-    let timer: number;
+    
+    // Create STOMP client
+    const stompClient = new Client({
+      // In development, server proxy is used for /ws/notify
+      webSocketFactory: () => new SockJS('/ws/notify'),
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
 
-    const fetchHeartbeat = async () => {
-      try {
-        const res = await fetch('/api/heartbeat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ clientId })
-        });
-        
-        if (res.ok) {
-          const contentType = res.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            try {
-              const data = await res.json();
-              if (isMounted && data.code === 0) {
-                setOnlineCount(data.data.onlineCount || 0);
-                setIsLive(true);
-              } else {
-                setIsLive(false);
-              }
-            } catch (parseError) {
-              console.error('Invalid JSON response:', parseError);
-              setIsLive(false);
-            }
-          } else {
-            setIsLive(false);
-          }
-        } else {
-          setIsLive(false);
-        }
-      } catch (error) {
-        console.error('Heartbeat failed:', error);
-        setIsLive(false);
+    stompClient.onConnect = (frame) => {
+      if (isMounted) {
+        setIsLive(true);
       }
+      
+      stompClient.subscribe('/topic/online-count', (message) => {
+        if (message.body && isMounted) {
+          try {
+            const data = JSON.parse(message.body);
+            setOnlineCount(data.onlineCount || 1);
+          } catch (e) {
+            console.error('Failed to parse STOMP message', e);
+          }
+        }
+      });
     };
 
-    // Initial fetch
-    fetchHeartbeat();
+    stompClient.onWebSocketClose = () => {
+      if (isMounted) setIsLive(false);
+    };
 
-    // Setup heartbeat interval (every 15 seconds)
-    timer = window.setInterval(fetchHeartbeat, 15000);
+    stompClient.onStompError = (frame) => {
+      console.error('STOMP Error:', frame);
+      if (isMounted) setIsLive(false);
+    };
+
+    stompClient.activate();
 
     return () => {
       isMounted = false;
-      window.clearInterval(timer);
+      stompClient.deactivate();
     };
   }, []);
 
