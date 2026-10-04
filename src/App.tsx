@@ -54,6 +54,27 @@ const mapPost = (p: RawPost): Post => {
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const reloadPosts = async () => {
+    try {
+      const res = await fetch(targetAccount ? `/api/posts/ugc/user/${targetAccount}?page=1&size=12` : '/api/posts/page?page=1&size=12');
+      if (res.ok) {
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const env = await res.json();
+          if (env.code === 0 && env.data) {
+            const data = env.data;
+            const items = data.items || data.records || [];
+            setPosts(items.map(mapPost));
+            setHasMore(data.hasNext != null ? data.hasNext : data.current < data.pages);
+            setPage(1);
+          }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     if (isSidebarOpen) {
       document.body.style.overflow = 'hidden';
@@ -544,7 +565,7 @@ export default function App() {
       <UgcPostModal
         isOpen={isUgcOpen}
         onClose={() => setIsUgcOpen(false)}
-        onSuccess={() => {}}
+        onSuccess={reloadPosts}
       />
     </div>
   );
