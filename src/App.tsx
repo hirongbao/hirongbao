@@ -14,9 +14,14 @@ import { ReleaseLogSection } from './components/ReleaseLogSection';
 import { AnniversariesSection } from './components/AnniversariesSection';
 import AuthModal from './components/AuthModal';
 import UserCenterModal from './components/UserCenterModal';
+import NotificationModal from './components/NotificationModal';
 import GuestbookSection from './components/GuestbookSection';
 import UgcPostModal from './components/UgcPostModal';
+import AnniversaryModal from './components/AnniversaryModal';
 import { getUserInfo } from './utils/auth';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+
 
 // 后端动态原始数据映射为展示模型（时间转相对时间、id 转字符串）
 const mapComment = (c: any): import('./types').Comment => ({
@@ -72,7 +77,39 @@ export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isUserCenterOpen, setIsUserCenterOpen] = useState(false);
   const [isUgcOpen, setIsUgcOpen] = useState(false);
+  const [isAnniversaryOpen, setIsAnniversaryOpen] = useState(false);
   const [user, setUser] = useState(getUserInfo());
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    // Fetch initial unread count
+    fetch('/api/notifications/unread-count', {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('servicehub_token')}` }
+    }).then(r => r.json()).then(res => {
+      if (res.code === 0) setUnreadCount(res.data);
+    });
+
+    const stompClient = new Client({
+      webSocketFactory: () => new SockJS('/ws/notify'),
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+
+    stompClient.onConnect = () => {
+      stompClient.subscribe(`/topic/notify/${user.id}`, (msg) => {
+        try {
+          const data = JSON.parse(msg.body);
+          if (data.unreadCount !== undefined) setUnreadCount(data.unreadCount);
+        } catch (e) {}
+      });
+    };
+    stompClient.activate();
+    return () => { stompClient.deactivate(); };
+  }, [user?.id]);
 
   useEffect(() => {
     const handleAuthExpired = () => {
@@ -534,17 +571,34 @@ export default function App() {
         onSuccess={() => setUser(getUserInfo())} 
       />
       
+            <NotificationModal 
+        isOpen={isNotifOpen} 
+        onClose={() => setIsNotifOpen(false)}
+        token={localStorage.getItem('servicehub_token') || ''}
+      />
       <UserCenterModal 
         isOpen={isUserCenterOpen} 
+        unreadCount={unreadCount}
+        onOpenNotifications={() => {
+          setIsUserCenterOpen(false);
+          setIsNotifOpen(true);
+          setUnreadCount(0);
+        }} 
         onClose={() => setIsUserCenterOpen(false)} 
         onLogout={() => setUser(null)}
         onPublish={() => setIsUgcOpen(true)}
+        onPublishAnniversary={() => setIsAnniversaryOpen(true)}
       />
       
       <UgcPostModal
         isOpen={isUgcOpen}
         onClose={() => setIsUgcOpen(false)}
         onSuccess={() => {}}
+      />
+
+      <AnniversaryModal
+        isOpen={isAnniversaryOpen}
+        onClose={() => setIsAnniversaryOpen(false)}
       />
     </div>
   );
