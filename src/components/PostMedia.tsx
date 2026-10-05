@@ -75,6 +75,44 @@ function SlideImage({ src, mode, onViewFull }: SlideImageProps) {
 function Lightbox({ images, initialIdx, onClose }: { images: {mediaUrl: string}[]; initialIdx: number; onClose: () => void }) {
   const [idx, setIdx] = useState(initialIdx);
   const [tall, setTall] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    setScale(1);
+    setPan({ x: 0, y: 0 });
+  }, [idx]);
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.stopPropagation();
+    if (e.deltaY < 0) {
+      setScale(s => Math.min(s + 0.2, 5));
+    } else {
+      setScale(s => Math.max(s - 0.2, 0.5));
+    }
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (scale > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isDragging && scale > 1) {
+      setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
   const src = images[idx]?.mediaUrl;
 
   const next = useCallback(() => setIdx(i => (i + 1) % images.length), [images.length]);
@@ -146,20 +184,31 @@ function Lightbox({ images, initialIdx, onClose }: { images: {mediaUrl: string}[
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className={`w-full max-w-4xl h-full flex flex-col items-center justify-start overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full py-12 px-2`} 
+        className={`w-full h-full flex items-center justify-center overflow-hidden`}
         onClick={e => e.stopPropagation()}
+        onWheel={handleWheel}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
-        <img
-          src={src}
-          onLoad={e => {
-            const img = e.currentTarget;
-            if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-              setTall(img.naturalHeight / img.naturalWidth > 1.6);
-            }
-          }}
-          alt=""
-          className={tall ? 'w-full max-w-2xl h-auto rounded-xl shadow-2xl block my-auto' : 'max-w-full max-h-[88vh] w-auto h-auto object-contain rounded-xl shadow-2xl my-auto'}
-        />
+        <div 
+          style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`, transition: isDragging ? 'none' : 'transform 0.2s', cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'auto' }}
+          className="w-full h-full flex flex-col items-center justify-center pointer-events-none"
+        >
+          <img
+            src={src}
+            onLoad={e => {
+              const img = e.currentTarget;
+              if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                setTall(img.naturalHeight / img.naturalWidth > 1.6);
+              }
+            }}
+            alt=""
+            className={tall ? 'w-full max-w-2xl h-auto rounded-xl shadow-2xl block pointer-events-auto' : 'max-w-full max-h-[88vh] w-auto h-auto object-contain rounded-xl shadow-2xl pointer-events-auto'}
+            draggable={false}
+          />
+        </div>
       </motion.div>
     </motion.div>
   );

@@ -12,7 +12,6 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@stomp/stompjs": "^7.3.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "express": "^4.21.2",
@@ -30,8 +29,9 @@
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-icons": "^5.7.0",
-    "sockjs-client": "^1.6.1",
-    "vite": "^6.2.3"
+    "vite": "^6.2.3",
+    "@stomp/stompjs": "^7.0.0",
+    "sockjs-client": "^1.6.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
