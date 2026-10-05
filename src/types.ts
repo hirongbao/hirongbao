@@ -111,3 +111,17 @@ export interface RawPost {
   nickname?: string;
   avatarUrl?: string;
 }
+
+export interface SiteAnniversary {
+  id: string;
+  userId?: number;
+  title: string;
+  eventDate: string;
+  type: string;
+  icon: string;
+  coverUrl?: string;
+  isEnabled?: boolean;
+  sortOrder?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
