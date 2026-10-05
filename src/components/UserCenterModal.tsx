@@ -3,14 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, LogOut, Edit3, Settings } from 'lucide-react';
 import { getUserInfo, removeToken, removeUserInfo } from '../utils/auth';
 
+import { Bell } from 'lucide-react';
 interface UserCenterModalProps {
+  unreadCount?: number;
   isOpen: boolean;
   onClose: () => void;
   onLogout: () => void;
   onPublish: () => void;
 }
 
-export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish }: UserCenterModalProps) {
+export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish, unreadCount = 0 }: UserCenterModalProps) {
   const user = getUserInfo();
 
   const handleLogout = () => {
@@ -57,12 +59,23 @@ export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish }
               </div>
 
               <div className="space-y-3">
-                <button
+                                <button
                   onClick={() => { window.location.href = `/${user?.accountName}/post`; }}
-                  className="w-full py-4 flex items-center justify-center space-x-2 bg-zinc-100 text-zinc-900 rounded-2xl font-bold tracking-widest transition-all hover:bg-zinc-200"
+                  className="w-full py-4 flex items-center justify-center space-x-2 bg-zinc-100 text-zinc-900 rounded-2xl font-bold tracking-widest transition-all hover:bg-zinc-200 relative"
                 >
                   <Settings size={18} />
-                  <span>个人主页</span>
+                  <span>个人主页 / 纪念日</span>
+                </button>
+                <button
+                  onClick={() => { 
+                    fetch('/api/notifications/read-all', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('servicehub_token')}` }});
+                    alert("暂无更多历史通知"); 
+                  }}
+                  className="w-full py-4 flex items-center justify-center space-x-2 bg-zinc-100 text-zinc-900 rounded-2xl font-bold tracking-widest transition-all hover:bg-zinc-200 relative"
+                >
+                  <Bell size={18} />
+                  <span>消息通知</span>
+                  {unreadCount > 0 && <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{unreadCount}</span>}
                 </button>
                 <button
                   onClick={() => { onClose(); onPublish(); }}
