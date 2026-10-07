@@ -5,7 +5,15 @@ export function OnlineStats() {
   const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
-    // 为浏览器生成并持久化匿名访客 ID，避免后端只能看到代理地址时统计失效
+    // 监听 WebSocket 的实时在线人数广播
+    const handleWsOnlineCount = (e: any) => {
+      if (typeof e.detail === 'number') {
+        setOnlineCount(e.detail);
+        setIsLive(true);
+      }
+    };
+    window.addEventListener('ws_online_count', handleWsOnlineCount);
+
     const storageKey = 'hirongbao:visitor-id';
     let clientId = window.localStorage.getItem(storageKey);
     if (!clientId) {
@@ -14,56 +22,30 @@ export function OnlineStats() {
         : `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
       window.localStorage.setItem(storageKey, clientId);
     }
-    
-    let isMounted = true;
-    let timer: number;
 
-    const fetchHeartbeat = async () => {
+    // 只在组件挂载时发送一次心跳用于记录访客，后续依赖 WebSocket 实时更新
+    let isMounted = true;
+    const recordVisit = async () => {
       try {
         const res = await fetch('/api/heartbeat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ clientId })
         });
-        
-        if (res.ok) {
-          const contentType = res.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            try {
-              const data = await res.json();
-              if (isMounted && data.code === 0) {
-                setOnlineCount(data.data.onlineCount || 0);
-                setIsLive(true);
-              } else {
-                setIsLive(false);
-              }
-            } catch (parseError) {
-              console.error('Invalid JSON response:', parseError);
-              setIsLive(false);
-            }
-          } else {
-            setIsLive(false);
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          if (data.code === 0 && onlineCount === 0) {
+             setOnlineCount(data.data.onlineCount || 0);
+             setIsLive(true);
           }
-        } else {
-          setIsLive(false);
         }
-      } catch (error) {
-        console.error('Heartbeat failed:', error);
-        setIsLive(false);
-      }
+      } catch (e) {}
     };
-
-    // Initial fetch
-    fetchHeartbeat();
-
-    // Setup heartbeat interval (every 15 seconds)
-    timer = window.setInterval(fetchHeartbeat, 15000);
+    recordVisit();
 
     return () => {
       isMounted = false;
-      window.clearInterval(timer);
+      window.removeEventListener('ws_online_count', handleWsOnlineCount);
     };
   }, []);
 

@@ -100,12 +100,19 @@ export default function App() {
     });
 
     stompClient.onConnect = () => {
-      stompClient.subscribe(`/topic/notify/${user.id}`, (msg) => {
+      stompClient.subscribe('/topic/online-count', (msg) => {
         try {
-          const data = JSON.parse(msg.body);
-          if (data.unreadCount !== undefined) setUnreadCount(data.unreadCount);
+          window.dispatchEvent(new CustomEvent('ws_online_count', { detail: Number(msg.body) }));
         } catch (e) {}
       });
+      if (user?.id) {
+        stompClient.subscribe(`/topic/notify/${user.id}`, (msg) => {
+          try {
+            const data = JSON.parse(msg.body);
+            if (data.unreadCount !== undefined) setUnreadCount(data.unreadCount);
+          } catch (e) {}
+        });
+      }
     };
     stompClient.activate();
     return () => { stompClient.deactivate(); };
