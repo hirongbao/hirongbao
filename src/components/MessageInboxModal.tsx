@@ -18,6 +18,13 @@ export function MessageInboxModal({ isOpen, onClose, onOpenChat }: MessageInboxM
   useEffect(() => {
     if (isOpen) {
       loadSessions();
+      const handleNotify = (e: any) => {
+        if (e.detail?.type === 'MESSAGE') {
+          loadSessions();
+        }
+      };
+      window.addEventListener('ws_notify', handleNotify);
+      return () => window.removeEventListener('ws_notify', handleNotify);
     }
   }, [isOpen]);
 

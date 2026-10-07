@@ -116,6 +116,7 @@ export default function App() {
           try {
             const data = JSON.parse(msg.body);
             if (data.unreadCount !== undefined) setUnreadCount(data.unreadCount);
+            window.dispatchEvent(new CustomEvent("ws_notify", { detail: data }));
           } catch (e) {}
         });
       }

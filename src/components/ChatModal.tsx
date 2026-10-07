@@ -23,10 +23,13 @@ export function ChatModal({ isOpen, onClose, targetUserId, targetName }: ChatMod
     if (isOpen && targetUserId) {
       loadHistory();
       // Optional: Polling or WebSocket could be added here
-      const interval = setInterval(() => {
-        loadHistory(false);
-      }, 5000);
-      return () => clearInterval(interval);
+            const handleNotify = (e: any) => {
+        if (e.detail?.type === 'MESSAGE') {
+          loadHistory(false);
+        }
+      };
+      window.addEventListener('ws_notify', handleNotify);
+      return () => window.removeEventListener('ws_notify', handleNotify);
     }
   }, [isOpen, targetUserId]);
 
