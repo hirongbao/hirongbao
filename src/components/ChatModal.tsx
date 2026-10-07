@@ -44,11 +44,8 @@ export function ChatModal({ isOpen, onClose, targetUserId, targetName }: ChatMod
   const loadHistory = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const res = await authRequest(`/api/hirongbaohub/messages/history/${targetUserId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setMessages(data);
-      }
+      const data = await authRequest(`/api/hirongbaohub/messages/history/${targetUserId}`);
+      setMessages(data.records || []);
     } catch (e) {
       console.error('Failed to load chat history', e);
     } finally {
@@ -62,15 +59,13 @@ export function ChatModal({ isOpen, onClose, targetUserId, targetName }: ChatMod
 
     setSending(true);
     try {
-      const res = await authRequest('/api/hirongbaohub/messages', {
+      await authRequest('/api/hirongbaohub/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ receiverId: targetUserId, content: inputText.trim() })
       });
-      if (res.ok) {
-        setInputText('');
-        loadHistory(false);
-      }
+      setInputText('');
+      loadHistory(false);
     } catch (e) {
       console.error('Failed to send message', e);
     } finally {

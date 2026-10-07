@@ -31,11 +31,8 @@ export function MessageInboxModal({ isOpen, onClose, onOpenChat }: MessageInboxM
   const loadSessions = async () => {
     setLoading(true);
     try {
-      const res = await authRequest('/api/hirongbaohub/messages/sessions');
-      if (res.ok) {
-        const data = await res.json();
-        setSessions(data);
-      }
+      const data = await authRequest('/api/hirongbaohub/messages/sessions');
+      setSessions(data || []);
     } catch (e) {
       console.error('Failed to load sessions', e);
     } finally {
