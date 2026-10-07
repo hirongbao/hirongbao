@@ -8,6 +8,7 @@ export interface Comment {
   id: string;
   author: string;
   authorAvatar?: string | null;
+  userId?: string;
   content: string;
   createdAt: string;
   parentId?: string | null;
@@ -124,4 +125,23 @@ export interface SiteAnniversary {
   sortOrder?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface MessageSession {
+  targetUserId: string;
+  targetAccountName: string;
+  targetNickname: string;
+  targetAvatarUrl: string | null;
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  createdAt: string;
+  isRead: boolean;
 }

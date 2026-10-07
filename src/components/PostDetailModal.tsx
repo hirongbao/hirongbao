@@ -5,6 +5,7 @@ import { Post, Comment } from '../types';
 import { authRequest, getUserInfo } from '../utils/auth';
 import { PostMedia } from './PostMedia';
 import { formatRelativeTime } from '../utils/time';
+import { ChatModal } from './ChatModal';
 
 interface PostDetailModalProps {
   post: Post | null;
@@ -13,15 +14,16 @@ interface PostDetailModalProps {
   onClose: () => void;
 }
 
-const MinimalAvatar = ({ name, avatarUrl, size = 'normal' }: { name: string, avatarUrl?: string | null, size?: 'normal' | 'small' }) => {
+const MinimalAvatar = ({ name, avatarUrl, size = 'normal', onClick }: { name: string, avatarUrl?: string | null, size?: 'normal' | 'small', onClick?: (e: React.MouseEvent) => void }) => {
   const isVisitor = name === '访客' || !name;
   const dimensionClass = size === 'small' ? 'w-7 h-7' : 'w-9 h-9';
   const iconSize = size === 'small' ? 12 : 14;
   const textSize = size === 'small' ? 'text-[10px]' : 'text-xs';
+  const cursorClass = onClick && !isVisitor ? 'cursor-pointer hover:opacity-80 transition-opacity' : '';
   
   if (avatarUrl) {
     return (
-      <img src={avatarUrl} alt={name} className={`${dimensionClass} rounded-full object-cover shrink-0 shadow-sm border border-zinc-200/80`} />
+      <img src={avatarUrl} alt={name} onClick={(e) => { if (!isVisitor && onClick) onClick(e); }} className={`${dimensionClass} rounded-full object-cover shrink-0 shadow-sm border border-zinc-200/80 ${cursorClass}`} />
     );
   }
 
@@ -34,7 +36,7 @@ const MinimalAvatar = ({ name, avatarUrl, size = 'normal' }: { name: string, ava
   }
   
   return (
-    <div className={`${dimensionClass} rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 shadow-sm`}>
+    <div onClick={(e) => { if (!isVisitor && onClick) onClick(e); }} className={`${dimensionClass} rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 shadow-sm ${cursorClass}`}>
       <span className={`text-white font-serif italic ${textSize}`}>
         {name.charAt(0).toUpperCase()}
       </span>
@@ -47,6 +49,8 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
   const [isLiked, setIsLiked] = useState(false);
   const [comments, setComments] = useState<Comment[]>(post?.comments || []);
   const [likes, setLikes] = useState(post?.likeCount || 0);
+  const [activeAvatar, setActiveAvatar] = useState<{ userId: string; author: string; x: number; y: number } | null>(null);
+  const [chatTarget, setChatTarget] = useState<{ userId: string; name: string } | null>(null);
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -55,8 +59,20 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
   };
   const [replyTo, setReplyTo] = useState<{ id: string; author: string } | null>(null);
   const commentInputRef = React.useRef<HTMLInputElement>(null);
+  
+  const handleAvatarClick = (e: React.MouseEvent, comment: Comment) => {
+    if (comment.author === '访客') return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setActiveAvatar({
+      userId: comment.userId || comment.author,
+      author: comment.author,
+      x: rect.left,
+      y: rect.bottom
+    });
+  };
+
   useEffect(() => {
-    if (post) {
+    if (post || chatTarget) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -64,7 +80,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
     return () => {
       document.body.style.overflow = '';
     };
-  }, [post]);
+  }, [post, chatTarget]);
   const likeBusy = React.useRef(false);
 
   // Update local state when post changes (e.g. when opening a new post)
@@ -290,7 +306,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                             )}
                             {/* Top-level comment */}
                             <div className="flex gap-3 relative z-10">
-                              <MinimalAvatar name={comment.author} avatarUrl={comment.authorAvatar} />
+                              <MinimalAvatar name={comment.author} avatarUrl={comment.authorAvatar} onClick={(e) => handleAvatarClick(e, comment)} />
                               <div className="flex-1 pb-2">
                                 <div className="flex items-center gap-2 mb-0.5">
                                   <span className="font-semibold text-zinc-900 text-[13px]">
@@ -317,7 +333,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                               <div className="pl-10 space-y-4 pt-2 relative z-10">
                                 {comment.children.map(reply => (
                                   <div key={reply.id} className="relative flex gap-3">
-                                    <MinimalAvatar name={reply.author} avatarUrl={reply.authorAvatar} size="small" />
+                                    <MinimalAvatar name={reply.author} avatarUrl={reply.authorAvatar} size="small" onClick={(e) => handleAvatarClick(e, reply)} />
                                     <div className="flex-1 pb-1">
                                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                                         <span className="font-semibold text-zinc-900 text-[13px]">
@@ -403,6 +419,57 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
               </div>
             </motion.div>
           </div>
+
+          {/* Avatar Action Menu */}
+          <AnimatePresence>
+            {activeAvatar && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[130]"
+                  onClick={(e) => { e.stopPropagation(); setActiveAvatar(null); }}
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                  style={{ position: 'fixed', top: activeAvatar.y + 10, left: activeAvatar.x }}
+                  className="bg-white rounded-xl shadow-xl border border-zinc-100 overflow-hidden z-[140] w-32"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => { window.location.href = `/${activeAvatar.author}/post`; }}
+                    className="w-full text-left px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-2"
+                  >
+                    <User size={14} />
+                    进入主页
+                  </button>
+                  <button
+                    onClick={() => {
+                      setChatTarget({ userId: activeAvatar.userId, name: activeAvatar.author });
+                      setActiveAvatar(null);
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-2 border-t border-zinc-100"
+                  >
+                    <MessageCircle size={14} />
+                    私信
+                  </button>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+
+          {chatTarget && (
+            <ChatModal
+              isOpen={true}
+              onClose={() => setChatTarget(null)}
+              targetUserId={chatTarget.userId}
+              targetName={chatTarget.name}
+            />
+          )}
+
         </motion.div>
       )}
     </AnimatePresence>

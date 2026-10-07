@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, LogOut, Edit3, Settings, Calendar } from 'lucide-react';
 import { getUserInfo, removeToken, removeUserInfo } from '../utils/auth';
 
-import { Bell } from 'lucide-react';
+import { Bell, MessageSquare } from 'lucide-react';
 interface UserCenterModalProps {
   unreadCount?: number;
+  unreadMessageCount?: number;
   onOpenNotifications?: () => void;
+  onOpenMessageInbox?: () => void;
   isOpen: boolean;
   onClose: () => void;
   onLogout: () => void;
@@ -14,7 +16,7 @@ interface UserCenterModalProps {
   onPublishAnniversary: () => void;
 }
 
-export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish, onPublishAnniversary, onOpenNotifications, unreadCount = 0 }: UserCenterModalProps) {
+export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish, onPublishAnniversary, onOpenNotifications, onOpenMessageInbox, unreadCount = 0, unreadMessageCount = 0 }: UserCenterModalProps) {
   const user = getUserInfo();
 
   const handleLogout = () => {
@@ -68,14 +70,24 @@ export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish, 
                   <Settings size={18} />
                   <span>个人主页</span>
                 </button>
-                <button
-                  onClick={() => { if(onOpenNotifications) onOpenNotifications(); }}
-                  className="w-full py-4 flex items-center justify-center space-x-2 bg-zinc-100 text-zinc-900 rounded-2xl font-bold tracking-widest transition-all hover:bg-zinc-200 relative"
-                >
-                  <Bell size={18} />
-                  <span>消息通知</span>
-                  {unreadCount > 0 && <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{unreadCount}</span>}
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => { if(onOpenNotifications) onOpenNotifications(); }}
+                    className="w-full py-4 flex items-center justify-center space-x-2 bg-zinc-100 text-zinc-900 rounded-2xl font-bold tracking-widest transition-all hover:bg-zinc-200 relative"
+                  >
+                    <Bell size={18} />
+                    <span>消息通知</span>
+                    {unreadCount > 0 && <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{unreadCount}</span>}
+                  </button>
+                  <button
+                    onClick={() => { if(onOpenMessageInbox) onOpenMessageInbox(); }}
+                    className="w-full py-4 flex items-center justify-center space-x-2 bg-zinc-100 text-zinc-900 rounded-2xl font-bold tracking-widest transition-all hover:bg-zinc-200 relative"
+                  >
+                    <MessageSquare size={18} />
+                    <span>私信箱</span>
+                    {unreadMessageCount > 0 && <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{unreadMessageCount}</span>}
+                  </button>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => { onClose(); onPublish(); }}

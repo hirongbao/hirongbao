@@ -18,6 +18,8 @@ import NotificationModal from './components/NotificationModal';
 import GuestbookSection from './components/GuestbookSection';
 import UgcPostModal from './components/UgcPostModal';
 import AnniversaryModal from './components/AnniversaryModal';
+import { MessageInboxModal } from './components/MessageInboxModal';
+import { ChatModal } from './components/ChatModal';
 import { getUserInfo } from './utils/auth';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -28,6 +30,7 @@ const mapComment = (c: any): import('./types').Comment => ({
   id: String(c.id),
   author: c.author,
   authorAvatar: c.authorAvatar || null,
+  userId: c.userId ? String(c.userId) : undefined,
   content: c.content,
   createdAt: formatRelativeTime(c.createdAt),
   parentId: c.parentId ? String(c.parentId) : null,
@@ -81,6 +84,9 @@ export default function App() {
   const [user, setUser] = useState(getUserInfo());
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isInboxOpen, setIsInboxOpen] = useState(false);
+  const [chatTarget, setChatTarget] = useState<{ userId: string; name: string } | null>(null);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -586,16 +592,38 @@ export default function App() {
       <UserCenterModal 
         isOpen={isUserCenterOpen} 
         unreadCount={unreadCount}
+        unreadMessageCount={unreadMessageCount}
         onOpenNotifications={() => {
           setIsUserCenterOpen(false);
           setIsNotifOpen(true);
           setUnreadCount(0);
-        }} 
+        }}
+        onOpenMessageInbox={() => {
+          setIsUserCenterOpen(false);
+          setIsInboxOpen(true);
+        }}
         onClose={() => setIsUserCenterOpen(false)} 
         onLogout={() => setUser(null)}
         onPublish={() => setIsUgcOpen(true)}
         onPublishAnniversary={() => setIsAnniversaryOpen(true)}
       />
+
+      <MessageInboxModal
+        isOpen={isInboxOpen}
+        onClose={() => setIsInboxOpen(false)}
+        onOpenChat={(userId, name) => {
+          setChatTarget({ userId, name });
+        }}
+      />
+
+      {chatTarget && (
+        <ChatModal
+          isOpen={true}
+          onClose={() => setChatTarget(null)}
+          targetUserId={chatTarget.userId}
+          targetName={chatTarget.name}
+        />
+      )}
       
       <UgcPostModal
         isOpen={isUgcOpen}
