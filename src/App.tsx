@@ -575,8 +575,8 @@ export default function App() {
 
       <PostDetailModal
         post={selectedPost}
-        authorName={profile?.name || ''}
-        authorAvatar={profile?.avatarUrl || ''}
+        authorName={selectedPost?.nickname || selectedPost?.accountName || profile?.name || ''}
+        authorAvatar={selectedPost?.avatarUrl || profile?.avatarUrl || ''}
         onClose={() => setSelectedPost(null)}
       />
       
