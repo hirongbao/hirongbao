@@ -5,6 +5,7 @@ import { RiQqLine, RiTiktokLine } from 'react-icons/ri';
 import { motion, AnimatePresence } from 'motion/react';
 import { formatCount } from '../utils/format';
 import { OnlineStats } from './OnlineStats';
+import { GlobalUserList } from './GlobalUserList';
 import ProfileEditModal from './ProfileEditModal';
 import { getUserInfo } from '../utils/auth';
 
@@ -21,9 +22,10 @@ interface ProfileProps {
   activeSection: 'feed' | 'square' | 'releases' | 'anniversaries' | 'guestbook';
   onSectionChange: (section: 'feed' | 'square' | 'releases' | 'anniversaries' | 'guestbook') => void;
   isMainSite?: boolean;
+  onOpenChat?: (userId: string, name: string) => void;
 }
 
-export function Profile({ profile, onSubscribe, activeSection, onSectionChange, isMainSite = true }: ProfileProps) {
+export function Profile({ profile, onSubscribe, activeSection, onSectionChange, isMainSite = true, onOpenChat }: ProfileProps) {
   const [isBioExpanded, setIsBioExpanded] = useState(false);
   const [activeQr, setActiveQr] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -38,6 +40,11 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange, 
   return (
     <div className="flex h-full flex-col justify-between">
       <div className="space-y-5 lg:space-y-7">
+        {isMainSite ? (
+          <GlobalUserList onOpenChat={onOpenChat} />
+        ) : (
+          <>
+
         <div className="relative inline-block">
           <img
             src={profile.avatarUrl}
@@ -162,31 +169,39 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange, 
           </div>
         )}
 
-        <nav className="space-y-4 pt-2 my-6 block lg:hidden [@media(min-width:1024px)_and_(min-height:780px)]:block">
-          <button type="button" onClick={() => onSectionChange('feed')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'feed' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>信息流</span>
-            <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
-          </button>
+                  </>
+        )}
+      <nav className="space-y-4 pt-2 my-6 block lg:hidden [@media(min-width:1024px)_and_(min-height:780px)]:block">
+          {!isMainSite && (
+            <button type="button" onClick={() => onSectionChange('feed')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'feed' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>信息流</span>
+              <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+            </button>
+          )}
           {isMainSite && (
             <>
+              <button type="button" onClick={() => onSectionChange('square')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'square' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'square' ? 'text-zinc-900' : 'text-zinc-400'}`}>动态广场</span>
+                <div className={`h-[1px] flex-1 ${activeSection === 'square' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+              </button>
               <button type="button" onClick={() => onSectionChange('releases')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'releases' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
                 <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'releases' ? 'text-zinc-900' : 'text-zinc-400'}`}>更新日志</span>
                 <div className={`h-[1px] flex-1 ${activeSection === 'releases' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
               </button>
             </>
           )}
-          <button type="button" onClick={() => onSectionChange('anniversaries')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'anniversaries' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'anniversaries' ? 'text-zinc-900' : 'text-zinc-400'}`}>纪念日</span>
-            <div className={`h-[1px] flex-1 ${activeSection === 'anniversaries' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
-          </button>
-          <button type="button" onClick={() => onSectionChange('guestbook')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'guestbook' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'guestbook' ? 'text-zinc-900' : 'text-zinc-400'}`}>留言板</span>
-            <div className={`h-[1px] flex-1 ${activeSection === 'guestbook' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
-          </button>
-          <button type="button" onClick={() => onSectionChange('square')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'square' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'square' ? 'text-zinc-900' : 'text-zinc-400'}`}>动态广场</span>
-            <div className={`h-[1px] flex-1 ${activeSection === 'square' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
-          </button>
+          {!isMainSite && (
+            <>
+              <button type="button" onClick={() => onSectionChange('anniversaries')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'anniversaries' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'anniversaries' ? 'text-zinc-900' : 'text-zinc-400'}`}>纪念日</span>
+                <div className={`h-[1px] flex-1 ${activeSection === 'anniversaries' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+              </button>
+              <button type="button" onClick={() => onSectionChange('guestbook')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'guestbook' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'guestbook' ? 'text-zinc-900' : 'text-zinc-400'}`}>留言板</span>
+                <div className={`h-[1px] flex-1 ${activeSection === 'guestbook' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+              </button>
+            </>
+          )}
         </nav>
       </div>
 

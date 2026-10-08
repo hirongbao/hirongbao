@@ -76,7 +76,11 @@ export default function App() {
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [unsubscribeData, setUnsubscribeData] = useState<{email: string, token: string} | null>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [activeSection, setActiveSection] = useState<'feed' | 'square' | 'releases' | 'anniversaries' | 'guestbook'>('feed');
+    const targetAccount = useMemo(() => {
+    const match = window.location.pathname.match(/^\/([a-zA-Z0-9_]+)\/post\/?$/);
+    return match ? match[1] : null;
+  }, []);
+  const [activeSection, setActiveSection] = useState<'feed' | 'square' | 'releases' | 'anniversaries' | 'guestbook'>(targetAccount ? 'feed' : 'square');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isUserCenterOpen, setIsUserCenterOpen] = useState(false);
   const [isUgcOpen, setIsUgcOpen] = useState(false);
@@ -200,10 +204,7 @@ export default function App() {
     }
   }, []);
 
-  const targetAccount = useMemo(() => {
-    const match = window.location.pathname.match(/^\/([a-zA-Z0-9_]+)\/post\/?$/);
-    return match ? match[1] : null;
-  }, []);
+
 
   useEffect(() => {
     const fetchData = async () => {
