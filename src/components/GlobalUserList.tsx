@@ -36,9 +36,18 @@ export function GlobalUserList({ onOpenChat }: { onOpenChat?: (userId: string, n
 
   return (
     <div className="w-full relative pt-2">
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
       <div className="flex flex-col space-y-4">
         <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">活跃用户 / USERS</h3>
-        <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 max-h-[600px] overflow-y-auto hide-scrollbar pb-4">
           {users.map(user => (
             <div key={user.id} className="relative group aspect-square">
               <img 
