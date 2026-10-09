@@ -96,11 +96,10 @@ export default function App() {
     if (!user?.id) return;
     
     // Fetch initial unread count
-    fetch('/api/notifications/unread-count', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('servicehub_token')}` }
-    }).then(r => r.json()).then(res => {
-      if (res.code === 0) setUnreadCount(res.data);
-    });
+    fetch('/api/notifications/unread-count')
+      .then(r => r.json()).then(res => {
+        if (res.code === 0) setUnreadCount(res.data);
+      });
 
     const stompClient = new Client({
       webSocketFactory: () => new SockJS('/ws/notify'),
@@ -589,7 +588,7 @@ export default function App() {
             <NotificationModal 
         isOpen={isNotifOpen} 
         onClose={() => setIsNotifOpen(false)}
-        token={localStorage.getItem('servicehub_token') || ''}
+        token={localStorage.getItem('site_token') || ''}
       />
       <UserCenterModal 
         isOpen={isUserCenterOpen} 
