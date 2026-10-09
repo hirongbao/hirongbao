@@ -1,50 +1,20 @@
 import React, { useState, useEffect } from 'react';
 
 export function OnlineStats() {
-  const [onlineCount, setOnlineCount] = useState<number>(0);
-  const [isLive, setIsLive] = useState(false);
+  const [onlineCount, setOnlineCount] = useState<number>(1);
+  const [isLive, setIsLive] = useState(true);
 
   useEffect(() => {
     // 监听 WebSocket 的实时在线人数广播
     const handleWsOnlineCount = (e: any) => {
       if (typeof e.detail === 'number') {
-        setOnlineCount(e.detail);
+        setOnlineCount(Math.max(1, e.detail));
         setIsLive(true);
       }
     };
     window.addEventListener('ws_online_count', handleWsOnlineCount);
 
-    const storageKey = 'hirongbao:visitor-id';
-    let clientId = window.localStorage.getItem(storageKey);
-    if (!clientId) {
-      clientId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
-      window.localStorage.setItem(storageKey, clientId);
-    }
-
-    // 只在组件挂载时发送一次心跳用于记录访客，后续依赖 WebSocket 实时更新
-    let isMounted = true;
-    const recordVisit = async () => {
-      try {
-        const res = await fetch('/api/heartbeat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ clientId })
-        });
-        if (res.ok && isMounted) {
-          const data = await res.json();
-          if (data.code === 0 && onlineCount === 0) {
-             setOnlineCount(data.data.onlineCount || 0);
-             setIsLive(true);
-          }
-        }
-      } catch (e) {}
-    };
-    recordVisit();
-
     return () => {
-      isMounted = false;
       window.removeEventListener('ws_online_count', handleWsOnlineCount);
     };
   }, []);
