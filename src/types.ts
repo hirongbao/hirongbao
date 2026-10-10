@@ -128,20 +128,26 @@ export interface SiteAnniversary {
 }
 
 export interface MessageSession {
-  targetUserId: string;
-  targetAccountName: string;
-  targetNickname: string;
-  targetAvatarUrl: string | null;
-  lastMessage: string;
+  targetUserId?: string | number;
+  targetAccountName?: string;
+  targetNickname?: string;
+  targetAvatarUrl?: string | null;
+  lastMessage?: string;
   lastMessageTime: string;
   unreadCount: number;
+  otherUserId?: string | number;
+  otherUserName?: string;
+  otherUserAvatar?: string | null;
+  lastMessageContent?: string;
 }
 
 export interface ChatMessage {
-  id: string;
-  senderId: string;
-  receiverId: string;
+  id: string | number;
+  senderId: string | number;
+  receiverId: string | number;
   content: string;
   createdAt: string;
   isRead: boolean;
+  senderName?: string;
+  senderAvatar?: string | null;
 }

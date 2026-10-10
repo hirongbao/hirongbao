@@ -48,6 +48,7 @@ export default function NotificationModal({ isOpen, onClose, token }: Notificati
       case 'LIKE': return <Heart size={16} className="text-red-500" />;
       case 'COMMENT': return <MessageCircle size={16} className="text-blue-500" />;
       case 'GUESTBOOK': return <MessageSquare size={16} className="text-emerald-500" />;
+      case 'MESSAGE': return <MessageSquare size={16} className="text-violet-500" />;
       default: return <Bell size={16} className="text-zinc-500" />;
     }
   };
@@ -57,6 +58,7 @@ export default function NotificationModal({ isOpen, onClose, token }: Notificati
       case 'LIKE': return '赞了你的动态';
       case 'COMMENT': return '评论了你';
       case 'GUESTBOOK': return '给你留言';
+      case 'MESSAGE': return '给你发来一条私信';
       default: return '发来一条通知';
     }
   };

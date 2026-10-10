@@ -8,7 +8,7 @@ import { formatRelativeTime } from '../utils/time';
 interface MessageInboxModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenChat: (userId: string, targetName: string) => void;
+  onOpenChat: (userId: string, targetName: string, avatarUrl?: string | null) => void;
 }
 
 export function MessageInboxModal({ isOpen, onClose, onOpenChat }: MessageInboxModalProps) {
@@ -77,46 +77,52 @@ export function MessageInboxModal({ isOpen, onClose, onOpenChat }: MessageInboxM
                   暂无私信记录
                 </div>
               ) : (
-                sessions.map(session => (
-                  <button
-                    key={session.targetUserId}
-                    onClick={() => {
-                      onClose();
-                      onOpenChat(session.targetUserId, session.targetNickname || session.targetAccountName);
-                    }}
-                    className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-zinc-50 transition-colors text-left"
-                  >
-                    <div className="relative">
-                      {session.targetAvatarUrl ? (
-                        <img src={session.targetAvatarUrl} alt={session.targetAccountName} className="w-12 h-12 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center">
-                          <span className="text-zinc-500 font-medium">
-                            {(session.targetNickname || session.targetAccountName || 'U')[0].toUpperCase()}
+                sessions.map(session => {
+                  const sid = String(session.targetUserId ?? session.otherUserId ?? '');
+                  const sName = session.targetNickname || session.otherUserName || session.targetAccountName || '用户';
+                  const sAvatar = session.targetAvatarUrl || session.otherUserAvatar || null;
+                  const sLastMsg = session.lastMessage || session.lastMessageContent || '';
+                  return (
+                    <button
+                      key={sid}
+                      onClick={() => {
+                        onClose();
+                        onOpenChat(sid, sName, sAvatar);
+                      }}
+                      className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-zinc-50 transition-colors text-left"
+                    >
+                      <div className="relative">
+                        {sAvatar ? (
+                          <img src={sAvatar} alt={sName} className="w-12 h-12 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center">
+                            <span className="text-zinc-500 font-medium">
+                              {sName[0]?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                        )}
+                        {session.unreadCount > 0 && (
+                          <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white">
+                            {session.unreadCount > 99 ? '99+' : session.unreadCount}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-baseline mb-1">
+                          <h3 className="font-medium text-zinc-900 truncate">
+                            {sName}
+                          </h3>
+                          <span className="text-xs text-zinc-400 shrink-0 ml-2">
+                            {formatRelativeTime(session.lastMessageTime)}
                           </span>
                         </div>
-                      )}
-                      {session.unreadCount > 0 && (
-                        <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white">
-                          {session.unreadCount > 99 ? '99+' : session.unreadCount}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-baseline mb-1">
-                        <h3 className="font-medium text-zinc-900 truncate">
-                          {session.targetNickname || session.targetAccountName}
-                        </h3>
-                        <span className="text-xs text-zinc-400 shrink-0 ml-2">
-                          {formatRelativeTime(session.lastMessageTime)}
-                        </span>
+                        <p className="text-sm text-zinc-500 truncate">
+                          {sLastMsg}
+                        </p>
                       </div>
-                      <p className="text-sm text-zinc-500 truncate">
-                        {session.lastMessage}
-                      </p>
-                    </div>
-                  </button>
-                ))
+                    </button>
+                  );
+                })
               )}
             </div>
           </motion.div>

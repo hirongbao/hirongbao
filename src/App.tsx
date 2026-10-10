@@ -89,17 +89,31 @@ export default function App() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isInboxOpen, setIsInboxOpen] = useState(false);
-  const [chatTarget, setChatTarget] = useState<{ userId: string; name: string } | null>(null);
+  const [chatTarget, setChatTarget] = useState<{ userId: string; name: string; avatarUrl?: string | null } | null>(null);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
   useEffect(() => {
     if (!user?.id) return;
     
+    const token = localStorage.getItem('site_token') || '';
+
     // Fetch initial unread count
-    fetch('/api/notifications/unread-count')
+    fetch('/api/notifications/unread-count', {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
       .then(r => r.json()).then(res => {
-        if (res.code === 0) setUnreadCount(res.data);
-      });
+        if (res.code === 0 && typeof res.data === 'number') setUnreadCount(res.data);
+      }).catch(() => {});
+
+    // Fetch initial unread message count
+    if (token) {
+      fetch('/api/hirongbaohub/messages/unread', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(r => r.json()).then(res => {
+          if (res.code === 0 && typeof res.data === 'number') setUnreadMessageCount(res.data);
+        }).catch(() => {});
+    }
 
     const stompClient = new Client({
       webSocketFactory: () => new SockJS('/ws/notify'),
@@ -118,7 +132,11 @@ export default function App() {
         stompClient.subscribe(`/topic/notify/${user.id}`, (msg) => {
           try {
             const data = JSON.parse(msg.body);
-            if (data.unreadCount !== undefined) setUnreadCount(data.unreadCount);
+            if (data.type === 'MESSAGE') {
+              if (data.unreadCount !== undefined) setUnreadMessageCount(data.unreadCount);
+            } else {
+              if (data.unreadCount !== undefined) setUnreadCount(data.unreadCount);
+            }
             window.dispatchEvent(new CustomEvent("ws_notify", { detail: data }));
           } catch (e) {}
         });
@@ -612,8 +630,8 @@ export default function App() {
       <MessageInboxModal
         isOpen={isInboxOpen}
         onClose={() => setIsInboxOpen(false)}
-        onOpenChat={(userId, name) => {
-          setChatTarget({ userId, name });
+        onOpenChat={(userId, name, avatarUrl) => {
+          setChatTarget({ userId, name, avatarUrl });
         }}
       />
 
@@ -623,6 +641,7 @@ export default function App() {
           onClose={() => setChatTarget(null)}
           targetUserId={chatTarget.userId}
           targetName={chatTarget.name}
+          targetAvatarUrl={chatTarget.avatarUrl}
         />
       )}
       

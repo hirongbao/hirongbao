@@ -49,8 +49,8 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
   const [isLiked, setIsLiked] = useState(false);
   const [comments, setComments] = useState<Comment[]>(post?.comments || []);
   const [likes, setLikes] = useState(post?.likeCount || 0);
-  const [activeAvatar, setActiveAvatar] = useState<{ userId: string; author: string; x: number; y: number } | null>(null);
-  const [chatTarget, setChatTarget] = useState<{ userId: string; name: string } | null>(null);
+  const [activeAvatar, setActiveAvatar] = useState<{ userId: string; author: string; avatarUrl?: string | null; x: number; y: number } | null>(null);
+  const [chatTarget, setChatTarget] = useState<{ userId: string; name: string; avatarUrl?: string | null } | null>(null);
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -64,8 +64,9 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
     if (comment.author === '访客') return;
     const rect = e.currentTarget.getBoundingClientRect();
     setActiveAvatar({
-      userId: comment.userId || comment.author,
+      userId: comment.userId ? String(comment.userId) : comment.author,
       author: comment.author,
+      avatarUrl: comment.authorAvatar || null,
       x: rect.left,
       y: rect.bottom
     });
@@ -448,7 +449,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
                   </button>
                   <button
                     onClick={() => {
-                      setChatTarget({ userId: activeAvatar.userId, name: activeAvatar.author });
+                      setChatTarget({ userId: activeAvatar.userId, name: activeAvatar.author, avatarUrl: activeAvatar.avatarUrl });
                       setActiveAvatar(null);
                     }}
                     className="w-full text-left px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-2 border-t border-zinc-100"
@@ -467,6 +468,7 @@ export function PostDetailModal({ post, authorName, authorAvatar, onClose }: Pos
               onClose={() => setChatTarget(null)}
               targetUserId={chatTarget.userId}
               targetName={chatTarget.name}
+              targetAvatarUrl={chatTarget.avatarUrl}
             />
           )}
 
