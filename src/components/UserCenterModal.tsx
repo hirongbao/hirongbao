@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, LogOut, Edit3, Settings, Calendar } from 'lucide-react';
+import { X, LogOut, Edit3, Settings, Calendar, Bell, MessageSquare } from 'lucide-react';
 import { getUserInfo, removeToken, removeUserInfo } from '../utils/auth';
 
-import { Bell, MessageSquare } from 'lucide-react';
 interface UserCenterModalProps {
   unreadCount?: number;
   unreadMessageCount?: number;
@@ -25,6 +24,8 @@ export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish, 
     onLogout();
     onClose();
   };
+
+  const totalUnread = unreadCount + unreadMessageCount;
 
   return (
     <AnimatePresence>
@@ -49,11 +50,18 @@ export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish, 
             
             <div className="p-8">
               <div className="flex flex-col items-center mb-8">
-                <div className="w-20 h-20 bg-zinc-200 rounded-full flex items-center justify-center mb-4 overflow-hidden shadow-lg border-4 border-white">
-                  {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-3xl font-bold text-zinc-400">{user?.accountName?.charAt(0)?.toUpperCase()}</span>
+                <div className="relative mb-4">
+                  <div className="w-20 h-20 bg-zinc-200 rounded-full flex items-center justify-center overflow-hidden shadow-lg border-4 border-white">
+                    {user?.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl font-bold text-zinc-400">{user?.accountName?.charAt(0)?.toUpperCase()}</span>
+                    )}
+                  </div>
+                  {totalUnread > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </span>
                   )}
                 </div>
                 <h3 className="text-xl font-bold text-zinc-900">{user?.accountName}</h3>
@@ -63,7 +71,7 @@ export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish, 
               </div>
 
               <div className="space-y-3">
-                                <button
+                <button
                   onClick={() => { window.location.href = `/${user?.accountName}/post`; }}
                   className="w-full py-4 flex items-center justify-center space-x-2 bg-zinc-100 text-zinc-900 rounded-2xl font-bold tracking-widest transition-all hover:bg-zinc-200 relative"
                 >
@@ -77,7 +85,11 @@ export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish, 
                   >
                     <Bell size={18} />
                     <span>消息通知</span>
-                    {unreadCount > 0 && <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{unreadCount}</span>}
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={() => { if(onOpenMessageInbox) onOpenMessageInbox(); }}
@@ -85,7 +97,11 @@ export default function UserCenterModal({ isOpen, onClose, onLogout, onPublish, 
                   >
                     <MessageSquare size={18} />
                     <span>私信箱</span>
-                    {unreadMessageCount > 0 && <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{unreadMessageCount}</span>}
+                    {unreadMessageCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                        {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                      </span>
+                    )}
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

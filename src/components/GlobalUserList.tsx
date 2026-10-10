@@ -10,7 +10,7 @@ interface User {
   bio?: string;
 }
 
-export function GlobalUserList({ onOpenChat }: { onOpenChat?: (userId: string, name: string) => void }) {
+export function GlobalUserList({ onOpenChat }: { onOpenChat?: (userId: string, name: string, avatarUrl?: string | null) => void }) {
   const [users, setUsers] = useState<User[]>([]);
   const [activeAvatar, setActiveAvatar] = useState<{ user: User; x: number; y: number } | null>(null);
 
@@ -84,7 +84,7 @@ export function GlobalUserList({ onOpenChat }: { onOpenChat?: (userId: string, n
               </button>
               <button
                 onClick={() => {
-                  if (onOpenChat) onOpenChat(activeAvatar.user.id, activeAvatar.user.accountName);
+                  if (onOpenChat) onOpenChat(activeAvatar.user.id, activeAvatar.user.accountName, activeAvatar.user.avatarUrl);
                   setActiveAvatar(null);
                 }}
                 className="w-full text-left px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-2 border-t border-zinc-100"

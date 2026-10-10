@@ -22,7 +22,7 @@ interface ProfileProps {
   activeSection: 'feed' | 'square' | 'releases' | 'anniversaries' | 'guestbook';
   onSectionChange: (section: 'feed' | 'square' | 'releases' | 'anniversaries' | 'guestbook') => void;
   isMainSite?: boolean;
-  onOpenChat?: (userId: string, name: string) => void;
+  onOpenChat?: (userId: string, name: string, avatarUrl?: string | null) => void;
 }
 
 export function Profile({ profile, onSubscribe, activeSection, onSectionChange, isMainSite = true, onOpenChat }: ProfileProps) {

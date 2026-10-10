@@ -132,10 +132,13 @@ export default function App() {
         stompClient.subscribe(`/topic/notify/${user.id}`, (msg) => {
           try {
             const data = JSON.parse(msg.body);
-            if (data.type === 'MESSAGE') {
+            if (data.type === 'MESSAGE' || data.message) {
               if (data.unreadCount !== undefined) setUnreadMessageCount(data.unreadCount);
-            } else {
-              if (data.unreadCount !== undefined) setUnreadCount(data.unreadCount);
+              if (data.unreadMessageCount !== undefined) setUnreadMessageCount(data.unreadMessageCount);
+            }
+            if (data.newNotification || data.unreadNotificationCount !== undefined || (data.type !== 'MESSAGE' && data.unreadCount !== undefined)) {
+              if (data.unreadNotificationCount !== undefined) setUnreadCount(data.unreadNotificationCount);
+              else if (data.unreadCount !== undefined && data.type !== 'MESSAGE') setUnreadCount(data.unreadCount);
             }
             window.dispatchEvent(new CustomEvent("ws_notify", { detail: data }));
           } catch (e) {}
@@ -427,7 +430,14 @@ export default function App() {
             <X size={20} />
           </button>
         </div>
-        <Profile profile={profile} onSubscribe={() => { setIsSidebarOpen(false); setIsSubscribeOpen(true); }} activeSection={activeSection} onSectionChange={(s) => { setActiveSection(s); setIsSidebarOpen(false); }} isMainSite={!targetAccount} />
+        <Profile 
+          profile={profile} 
+          onSubscribe={() => { setIsSidebarOpen(false); setIsSubscribeOpen(true); }} 
+          activeSection={activeSection} 
+          onSectionChange={(s) => { setActiveSection(s); setIsSidebarOpen(false); }} 
+          isMainSite={!targetAccount} 
+          onOpenChat={(userId, name, avatarUrl) => setChatTarget({ userId, name, avatarUrl })}
+        />
       </aside>
 
       {/* Feed Area */}
@@ -443,9 +453,12 @@ export default function App() {
               <div className="flex items-center space-x-4">
                 <button 
                   onClick={() => setIsSidebarOpen(true)}
-                  className="lg:hidden p-2 -ml-2 text-zinc-900 hover:bg-zinc-100 rounded-full transition-colors"
+                  className="lg:hidden p-2 -ml-2 text-zinc-900 hover:bg-zinc-100 rounded-full transition-colors relative"
                 >
                   <Menu size={20} />
+                  {(unreadCount + unreadMessageCount) > 0 && (
+                    <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white animate-pulse" />
+                  )}
                 </button>
                 <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">
                   {activeSection === 'releases' ? '更新日志 / CHANGELOG' : activeSection === 'anniversaries' ? '纪念日 / ANNIVERSARIES' : activeSection === 'guestbook' ? '留言板 / GUESTBOOK' : activeSection === 'square' ? '动态广场 / SQUARE' : '信息流 / 动态'}
@@ -463,9 +476,9 @@ export default function App() {
                 ) : (
                   <button
                     onClick={() => setIsUserCenterOpen(true)}
-                    className="flex items-center space-x-2 p-1 pr-3 bg-zinc-100 hover:bg-zinc-200 rounded-full transition-colors"
+                    className="relative flex items-center space-x-2 p-1 pr-3 bg-zinc-100 hover:bg-zinc-200 rounded-full transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-zinc-300 flex items-center justify-center overflow-hidden shrink-0">
+                    <div className="relative w-8 h-8 rounded-full bg-zinc-300 flex items-center justify-center overflow-hidden shrink-0">
                       {user.avatarUrl ? (
                         <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
@@ -473,6 +486,11 @@ export default function App() {
                       )}
                     </div>
                     <span className="text-[11px] font-bold text-zinc-700 hidden sm:inline truncate max-w-[100px]">{user.accountName}</span>
+                    {(unreadCount + unreadMessageCount) > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                        {(unreadCount + unreadMessageCount) > 99 ? '99+' : (unreadCount + unreadMessageCount)}
+                      </span>
+                    )}
                   </button>
                 )}
               </div>
