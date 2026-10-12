@@ -683,16 +683,6 @@ export default function App() {
         isOpen={isAnniversaryOpen}
         onClose={() => setIsAnniversaryOpen(false)}
       />
-
-      {targetAccount && (
-        <a
-          href="/"
-          className="fixed bottom-6 left-6 z-40 lg:hidden inline-flex items-center space-x-2 px-4 py-2.5 bg-zinc-900/90 hover:bg-zinc-900 backdrop-blur-md text-white rounded-full text-xs font-bold shadow-xl shadow-zinc-900/25 active:scale-95 transition-all border border-white/10"
-        >
-          <ArrowLeft size={15} />
-          <span>返回主站</span>
-        </a>
-      )}
     </div>
   );
 }
