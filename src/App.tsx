@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, AlertTriangle, RefreshCw, ChevronDown, User } from 'lucide-react';
+import { Menu, X, AlertTriangle, RefreshCw, ChevronDown, User, ArrowLeft } from 'lucide-react';
 import { Profile } from './components/Profile';
 import { PostCard } from './components/PostCard';
 import { SubscribeModal } from './components/SubscribeModal';
@@ -450,7 +450,7 @@ export default function App() {
               transition={{ duration: 0.5 }}
               className="flex items-center justify-between border-b border-zinc-200 pb-4 mb-8"
             >
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3 sm:space-x-4">
                 <button 
                   onClick={() => setIsSidebarOpen(true)}
                   className="lg:hidden p-2 -ml-2 text-zinc-900 hover:bg-zinc-100 rounded-full transition-colors relative"
@@ -460,6 +460,16 @@ export default function App() {
                     <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white animate-pulse" />
                   )}
                 </button>
+                {targetAccount && (
+                  <a
+                    href="/"
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-full text-xs font-bold tracking-wider transition-all shadow-md shadow-zinc-900/15 hover:scale-[1.02] active:scale-[0.98] group shrink-0"
+                    title="返回主站"
+                  >
+                    <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                    <span>返回主站</span>
+                  </a>
+                )}
                 <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">
                   {activeSection === 'releases' ? '更新日志 / CHANGELOG' : activeSection === 'anniversaries' ? '纪念日 / ANNIVERSARIES' : activeSection === 'guestbook' ? '留言板 / GUESTBOOK' : activeSection === 'square' ? '动态广场 / SQUARE' : '信息流 / 动态'}
                 </h2>
@@ -673,6 +683,16 @@ export default function App() {
         isOpen={isAnniversaryOpen}
         onClose={() => setIsAnniversaryOpen(false)}
       />
+
+      {targetAccount && (
+        <a
+          href="/"
+          className="fixed bottom-6 left-6 z-40 lg:hidden inline-flex items-center space-x-2 px-4 py-2.5 bg-zinc-900/90 hover:bg-zinc-900 backdrop-blur-md text-white rounded-full text-xs font-bold shadow-xl shadow-zinc-900/25 active:scale-95 transition-all border border-white/10"
+        >
+          <ArrowLeft size={15} />
+          <span>返回主站</span>
+        </a>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ProfileData } from '../types';
-import { MessageCircle, Github, X, Send, Edit3 } from 'lucide-react';
+import { MessageCircle, Github, X, Send, Edit3, ArrowLeft } from 'lucide-react';
 import { RiQqLine, RiTiktokLine } from 'react-icons/ri';
 import { motion, AnimatePresence } from 'motion/react';
 import { formatCount } from '../utils/format';
@@ -44,8 +44,15 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange, 
           <GlobalUserList onOpenChat={onOpenChat} />
         ) : (
           <>
+            <a
+              href="/"
+              className="flex items-center justify-center space-x-2 w-full py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl text-xs font-bold tracking-widest transition-all shadow-md shadow-zinc-900/10 hover:scale-[1.01] active:scale-[0.99] group mb-2"
+            >
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+              <span>返回主站</span>
+            </a>
 
-        <div className="relative inline-block">
+            <div className="relative inline-block">
           <img
             src={profile.avatarUrl}
             alt={profile.name}
@@ -173,10 +180,22 @@ export function Profile({ profile, onSubscribe, activeSection, onSectionChange, 
         )}
       <nav className="space-y-4 pt-2 my-6 block lg:hidden [@media(min-width:1024px)_and_(min-height:780px)]:block">
           {!isMainSite && (
-            <button type="button" onClick={() => onSectionChange('feed')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'feed' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>信息流</span>
-              <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
-            </button>
+            <>
+              <a
+                href="/"
+                className="w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity opacity-50 hover:opacity-100"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 group-hover:text-zinc-900 flex items-center space-x-1.5 transition-colors">
+                  <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
+                  <span>返回主站</span>
+                </span>
+                <div className="h-[1px] flex-1 bg-zinc-200"></div>
+              </a>
+              <button type="button" onClick={() => onSectionChange('feed')} className={`w-full flex items-center space-x-4 group cursor-pointer text-left transition-opacity ${activeSection === 'feed' ? 'opacity-100' : 'opacity-35 hover:opacity-70'}`}>
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${activeSection === 'feed' ? 'text-zinc-900' : 'text-zinc-400'}`}>信息流</span>
+                <div className={`h-[1px] flex-1 ${activeSection === 'feed' ? 'bg-zinc-900' : 'bg-zinc-200'}`}></div>
+              </button>
+            </>
           )}
           {isMainSite && (
             <>
