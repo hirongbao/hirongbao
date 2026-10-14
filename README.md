@@ -24,7 +24,7 @@ hirongbao，目前从事后端开发，寻求自由。
 
 ### 一些开源工具(希望可以迭代更多)
 
-#### [antigravity-proxy-env](https://github.com/hirongbao/antigravity-proxy-env)
+#### [windows-proxy-env](https://github.com/hirongbao/antigravity-proxy-env)
 无需 TUN、DLL 注入或管理员权限的 Windows 代理环境变量工具
 
 ---
