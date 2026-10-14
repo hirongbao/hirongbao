@@ -27,6 +27,9 @@ hirongbao，目前从事后端开发，寻求自由。
 #### [windows-proxy-env](https://github.com/hirongbao/antigravity-proxy-env)
 无需 TUN、DLL 注入或管理员权限的 Windows 代理环境变量工具
 
+### [sync-phone-media](https://github.com/hirongbao/sync-phone-media)
+基于 Android 11+ 无线调试 mDNS 协议的局域网相册极速双向同步管家。电脑删废片手机自动清除、大文件完整校验、无感静默后台运行
+
 ---
 
 ### End
