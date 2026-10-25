@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Save, Plus, Edit2, Trash2, Calendar, Heart, Briefcase, Plane, Flag, Gift, Clock, Loader2, Image as ImageIcon } from 'lucide-react';
 import { SiteAnniversary } from '../types';
 import { authRequest } from '../utils/auth';

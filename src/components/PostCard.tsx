@@ -11,10 +11,11 @@ interface PostCardProps {
   post: Post;
   authorName: string;
   authorAvatar: string;
+  priority?: boolean;
   onClick?: () => void;
 }
 
-export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardProps) {
+export function PostCard({ post, authorName, authorAvatar, priority = false, onClick }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(post.likeCount);
 
@@ -178,9 +179,9 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
       </AnimatePresence>
       <motion.div 
         layout
-        initial={{ opacity: 0, y: 20 }}
+        initial={priority ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        transition={priority ? { duration: 0 } : { duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         className="bg-white rounded-[2rem] lg:rounded-[3rem] shadow-xl shadow-zinc-200/40 border border-zinc-100 overflow-hidden flex flex-col"
       >
         <div className="p-8 lg:p-12 flex flex-col">

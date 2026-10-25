@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, Image as ImageIcon, Link as LinkIcon, RefreshCw, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { authRequest } from '../utils/auth';
 

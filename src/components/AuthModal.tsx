@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User, Key, RefreshCw } from 'lucide-react';
 import { authRequest, setToken, setUserInfo } from '../utils/auth';
 

@@ -53,7 +53,7 @@ function SlideImage({ src, mode, onViewFull }: SlideImageProps) {
         className="relative w-full cursor-zoom-in overflow-hidden max-h-[560px]"
         onClick={e => { e.stopPropagation(); onViewFull(); }}
       >
-        <img src={src} onLoad={classify} alt="" className="w-full object-cover object-top" />
+        <img src={src} onLoad={classify} loading="lazy" decoding="async" alt="" className="w-full object-cover object-top" />
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-4 py-1.5 rounded-full whitespace-nowrap">
           长图 · 点击查看大图
         </div>
@@ -65,6 +65,8 @@ function SlideImage({ src, mode, onViewFull }: SlideImageProps) {
     <img
       src={src}
       onLoad={classify}
+      loading="lazy"
+      decoding="async"
       alt=""
       className="w-full h-auto block"
     />

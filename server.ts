@@ -204,6 +204,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath, {
+      index: false,
       maxAge: '1y',
       immutable: true,
       setHeaders: (res, filePath) => {
@@ -212,9 +213,59 @@ async function startServer() {
         }
       }
     }));
-    app.get("*", (req, res) => {
+
+    let cachedHtmlWithData: string | null = null;
+    let lastCacheTimestamp = 0;
+    const CACHE_TTL_MS = 10_000; // 10秒服务端内存缓存
+
+    async function getInjectedHtml(): Promise<string> {
+      const now = Date.now();
+      if (cachedHtmlWithData && now - lastCacheTimestamp < CACHE_TTL_MS) {
+        return cachedHtmlWithData;
+      }
+
+      const rawHtml = await fs.promises.readFile(path.join(distPath, "index.html"), "utf-8");
+      try {
+        const [profileRes, postsRes, releasesRes] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/hirongbaohub/profile`, { signal: AbortSignal.timeout(3000) })
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null),
+          fetch(`${BACKEND_URL}/api/hirongbaohub/posts/square?page=1&size=12`, { signal: AbortSignal.timeout(3000) })
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null),
+          fetch(`${BACKEND_URL}/api/hirongbaohub/releases`, { signal: AbortSignal.timeout(3000) })
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null)
+        ]);
+
+        const initialData = {
+          profile: profileRes?.code === 0 ? profileRes.data : null,
+          postsData: postsRes?.code === 0 ? postsRes.data : null,
+          releases: releasesRes?.code === 0 ? releasesRes.data : null
+        };
+
+        const jsonStr = JSON.stringify(initialData).replace(/</g, '\\u003c');
+        const scriptTag = `<script id="__INITIAL_DATA__">window.__INITIAL_DATA__=${jsonStr};</script>`;
+
+        const injected = rawHtml.replace('</head>', `${scriptTag}</head>`);
+        cachedHtmlWithData = injected;
+        lastCacheTimestamp = now;
+        return injected;
+      } catch (err) {
+        console.error("Error pre-seeding initial data:", err);
+        return rawHtml;
+      }
+    }
+
+    app.get("*", async (req, res) => {
       res.setHeader('Cache-Control', 'no-cache');
-      res.sendFile(path.join(distPath, "index.html"));
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      try {
+        const html = await getInjectedHtml();
+        res.send(html);
+      } catch (e) {
+        res.sendFile(path.join(distPath, "index.html"));
+      }
     });
   }
 

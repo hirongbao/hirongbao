@@ -171,19 +171,33 @@ export default function App() {
     window.addEventListener('auth_expired', handleAuthExpired);
     return () => window.removeEventListener('auth_expired', handleAuthExpired);
   }, []);
-  const [releaseLogs, setReleaseLogs] = useState<ReleaseLog[]>([]);
+  const initialPayload = typeof window !== 'undefined' ? (window as any).__INITIAL_DATA__ : null;
+  const initialProfile = initialPayload?.profile || null;
+  const initialRawPosts = initialPayload?.postsData?.items || initialPayload?.postsData?.records || [];
+  const initialSquarePosts = useMemo(() => initialRawPosts.map((p: any) => mapPost(p)), []);
+  const initialReleases = initialPayload?.releases || [];
 
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [releaseLogs, setReleaseLogs] = useState<ReleaseLog[]>(() => initialReleases);
+
+  const [profile, setProfile] = useState<ProfileData | null>(() => initialProfile);
   const [posts, setPosts] = useState<Post[]>([]);
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   
-  const [squarePosts, setSquarePosts] = useState<Post[]>([]);
-  const [squarePage, setSquarePage] = useState<number>(1);
-  const [hasMoreSquare, setHasMoreSquare] = useState<boolean>(true);
+  const [squarePosts, setSquarePosts] = useState<Post[]>(() => initialSquarePosts);
+  const [squarePage, setSquarePage] = useState<number>(() => initialPayload?.postsData?.page || initialPayload?.postsData?.current || 1);
+  const [hasMoreSquare, setHasMoreSquare] = useState<boolean>(() => {
+    if (!initialPayload?.postsData) return true;
+    const d = initialPayload.postsData;
+    return d.hasMore !== undefined ? d.hasMore : ((d.page || 1) * (d.size || 12) < (d.total || 0));
+  });
       
-  const [isFetchingPosts, setIsFetchingPosts] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [isFetchingPosts, setIsFetchingPosts] = useState<boolean>(() => {
+    if (targetAccount) return true;
+    if (activeSection === 'square' && initialSquarePosts.length > 0) return false;
+    return true;
+  });
+  const [loading, setLoading] = useState<boolean>(() => !initialProfile);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   
@@ -249,8 +263,11 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsFetchingPosts(true);
         const isSquare = !targetAccount && activeSection === 'square';
+        const hasInitialData = isSquare && squarePosts.length > 0 && squarePage === 1;
+        if (!hasInitialData) {
+          setIsFetchingPosts(true);
+        }
         const postsUrl = targetAccount
           ? `/api/posts/ugc/user/${targetAccount}?page=1&size=12`
           : isSquare
@@ -616,16 +633,18 @@ export default function App() {
                     <div key={colIndex} className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12">
                       {colPosts.map((post, index) => {
                         const globalIndex = currentPosts.findIndex(p => p.id === post.id);
+                        const isPriority = globalIndex >= 0 && globalIndex < 4;
                         return (
                           <motion.div
                             key={post.id}
-                            initial={{ opacity: 0, y: 15 }}
+                            initial={isPriority ? false : { opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.2 }}
+                            transition={isPriority ? { duration: 0 } : { duration: 0.2 }}
                             className="w-full"
                           >
                             <PostCard 
                               post={post} 
+                              priority={isPriority}
                               authorName={post.nickname || post.accountName || profile.name} 
                               authorAvatar={post.avatarUrl || profile.avatarUrl} 
                               onClick={() => setSelectedPost(post)}

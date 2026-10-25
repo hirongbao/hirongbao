@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, LogOut, Edit3, Settings, Calendar, Bell, MessageSquare } from 'lucide-react';
 import { getUserInfo, removeToken, removeUserInfo } from '../utils/auth';
 
