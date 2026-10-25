@@ -1,28 +1,27 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, AlertTriangle, RefreshCw, ChevronDown, User, ArrowLeft } from 'lucide-react';
 import { Profile } from './components/Profile';
 import { PostCard } from './components/PostCard';
-import { SubscribeModal } from './components/SubscribeModal';
-import { UnsubscribeModal } from './components/UnsubscribeModal';
-import { PostDetailModal } from './components/PostDetailModal';
 import { Post, ProfileData, ApiResponse, RawPost, Category, PostPageData, ReleaseLog } from './types';
 import { formatRelativeTime } from './utils/time';
 import { SkeletonCard } from './components/SkeletonCard';
 import { ProfileSkeleton } from './components/ProfileSkeleton';
-import { ReleaseLogSection } from './components/ReleaseLogSection';
-import { AnniversariesSection } from './components/AnniversariesSection';
-import AuthModal from './components/AuthModal';
-import UserCenterModal from './components/UserCenterModal';
-import NotificationModal from './components/NotificationModal';
-import GuestbookSection from './components/GuestbookSection';
-import UgcPostModal from './components/UgcPostModal';
-import AnniversaryModal from './components/AnniversaryModal';
-import { MessageInboxModal } from './components/MessageInboxModal';
-import { ChatModal } from './components/ChatModal';
 import { getUserInfo } from './utils/auth';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
+
+const SubscribeModal = lazy(() => import('./components/SubscribeModal').then(m => ({ default: m.SubscribeModal })));
+const UnsubscribeModal = lazy(() => import('./components/UnsubscribeModal').then(m => ({ default: m.UnsubscribeModal })));
+const PostDetailModal = lazy(() => import('./components/PostDetailModal').then(m => ({ default: m.PostDetailModal })));
+const ReleaseLogSection = lazy(() => import('./components/ReleaseLogSection').then(m => ({ default: m.ReleaseLogSection })));
+const AnniversariesSection = lazy(() => import('./components/AnniversariesSection').then(m => ({ default: m.AnniversariesSection })));
+const GuestbookSection = lazy(() => import('./components/GuestbookSection'));
+const AuthModal = lazy(() => import('./components/AuthModal'));
+const UserCenterModal = lazy(() => import('./components/UserCenterModal'));
+const NotificationModal = lazy(() => import('./components/NotificationModal'));
+const UgcPostModal = lazy(() => import('./components/UgcPostModal'));
+const AnniversaryModal = lazy(() => import('./components/AnniversaryModal'));
+const MessageInboxModal = lazy(() => import('./components/MessageInboxModal').then(m => ({ default: m.MessageInboxModal })));
+const ChatModal = lazy(() => import('./components/ChatModal').then(m => ({ default: m.ChatModal })));
 
 
 // 后端动态原始数据映射为展示模型（时间转相对时间、id 转字符串）
@@ -115,38 +114,53 @@ export default function App() {
         }).catch(() => {});
     }
 
-    const stompClient = new Client({
-      webSocketFactory: () => new SockJS('/ws/notify'),
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-    });
+    let stompClient: any = null;
+    let isCancelled = false;
 
-    stompClient.onConnect = () => {
-      stompClient.subscribe('/topic/online-count', (msg) => {
-        try {
-          window.dispatchEvent(new CustomEvent('ws_online_count', { detail: Number(msg.body) }));
-        } catch (e) {}
+    Promise.all([
+      import('@stomp/stompjs'),
+      import('sockjs-client')
+    ]).then(([{ Client }, { default: SockJS }]) => {
+      if (isCancelled) return;
+      stompClient = new Client({
+        webSocketFactory: () => new SockJS('/ws/notify'),
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
       });
-      if (user?.id) {
-        stompClient.subscribe(`/topic/notify/${user.id}`, (msg) => {
+
+      stompClient.onConnect = () => {
+        stompClient.subscribe('/topic/online-count', (msg: any) => {
           try {
-            const data = JSON.parse(msg.body);
-            if (data.type === 'MESSAGE' || data.message) {
-              if (data.unreadCount !== undefined) setUnreadMessageCount(data.unreadCount);
-              if (data.unreadMessageCount !== undefined) setUnreadMessageCount(data.unreadMessageCount);
-            }
-            if (data.newNotification || data.unreadNotificationCount !== undefined || (data.type !== 'MESSAGE' && data.unreadCount !== undefined)) {
-              if (data.unreadNotificationCount !== undefined) setUnreadCount(data.unreadNotificationCount);
-              else if (data.unreadCount !== undefined && data.type !== 'MESSAGE') setUnreadCount(data.unreadCount);
-            }
-            window.dispatchEvent(new CustomEvent("ws_notify", { detail: data }));
+            window.dispatchEvent(new CustomEvent('ws_online_count', { detail: Number(msg.body) }));
           } catch (e) {}
         });
+        if (user?.id) {
+          stompClient.subscribe(`/topic/notify/${user.id}`, (msg: any) => {
+            try {
+              const data = JSON.parse(msg.body);
+              if (data.type === 'MESSAGE' || data.message) {
+                if (data.unreadCount !== undefined) setUnreadMessageCount(data.unreadCount);
+                if (data.unreadMessageCount !== undefined) setUnreadMessageCount(data.unreadMessageCount);
+              }
+              if (data.newNotification || data.unreadNotificationCount !== undefined || (data.type !== 'MESSAGE' && data.unreadCount !== undefined)) {
+                if (data.unreadNotificationCount !== undefined) setUnreadCount(data.unreadNotificationCount);
+                else if (data.unreadCount !== undefined && data.type !== 'MESSAGE') setUnreadCount(data.unreadCount);
+              }
+              window.dispatchEvent(new CustomEvent("ws_notify", { detail: data }));
+            } catch (e) {}
+          });
+        }
+      };
+      stompClient.activate();
+    }).catch(console.error);
+
+    return () => {
+      isCancelled = true;
+      if (stompClient) {
+        stompClient.deactivate();
       }
     };
-    stompClient.activate();
-    return () => { stompClient.deactivate(); };
   }, [user?.id]);
 
   useEffect(() => {
@@ -168,12 +182,18 @@ export default function App() {
   const [squarePage, setSquarePage] = useState<number>(1);
   const [hasMoreSquare, setHasMoreSquare] = useState<boolean>(true);
       
-  const [isFetchingPosts, setIsFetchingPosts] = useState(false);
+  const [isFetchingPosts, setIsFetchingPosts] = useState(true);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   
-  const [numCols, setNumCols] = useState(1);
+  const [numCols, setNumCols] = useState(() => {
+    if (typeof window === 'undefined') return 1;
+    const w = window.innerWidth;
+    if (w >= 1280) return 3;
+    if (w >= 640) return 2;
+    return 1;
+  });
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // 获取当前选中的帖子列表
@@ -229,9 +249,17 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsFetchingPosts(true);
+        const isSquare = !targetAccount && activeSection === 'square';
+        const postsUrl = targetAccount
+          ? `/api/posts/ugc/user/${targetAccount}?page=1&size=12`
+          : isSquare
+          ? '/api/posts/square?page=1&size=12'
+          : '/api/posts/page?page=1&size=12';
+
         const [profileRes, postsRes, releasesRes] = await Promise.all([
           fetch(targetAccount ? `/api/profile/user/${targetAccount}` : '/api/profile'),
-          fetch(targetAccount ? `/api/posts/ugc/user/${targetAccount}?page=1&size=12` : '/api/posts/page?page=1&size=12'),
+          fetch(postsUrl),
           fetch('/api/releases')
         ]);
 
@@ -267,24 +295,33 @@ export default function App() {
               const items = data.items || data.records || [];
               const page = data.page || data.current || 1;
               const hasMore = data.hasMore !== undefined ? data.hasMore : (page * (data.size || 12) < (data.total || 0));
-              setPosts(items.map((p: any) => mapPost(p)));
-              setPage(page);
-              setHasMore(hasMore);
+              const mapped = items.map((p: any) => mapPost(p));
+              if (isSquare) {
+                setSquarePosts(mapped);
+                setSquarePage(page);
+                setHasMoreSquare(hasMore);
+              } else {
+                setPosts(mapped);
+                setPage(page);
+                setHasMore(hasMore);
+              }
             } else {
-              setHasMore(false);
+              if (isSquare) setHasMoreSquare(false); else setHasMore(false);
             }
           } else {
-            setHasMore(false);
+            if (isSquare) setHasMoreSquare(false); else setHasMore(false);
           }
         } else {
-          setHasMore(false);
+          if (isSquare) setHasMoreSquare(false); else setHasMore(false);
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
         setErrorMsg('暂时无法连接服务，请稍后重试');
         setHasMore(false);
+        setHasMoreSquare(false);
       } finally {
         setLoading(false);
+        setIsFetchingPosts(false);
       }
     };
 
@@ -292,7 +329,7 @@ export default function App() {
   }, [retryCount]);
 
   useEffect(() => {
-    if (activeSection === 'square' && squarePosts.length === 0 && hasMoreSquare && !isFetchingPosts) {
+    if (activeSection === 'square' && squarePosts.length === 0 && hasMoreSquare && !isFetchingPosts && !loading) {
       setIsFetchingPosts(true);
       fetch('/api/posts/square?page=1&size=12')
         .then(res => res.json())
@@ -305,7 +342,7 @@ export default function App() {
         })
         .finally(() => setIsFetchingPosts(false));
     }
-  }, [activeSection, squarePosts.length, hasMoreSquare, isFetchingPosts]);
+  }, [activeSection, squarePosts.length, hasMoreSquare, isFetchingPosts, loading]);
 
   // 滚动到列表底部时自动加载下一页
   useEffect(() => {
@@ -506,11 +543,17 @@ export default function App() {
               </div>
             </motion.div>
             {activeSection === 'releases' ? (
-              <ReleaseLogSection releaseLogs={releaseLogs} />
+              <Suspense fallback={<div className="py-12 text-center text-zinc-400 text-xs">加载中…</div>}>
+                <ReleaseLogSection releaseLogs={releaseLogs} />
+              </Suspense>
             ) : activeSection === 'anniversaries' ? (
-              <AnniversariesSection targetAccount={targetAccount} />
+              <Suspense fallback={<div className="py-12 text-center text-zinc-400 text-xs">加载中…</div>}>
+                <AnniversariesSection targetAccount={targetAccount} />
+              </Suspense>
             ) : activeSection === 'guestbook' ? (
-              <GuestbookSection onRequestLogin={() => setIsAuthOpen(true)} targetAccount={targetAccount} />
+              <Suspense fallback={<div className="py-12 text-center text-zinc-400 text-xs">加载中…</div>}>
+                <GuestbookSection onRequestLogin={() => setIsAuthOpen(true)} targetAccount={targetAccount} />
+              </Suspense>
             ) : <>
                         {currentPosts.length === 0 && !isFetchingPosts ? (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex w-full flex-col items-center justify-center py-24 px-4 text-center">
@@ -576,9 +619,9 @@ export default function App() {
                         return (
                           <motion.div
                             key={post.id}
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: globalIndex * 0.1 }}
+                            transition={{ duration: 0.2 }}
                             className="w-full"
                           >
                             <PostCard 
@@ -606,83 +649,85 @@ export default function App() {
         </main>
       </div>
 
-      <SubscribeModal 
-        isOpen={isSubscribeOpen} 
-        onClose={() => setIsSubscribeOpen(false)} 
-      />
-
-      <UnsubscribeModal
-        isOpen={unsubscribeData !== null}
-        email={unsubscribeData?.email || ''}
-        token={unsubscribeData?.token || ''}
-        onClose={() => setUnsubscribeData(null)}
-      />
-
-      <PostDetailModal
-        post={selectedPost}
-        authorName={selectedPost?.nickname || selectedPost?.accountName || profile?.name || ''}
-        authorAvatar={selectedPost?.avatarUrl || profile?.avatarUrl || ''}
-        onClose={() => setSelectedPost(null)}
-      />
-      
-      <AuthModal 
-        isOpen={isAuthOpen} 
-        onClose={() => setIsAuthOpen(false)} 
-        onSuccess={() => setUser(getUserInfo())} 
-      />
-      
-            <NotificationModal 
-        isOpen={isNotifOpen} 
-        onClose={() => setIsNotifOpen(false)}
-        token={localStorage.getItem('site_token') || ''}
-      />
-      <UserCenterModal 
-        isOpen={isUserCenterOpen} 
-        unreadCount={unreadCount}
-        unreadMessageCount={unreadMessageCount}
-        onOpenNotifications={() => {
-          setIsUserCenterOpen(false);
-          setIsNotifOpen(true);
-          setUnreadCount(0);
-        }}
-        onOpenMessageInbox={() => {
-          setIsUserCenterOpen(false);
-          setIsInboxOpen(true);
-        }}
-        onClose={() => setIsUserCenterOpen(false)} 
-        onLogout={() => setUser(null)}
-        onPublish={() => setIsUgcOpen(true)}
-        onPublishAnniversary={() => setIsAnniversaryOpen(true)}
-      />
-
-      <MessageInboxModal
-        isOpen={isInboxOpen}
-        onClose={() => setIsInboxOpen(false)}
-        onOpenChat={(userId, name, avatarUrl) => {
-          setChatTarget({ userId, name, avatarUrl });
-        }}
-      />
-
-      {chatTarget && (
-        <ChatModal
-          isOpen={true}
-          onClose={() => setChatTarget(null)}
-          targetUserId={chatTarget.userId}
-          targetName={chatTarget.name}
-          targetAvatarUrl={chatTarget.avatarUrl}
+      <Suspense fallback={null}>
+        <SubscribeModal 
+          isOpen={isSubscribeOpen} 
+          onClose={() => setIsSubscribeOpen(false)} 
         />
-      )}
-      
-      <UgcPostModal
-        isOpen={isUgcOpen}
-        onClose={() => setIsUgcOpen(false)}
-        onSuccess={() => {}}
-      />
 
-      <AnniversaryModal
-        isOpen={isAnniversaryOpen}
-        onClose={() => setIsAnniversaryOpen(false)}
-      />
+        <UnsubscribeModal
+          isOpen={unsubscribeData !== null}
+          email={unsubscribeData?.email || ''}
+          token={unsubscribeData?.token || ''}
+          onClose={() => setUnsubscribeData(null)}
+        />
+
+        <PostDetailModal
+          post={selectedPost}
+          authorName={selectedPost?.nickname || selectedPost?.accountName || profile?.name || ''}
+          authorAvatar={selectedPost?.avatarUrl || profile?.avatarUrl || ''}
+          onClose={() => setSelectedPost(null)}
+        />
+        
+        <AuthModal 
+          isOpen={isAuthOpen} 
+          onClose={() => setIsAuthOpen(false)} 
+          onSuccess={() => setUser(getUserInfo())} 
+        />
+        
+        <NotificationModal 
+          isOpen={isNotifOpen} 
+          onClose={() => setIsNotifOpen(false)}
+          token={localStorage.getItem('site_token') || ''}
+        />
+        <UserCenterModal 
+          isOpen={isUserCenterOpen} 
+          unreadCount={unreadCount}
+          unreadMessageCount={unreadMessageCount}
+          onOpenNotifications={() => {
+            setIsUserCenterOpen(false);
+            setIsNotifOpen(true);
+            setUnreadCount(0);
+          }}
+          onOpenMessageInbox={() => {
+            setIsUserCenterOpen(false);
+            setIsInboxOpen(true);
+          }}
+          onClose={() => setIsUserCenterOpen(false)} 
+          onLogout={() => setUser(null)}
+          onPublish={() => setIsUgcOpen(true)}
+          onPublishAnniversary={() => setIsAnniversaryOpen(true)}
+        />
+
+        <MessageInboxModal
+          isOpen={isInboxOpen}
+          onClose={() => setIsInboxOpen(false)}
+          onOpenChat={(userId, name, avatarUrl) => {
+            setChatTarget({ userId, name, avatarUrl });
+          }}
+        />
+
+        {chatTarget && (
+          <ChatModal
+            isOpen={true}
+            onClose={() => setChatTarget(null)}
+            targetUserId={chatTarget.userId}
+            targetName={chatTarget.name}
+            targetAvatarUrl={chatTarget.avatarUrl}
+          />
+        )}
+        
+        <UgcPostModal
+          isOpen={isUgcOpen}
+          onClose={() => setIsUgcOpen(false)}
+          onSuccess={() => {}}
+        />
+
+        <AnniversaryModal
+          isOpen={isAnniversaryOpen}
+          onClose={() => setIsAnniversaryOpen(false)}
+        />
+      </Suspense>
     </div>
   );
 }

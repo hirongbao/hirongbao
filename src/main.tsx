@@ -1,9 +1,10 @@
-import {StrictMode} from 'react';
+import {StrictMode, Suspense, lazy} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
-import { ShareView } from './components/ShareView';
-import { ArticleView } from './components/ArticleView';
 import './index.css';
+
+const ShareView = lazy(() => import('./components/ShareView').then(m => ({ default: m.ShareView })));
+const ArticleView = lazy(() => import('./components/ArticleView').then(m => ({ default: m.ArticleView })));
 
 // 全局 fetch 拦截：若本地存在用户登录 Token 且请求本站 API，自动附带 Authorization 请求头
 const originalFetch = window.fetch;
@@ -43,13 +44,17 @@ const isArticleRoute =
 if (sharePostId) {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <ShareView postId={sharePostId} />
+      <Suspense fallback={null}>
+        <ShareView postId={sharePostId} />
+      </Suspense>
     </StrictMode>
   );
 } else if (isArticleRoute) {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <ArticleView />
+      <Suspense fallback={null}>
+        <ArticleView />
+      </Suspense>
     </StrictMode>
   );
 } else {

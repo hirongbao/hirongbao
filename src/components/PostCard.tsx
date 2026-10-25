@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, MessageCircle, Send, Share, Loader2, X, Download, QrCode, AlertCircle, Check } from 'lucide-react';
-import * as htmlToImage from 'html-to-image';
-import QRCode from 'qrcode';
 import { Post, Comment } from '../types';
 import { PostMedia } from './PostMedia';
 import { formatRelativeTime } from '../utils/time';
@@ -103,8 +101,9 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
       console.error('Failed to copy share URL:', copyErr);
     }
 
-    // 2. 生成真实动态二维码 DataURL
+    // 2. 动态加载二维码模块并生成真实动态二维码 DataURL
     try {
+      const QRCode = (await import('qrcode')).default;
       const qrDataUrl = await QRCode.toDataURL(shareUrl, {
         width: 180,
         margin: 1,
@@ -130,6 +129,7 @@ export function PostCard({ post, authorName, authorAvatar, onClick }: PostCardPr
         try {
           if (!posterRef.current) return;
           
+          const htmlToImage = await import('html-to-image');
           const dataUrl = await htmlToImage.toPng(posterRef.current, {
             pixelRatio: 2,
             backgroundColor: '#ffffff',
