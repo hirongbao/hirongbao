@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Heart, MessageCircle, Send, Share, Loader2, X, Download, QrCode, AlertCircle, Check } from 'lucide-react';
+import { Heart, MessageCircle, Send, Share, Loader2, X, Download, QrCode, AlertCircle, Check, ChevronRight } from 'lucide-react';
 import { Post, Comment } from '../types';
 import { PostMedia } from './PostMedia';
 import { formatRelativeTime } from '../utils/time';
@@ -199,14 +199,30 @@ export function PostCard({ post, authorName, authorAvatar, priority = false, onC
 
             {/* Content */}
             {post.content && post.media.length > 0 && (
-              <p className="whitespace-pre-wrap text-xl text-zinc-800 leading-snug mb-8">
-                {post.content}
-              </p>
+              <div className="mb-8">
+                <p className="whitespace-pre-line text-lg sm:text-xl text-zinc-800 leading-snug line-clamp-3 sm:line-clamp-4 break-words">
+                  {post.content.replace(/\n{3,}/g, '\n\n')}
+                </p>
+                {(post.content.length > 90 || (post.content.match(/\n/g) || []).length >= 3) && (
+                  <div className="inline-flex items-center gap-0.5 mt-2.5 text-xs font-semibold text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                    <span>查看全文</span>
+                    <ChevronRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                  </div>
+                )}
+              </div>
             )}
             {post.content && !post.media.length && (
-              <p className={`whitespace-pre-wrap font-serif leading-[1.4] italic text-zinc-800 mb-8 ${post.content.length > 200 ? 'text-lg lg:text-xl' : post.content.length > 80 ? 'text-2xl' : 'text-3xl lg:text-4xl'}`}>
-                {post.content}
-              </p>
+              <div className="mb-8">
+                <p className={`whitespace-pre-line font-serif leading-[1.45] italic text-zinc-800 line-clamp-5 sm:line-clamp-6 break-words ${post.content.length > 200 ? 'text-lg lg:text-xl' : post.content.length > 80 ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl lg:text-4xl'}`}>
+                  {post.content.replace(/\n{3,}/g, '\n\n')}
+                </p>
+                {(post.content.length > 150 || (post.content.match(/\n/g) || []).length >= 5) && (
+                  <div className="inline-flex items-center gap-0.5 mt-3 text-xs font-sans not-italic font-semibold text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                    <span>展开阅读全文</span>
+                    <ChevronRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Media（多图只展示封面，点击进入详情查看全部） */}
