@@ -9,47 +9,52 @@ function obfuscatorPlugin(): Plugin {
     name: 'vite-plugin-javascript-obfuscator',
     apply: 'build',
     enforce: 'post',
-    renderChunk(code, chunk) {
-      // 排除第三方依赖库及包含巨型语法高亮表的文章视图，仅混淆本项目的核心业务代码
-      if (
-        chunk.fileName.includes('vendor-') ||
-        chunk.fileName.includes('marked') ||
-        chunk.fileName.includes('highlight') ||
-        chunk.fileName.includes('ArticleView') ||
-        chunk.fileName.includes('stomp') ||
-        chunk.fileName.includes('browser-')
-      ) {
-        return null;
+    generateBundle(options, bundle) {
+      for (const [fileName, chunk] of Object.entries(bundle)) {
+        if (chunk.type !== 'chunk') continue;
+
+        // 排除第三方依赖库及文章高亮视图
+        if (
+          fileName.includes('vendor-') ||
+          fileName.includes('marked') ||
+          fileName.includes('highlight') ||
+          fileName.includes('ArticleView') ||
+          fileName.includes('stomp') ||
+          fileName.includes('browser-')
+        ) {
+          continue;
+        }
+
+        try {
+          const result = JavaScriptObfuscator.obfuscate(chunk.code, {
+            compact: true,
+            // 字符串加密池
+            stringArray: true,
+            stringArrayEncoding: ['base64'],
+            stringArrayThreshold: 0.8,
+            stringArrayRotate: true,
+            stringArrayShuffle: true,
+            stringArrayWrappersCount: 2,
+            stringArrayWrappersType: 'variable',
+
+            // 标识符十六进制混淆
+            identifierNamesGenerator: 'hexadecimal',
+
+            // 控制流保持适度，保证运行时高性能
+            controlFlowFlattening: false,
+            deadCodeInjection: false,
+
+            // 移除调试控制台输出
+            disableConsoleOutput: true,
+
+            sourceMap: false,
+          });
+
+          chunk.code = result.getObfuscatedCode();
+        } catch (err) {
+          console.error(`Failed to obfuscate chunk ${fileName}:`, err);
+        }
       }
-
-      const result = JavaScriptObfuscator.obfuscate(code, {
-        compact: true,
-        // 字符串加密池：将字符串转换为 Base64 编码池，打乱顺序并加动态解密层
-        stringArray: true,
-        stringArrayEncoding: ['base64'],
-        stringArrayThreshold: 0.8,
-        stringArrayRotate: true,
-        stringArrayShuffle: true,
-        stringArrayWrappersCount: 2,
-        stringArrayWrappersType: 'variable',
-
-        // 标识符十六进制混淆
-        identifierNamesGenerator: 'hexadecimal',
-
-        // 控制流保持适度，保证运行时高性能
-        controlFlowFlattening: false,
-        deadCodeInjection: false,
-
-        // 移除调试控制台输出
-        disableConsoleOutput: true,
-
-        sourceMap: false,
-      });
-
-      return {
-        code: result.getObfuscatedCode(),
-        map: null,
-      };
     },
   };
 }
